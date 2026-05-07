@@ -1,0 +1,7 @@
+{
+  "name": "kind-website",
+  "private": true,
+  "scripts": {
+    "serve": "npx --yes serve -l 3333 ."
+  }
+}

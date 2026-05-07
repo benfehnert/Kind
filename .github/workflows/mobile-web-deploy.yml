@@ -45,6 +45,11 @@ jobs:
           cp kind_health_exploration_app_6.html dist/index.html
           cp kind_health_exploration_app_6.html dist/kind_health_exploration_app_6.html
 
+      - name: Add Kind marketing site (static pages)
+        run: |
+          mkdir -p dist/kind-site
+          cp -R ../kind-website/. dist/kind-site/
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
