@@ -38,7 +38,10 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Export Expo web build
-        run: npx expo export --platform web --output-dir dist
+        run: npx expo export --platform web --output-dir dist --base-url /Kind/
+
+      - name: Preserve legacy app URL path
+        run: cp dist/index.html dist/kind_health_exploration_app_6.html
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
