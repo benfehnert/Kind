@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "ProtocolPath",
+    "slug": "protocol-path",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {},
+    "web": {}
+  }
+}

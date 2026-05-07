@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pg_isready)",
+      "Bash(psql --version)",
+      "Read(//opt/**)",
+      "Read(//Users/benfehnert/**)"
+    ]
+  }
+}
