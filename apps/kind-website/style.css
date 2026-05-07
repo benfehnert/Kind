@@ -1,30 +1,33 @@
-/* ── Design tokens ── */
+/* ── Design tokens (kind_one_page_brand_reference_v2) ── */
 :root {
-  --green:       #4A8C7A;
-  --green-light: #E8F4F0;
-  --green-mid:   #6AAF99;
-  --cream:       #FAFAF7;
-  --warm-white:  #FFFFFF;
-  --charcoal:    #1E2B26;
-  --slate:       #4A5E58;
-  --muted:       #7A908A;
-  --border:      #D8E8E3;
-  --coral:       #E07B65;
-  --coral-light: #FDF0ED;
+  --green:       #22401F; /* primary — headers, nav, key UI */
+  --green-light: #E6ECD0; /* secondary — calm backgrounds */
+  --green-mid:   #8FA87E; /* supportive tint on dark / accents */
+  --cream:       #F7F8F2; /* page background */
+  --warm-white:  #FFFFFF; /* surface */
+  --charcoal:    #1F2A1F; /* text */
+  --slate:       #3D4A3D;
+  --muted:       #A8B3A0; /* muted text */
+  --border:      #DADFD2;
+  --accent:      #F4A261; /* orange — CTAs & highlights, use sparingly */
+  --coral:       #F4A261; /* alias for existing .btn--coral / inline refs */
+  --coral-light: #FDF3EA;
   --radius:      12px;
   --radius-lg:   20px;
-  --shadow:      0 2px 16px rgba(30,43,38,0.08);
-  --shadow-lg:   0 8px 40px rgba(30,43,38,0.12);
-  --nav-height:  68px;
+  --shadow:      0 2px 16px rgba(31,42,31,0.08);
+  --shadow-lg:   0 8px 40px rgba(31,42,31,0.12);
+  --nav-height:  80px;
   --max-width:   1120px;
   --transition:  0.2s ease;
+  --font-body:   "Albert Sans", system-ui, -apple-system, sans-serif;
+  --font-logo:   "Onest", system-ui, sans-serif;
 }
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; font-size: 16px; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-body);
   background: var(--cream);
   color: var(--charcoal);
   line-height: 1.6;
@@ -35,6 +38,7 @@ a { color: inherit; text-decoration: none; }
 ul { list-style: none; }
 
 /* ── Typography ── */
+h1, h2, h3 { font-family: var(--font-body); }
 h1 { font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
 h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; }
 h3 { font-size: 1.2rem; font-weight: 600; line-height: 1.35; }
@@ -49,7 +53,7 @@ p  { color: var(--slate); line-height: 1.7; }
 /* ── Navigation ── */
 .nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(250,250,247,0.92);
+  background: rgba(247,248,242,0.94);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   height: var(--nav-height);
@@ -60,14 +64,31 @@ p  { color: var(--slate); line-height: 1.7; }
   height: 100%;
   display: flex; align-items: center; justify-content: space-between;
 }
-.nav__logo {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 1.25rem; font-weight: 700; color: var(--green);
+/* Logo lockup: Onest Bold “kind” + Albert Sans strapline (brand reference) */
+.brand-logo {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 1px; line-height: 1; text-decoration: none;
 }
-.nav__logo-dot {
-  width: 8px; height: 8px;
-  background: var(--coral); border-radius: 50%;
+.brand-logo__word {
+  font-family: var(--font-logo);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+  text-transform: lowercase;
 }
+.brand-logo__strap {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.6875rem;
+  color: var(--accent);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+}
+.brand-logo--footer .brand-logo__word { color: #fff; }
+.brand-logo--footer .brand-logo__strap { color: var(--accent); }
+
+.nav__logo { flex-shrink: 0; }
 .nav__links {
   display: flex; align-items: center; gap: 32px;
 }
@@ -116,7 +137,7 @@ p  { color: var(--slate); line-height: 1.7; }
 }
 .btn--outline:hover { background: var(--green); color: white; transform: translateY(-1px); }
 .btn--coral { background: var(--coral); color: white; }
-.btn--coral:hover { background: #c45f4a; transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn--coral:hover { background: #e08f45; transform: translateY(-1px); box-shadow: var(--shadow); }
 
 /* ── Hero ── */
 .hero {
@@ -221,7 +242,7 @@ p  { color: var(--slate); line-height: 1.7; }
   letter-spacing: 0.06em; margin-bottom: 20px;
 }
 .persona-card__tag--individual { background: var(--green-light); color: var(--green); }
-.persona-card__tag--researcher { background: var(--coral-light); color: var(--coral); }
+.persona-card__tag--researcher { background: var(--coral-light); color: #8a4a12; }
 .persona-card h3 { font-size: 1.3rem; margin-bottom: 8px; }
 .persona-card p  { font-size: 0.95rem; margin-bottom: 20px; }
 .persona-card ul { display: flex; flex-direction: column; gap: 8px; }
@@ -233,7 +254,7 @@ p  { color: var(--slate); line-height: 1.7; }
 
 /* ── Waitlist form ── */
 .waitlist-section {
-  background: linear-gradient(135deg, var(--green) 0%, #2E6B5C 100%);
+  background: linear-gradient(135deg, var(--green) 0%, #162814 100%);
   padding: 96px 0;
 }
 .waitlist-inner {
@@ -273,7 +294,7 @@ p  { color: var(--slate); line-height: 1.7; }
 .form-submit--green { background: var(--green); color: white; }
 .form-submit--green:hover { background: var(--charcoal); transform: translateY(-1px); box-shadow: var(--shadow); }
 .form-submit--coral { background: var(--coral); color: white; }
-.form-submit--coral:hover { background: #c45f4a; transform: translateY(-1px); box-shadow: var(--shadow); }
+.form-submit--coral:hover { background: #e08f45; transform: translateY(-1px); box-shadow: var(--shadow); }
 .form-note {
   font-size: 0.8rem; color: var(--muted);
   margin-top: 16px; text-align: center;
@@ -335,7 +356,7 @@ p  { color: var(--slate); line-height: 1.7; }
   line-height: 1.5;
 }
 .quote-strip cite {
-  font-size: 0.9rem; color: var(--green-mid);
+  font-size: 0.9rem; color: var(--accent);
   font-style: normal; font-weight: 600;
 }
 
@@ -361,7 +382,8 @@ p  { color: var(--slate); line-height: 1.7; }
 
 /* ── Footer ── */
 .footer {
-  background: var(--charcoal); color: rgba(255,255,255,0.7);
+  background: var(--green);
+  color: rgba(255,255,255,0.78);
   padding: 56px 0 32px;
 }
 .footer__inner {
@@ -369,10 +391,7 @@ p  { color: var(--slate); line-height: 1.7; }
   margin-bottom: 48px;
 }
 .footer__brand { color: white; }
-.footer__brand .logo {
-  font-size: 1.25rem; font-weight: 700; color: var(--green-mid);
-  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-}
+.footer__brand .logo { margin-bottom: 14px; }
 .footer__brand p { font-size: 0.9rem; }
 .footer__col h4 { color: white; font-size: 0.9rem; margin-bottom: 16px; }
 .footer__col ul { display: flex; flex-direction: column; gap: 10px; }
@@ -394,6 +413,8 @@ p  { color: var(--slate); line-height: 1.7; }
 @media (max-width: 768px) {
   .nav__links { display: none; }
   .nav__hamburger { display: flex; }
+  .brand-logo__word { font-size: 1.2rem; }
+  .brand-logo__strap { font-size: 0.625rem; }
   .hero { padding: 72px 0 64px; }
   .feature-row { grid-template-columns: 1fr; gap: 40px; }
   .feature-row--reverse .feature-visual { order: 0; }
