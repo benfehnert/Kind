@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kind — health exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600&family=Onest:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green-dark:   #22401F;
+    --green-light:  #E6ECD0;
+    --orange:       #F4A261;
+    --orange-dark:  #D4743E;
+    --bg:           #F7F8F2;
+    --surface:      #FFFFFF;
+    --text:         #1F2A1F;
+    --text-muted:   #A8B3A0;
+    --border:       #DADFD2;
+    --border-med:   #C4CCBA;
+    --font-sans:    'Albert Sans', sans-serif;
+    --font-logo:    'Onest', sans-serif;
+    --radius-md:    8px;
+    --radius-lg:    12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161D15; --surface:#1F2B1E; --text:#EEF2E8; --text-muted:#7A8F76; --border:rgba(255,255,255,0.10); --border-med:rgba(255,255,255,0.18); --green-light:#2A3C28; }
+  }
+  body { font-family: var(--font-sans); background: var(--bg); display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
+  .app { max-width: 480px; width: 100%; background: var(--bg); padding: 0 0 80px; }
+  /* Nav */
+  .nav { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1rem; background: var(--green-dark); }
+  .nav-logo { font-family: var(--font-logo); font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1; }
+  .nav-sub  { font-family: var(--font-sans); font-size: 11px; color: var(--orange); letter-spacing: 0.04em; margin-top: 1px; }
+  .nav-actions { display: flex; align-items: center; gap: 6px; }
+  .nav-icon-btn { width: 36px; height: 36px; border-radius: 50%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: background 0.12s; }
+  .nav-icon-btn:hover { background: rgba(255,255,255,0.12); }
+  .nav-icon-btn svg { width: 20px; height: 20px; stroke: rgba(255,255,255,0.75); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-avatar-btn { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--orange); cursor: pointer; flex-shrink: 0; background: var(--green-light); display:flex;align-items:center;justify-content:center;position:relative; }
+  .nav-avatar-btn .av-fallback { font-size: 13px; font-weight: 600; color: var(--green-dark); }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #E24B4A; border: 1.5px solid var(--green-dark); }
+  /* Overlays */
+  .overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.4); }
+  .overlay.open { display: flex; flex-direction: column; }
+  .overlay-panel { background: var(--surface); width: 100%; max-width: 480px; margin: 0 auto; border-radius: 0 0 var(--radius-lg) var(--radius-lg); padding: 1rem; max-height: 80vh; overflow-y: auto; }
+  .overlay-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .search-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 999px; font-size: 14px; font-family: var(--font-sans); background: var(--bg); color: var(--text); outline: none; }
+  .search-input:focus { border-color: var(--green-dark); }
+  .overlay-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
+  .search-section-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 0.75rem 0 0.4rem; }
+  .search-result-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .search-result-row:hover { opacity: 0.75; }
+  .search-result-icon { width: 34px; height: 34px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .search-result-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .search-result-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .notif-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; overflow:hidden; position:relative; }
+  .notif-body { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .notif-body strong { color: var(--text); font-weight: 500; }
+  .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .notif-unread { background: var(--green-light); }
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 10; }
+  .tab { flex: 1; padding: 12px 4px; font-size: 12px; font-weight: 500; font-family: var(--font-sans); text-align: center; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: var(--green-dark); border-bottom-color: var(--orange); }
+  .screen { display: none; padding: 1rem; }
+  .screen.active { display: block; }
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.6rem; }
+  .badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+  .badge-teal   { background: var(--green-light); color: var(--green-dark); }
+  .badge-amber  { background: #FDF0E4; color: #8A4A1A; }
+  .badge-blue   { background: #E6F1FB; color: #185FA5; }
+  .badge-green  { background: var(--green-light); color: var(--green-dark); }
+  .badge-purple { background: #EEEDFE; color: #534AB7; }
+  .section-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .section-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.55; }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  .metric-card  { background: var(--green-light); border-radius: var(--radius-md); padding: 0.85rem; }
+  .metric-label { font-size: 11px; color: var(--green-dark); opacity: 0.7; margin-bottom: 4px; }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--text); }
+  .metric-unit  { font-size: 12px; color: var(--text-muted); margin-left: 2px; }
+  .progress-bar  { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: var(--green-dark); border-radius: 999px; }
+  .log-btn { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: var(--radius-lg); font-size: 15px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; margin-bottom: 1rem; transition: background 0.15s; }
+  .log-btn:hover { background: var(--orange-dark); }
+  .timeline-item { display: flex; gap: 12px; margin-bottom: 1rem; }
+  .timeline-dot  { width: 10px; height: 10px; border-radius: 50%; background: var(--border-med); margin-top: 5px; flex-shrink: 0; }
+  .timeline-dot.active { background: var(--green-dark); width: 12px; height: 12px; margin-top: 4px; }
+  .timeline-content { flex: 1; }
+  .timeline-phase { font-size: 13px; font-weight: 600; color: var(--text); }
+  .timeline-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 2px; }
+  .profile-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .profile-name   { font-size: 14px; font-weight: 600; color: var(--text); }
+  .profile-meta   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .profile-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .science-banner { background: var(--green-light); border: 1px solid var(--border-med); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .science-title  { font-size: 13px; font-weight: 600; color: var(--green-dark); margin-bottom: 4px; }
+  .science-text   { font-size: 12px; color: var(--green-dark); opacity: 0.8; line-height: 1.55; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .toggle-label { font-size: 14px; color: var(--text); font-weight: 500; }
+  .toggle-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .toggle { width: 42px; height: 24px; border-radius: 999px; background: var(--green-dark); position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
+  .toggle.off { background: var(--border); }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: white; top: 3px; left: 21px; transition: left 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle.off::after { left: 3px; }
+  .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 1rem 0 0.5rem; }
+  .chart-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--green-dark); cursor: pointer; transition: opacity 0.15s; min-width: 0; }
+  .chart-bar:hover { opacity: 0.75; }
+  .chart-bar.caffeine { background: var(--orange); }
+  .chart-labels { display: flex; gap: 6px; }
+  .chart-label  { flex: 1; font-size: 10px; color: var(--text-muted); text-align: center; min-width: 0; }
+  .input-row    { margin-bottom: 14px; }
+  .input-label  { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 7px; display: block; }
+  select { width: 100%; padding: 9px 10px; border: 1px solid var(--border-med); border-radius: var(--radius-md); background: var(--surface); color: var(--text); font-size: 14px; font-family: var(--font-sans); }
+  select:focus { outline: none; border-color: var(--green-dark); }
+  input[type=range] { width: 100%; accent-color: var(--green-dark); }
+  .range-row  { display: flex; align-items: center; gap: 10px; }
+  .range-val  { font-size: 15px; font-weight: 600; color: var(--text); min-width: 32px; text-align: right; }
+  .log-form   { background: var(--green-light); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem; }
+  .submit-row { display: flex; gap: 8px; margin-top: 1rem; }
+  .btn-secondary { flex: 1; padding: 11px; background: transparent; border: 1px solid var(--border-med); border-radius: var(--radius-md); font-size: 14px; cursor: pointer; color: var(--text); font-family: var(--font-sans); font-weight: 500; }
+  .btn-primary   { flex: 2; padding: 11px; background: var(--orange); border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; color: white; font-family: var(--font-sans); transition: background 0.15s; }
+  .btn-primary:hover { background: var(--orange-dark); }
+  .insight-row  { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .insight-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .feed-item    { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .feed-header  { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .feed-avatar  { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; overflow:hidden; position:relative; }
+  .feed-meta    { flex: 1; }
+  .feed-name    { font-size: 13px; font-weight: 600; color: var(--text); }
+  .feed-time    { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .feed-body    { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+  .feed-body strong { color: var(--text); font-weight: 500; }
+  .feed-highlight { background: var(--green-light); border-radius: var(--radius-md); padding: 8px 10px; margin-top: 8px; font-size: 12px; color: var(--green-dark); line-height: 1.5; }
+  .feed-highlight strong { font-weight: 600; }
+  .chip-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 1rem; scrollbar-width: none; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .chip { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid var(--border-med); background: var(--surface); color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: all 0.12s; }
+  .chip.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+  .chip:hover:not(.active) { background: var(--green-light); }
+  .explore-area { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: opacity 0.12s; }
+  .explore-area:hover { opacity: 0.85; }
+  .explore-area.active-area { border-color: var(--green-dark); border-width: 1.5px; }
+  .explore-icon   { width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .explore-title  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .explore-desc   { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .explore-status { margin-left: auto; flex-shrink: 0; text-align: right; }
+  .start-btn { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+  .sub-tabs { display: flex; margin-bottom: 1.25rem; border: 1px solid var(--border-med); border-radius: var(--radius-md); overflow: hidden; }
+  .sub-tab { flex: 1; padding: 9px 8px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; color: var(--text-muted); background: transparent; border: none; font-family: var(--font-sans); transition: all 0.12s; }
+  .sub-tab.active { background: var(--green-dark); color: white; font-weight: 600; }
+  .sub-tab:first-child { border-right: 1px solid var(--border-med); }
+  .sub-panel { display: none; }
+  .sub-panel.active { display: block; }
+  .pub-card   { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .pub-source { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .pub-title  { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
+  .pub-meta   { font-size: 11px; color: var(--text-muted); }
+  .pub-tags   { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .comm-insight-item  { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .comm-insight-item:last-child { border-bottom: none; }
+  .comm-insight-icon  { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .comm-insight-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .comm-insight-body  { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .comm-insight-body strong { color: var(--text); font-weight: 500; }
+  .stat-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green-light); border-radius: 999px; padding: 3px 10px; font-size: 11px; color: var(--green-dark); margin-top: 6px; }
+  .stat-pill strong { font-weight: 600; }
+  /* Detail overlay (explorations) */
+  .detail-overlay { position: fixed; inset: 0; z-index: 200; background: var(--bg); transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; }
+  .detail-overlay.open { transform: translateX(0); }
+  .detail-inner { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+  .detail-header { position: sticky; top: 0; z-index: 10; background: var(--green-dark); padding: 0.85rem 1rem; display: flex; align-items: center; gap: 12px; }
+  .detail-back { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.12); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .detail-back svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .detail-title-text { font-size: 15px; font-weight: 600; color: white; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .kpi-card { flex: 1; background: var(--green-light); border-radius: var(--radius-md); padding: 10px 12px; }
+  .kpi-label  { font-size: 11px; color: var(--green-dark); opacity: 0.7; margin-bottom: 4px; }
+  .kpi-val    { font-size: 20px; font-weight: 600; color: var(--text); }
+  .kpi-unit   { font-size: 12px; color: var(--text-muted); }
+  .kpi-change { font-size: 11px; margin-top: 3px; }
+  .start-cta { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: var(--radius-lg); font-size: 15px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; margin-bottom: 1rem; display: block; transition: background 0.15s; }
+  .start-cta:hover { background: var(--orange-dark); }
+  .start-cta:disabled { background: #C4A882; cursor: default; }
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .check-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border-med); background: var(--surface); cursor: pointer; font-size: 12px; color: var(--text-muted); transition: all 0.12s; user-select: none; white-space: nowrap; font-family: var(--font-sans); }
+  .check-chip.checked { background: var(--green-light); border-color: var(--green-dark); color: var(--green-dark); font-weight: 600; }
+  .check-icon { opacity: 0; font-size: 10px; font-weight: 700; transition: opacity 0.1s; }
+  .check-chip.checked .check-icon { opacity: 1; }
+  .number-input-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .number-input { width: 90px; padding: 8px 10px; border: 1px solid var(--border-med); border-radius: var(--radius-md); font-size: 18px; font-weight: 600; color: var(--text); background: var(--surface); font-family: var(--font-sans); text-align: center; }
+  .number-input:focus { outline: none; border-color: var(--green-dark); }
+  .number-unit  { font-size: 14px; color: var(--text-muted); }
+  .field-hint   { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .outcome-row  { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .outcome-row:last-child { border-bottom: none; }
+  .log-success-card { background: var(--green-light); border: 1px solid var(--green-dark); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+  /* ── v6: Explorer rows ── */
+  .explorer-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; transition:opacity 0.12s; }
+  .explorer-row:last-child { border-bottom:none; }
+  .explorer-row:hover { opacity:0.82; }
+  .follow-btn { font-size:11px; font-weight:600; padding:5px 12px; border-radius:999px; border:1.5px solid var(--green-dark); background:transparent; color:var(--green-dark); cursor:pointer; font-family:var(--font-sans); white-space:nowrap; transition:all 0.15s; flex-shrink:0; }
+  .follow-btn.following { background:var(--green-dark); color:white; }
+  .follow-btn:hover:not(.following) { background:var(--green-light); }
+  /* ── v6: Activity cards ── */
+  .act-card { border:1px solid var(--border); border-radius:var(--radius-lg); padding:1rem 1.25rem; margin-bottom:0.75rem; background:var(--surface); cursor:pointer; transition:border-color 0.15s; }
+  .act-card.expanded { border-color:var(--green-dark); }
+  .act-detail { background:var(--green-light); border-radius:var(--radius-md); padding:8px 10px; font-size:12px; color:var(--green-dark); margin-bottom:8px; display:none; line-height:1.5; }
+  .act-card.expanded .act-detail { display:block; }
+  /* ── v6: Nice & message ── */
+  .nice-btn { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:var(--bg); border:1px solid var(--border); border-radius:999px; cursor:pointer; font-size:12px; color:var(--text-muted); font-family:var(--font-sans); transition:all 0.15s; }
+  .nice-btn.niced { background:var(--green-light); border-color:var(--green-dark); color:var(--green-dark); font-weight:600; }
+  .nice-btn:hover:not(.niced) { border-color:var(--border-med); }
+  .msg-btn { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; background:var(--bg); border:1px solid var(--border); border-radius:999px; cursor:pointer; font-size:12px; color:var(--text-muted); font-family:var(--font-sans); transition:all 0.15s; }
+  .msg-btn:hover { border-color:var(--border-med); }
+  .msg-box { display:none; margin-top:8px; }
+  .msg-box.open { display:block; }
+  .msg-ta { width:100%; padding:9px 12px; border:1.5px solid var(--border-med); border-radius:var(--radius-md); font-size:13px; font-family:var(--font-sans); color:var(--text); background:var(--surface); resize:none; min-height:70px; outline:none; line-height:1.5; }
+  .msg-ta:focus { border-color:var(--green-dark); }
+  /* ── v6: Community search ── */
+  .cs-tab { flex:1; padding:9px 4px; font-size:12px; font-weight:500; text-align:center; cursor:pointer; color:var(--text-muted); background:transparent; border:none; border-bottom:2px solid transparent; font-family:var(--font-sans); transition:all 0.12s; }
+  .cs-tab.active { color:var(--green-dark); border-bottom-color:var(--orange); font-weight:600; }
+  .cs-panel { display:none; max-height:340px; overflow-y:auto; }
+  .cs-panel.active { display:block; }
+  /* ── v6: Slide panels ── */
+  .slide-panel { position:fixed; inset:0; background:var(--bg); transform:translateX(100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1); overflow-y:auto; }
+  .slide-panel.open { transform:translateX(0); }
+  .slide-panel-inner { max-width:480px; margin:0 auto; padding-bottom:80px; }
+  /* ── v6: Explore chat ── */
+  .chat-bub { display:flex; gap:10px; margin-bottom:0.75rem; align-items:flex-start; }
+  .chat-bub.user-msg { flex-direction:row-reverse; }
+  .cb-av { width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0; }
+  .cb-txt { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px 14px;font-size:13px;color:var(--text-muted);line-height:1.55;max-width:88%; }
+  .user-msg .cb-txt { background:var(--green-dark);color:white;border-color:var(--green-dark); }
+  .chat-exp-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-top:8px;cursor:pointer;transition:border-color 0.15s; }
+  .chat-exp-card:hover { border-color:var(--border-med); }
+  .typing-dot { width:7px;height:7px;border-radius:50%;background:var(--text-muted);display:inline-block;margin:0 2px;animation:tp 1.4s infinite ease-in-out; }
+  .typing-dot:nth-child(2){animation-delay:0.2s} .typing-dot:nth-child(3){animation-delay:0.4s}
+  @keyframes tp{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+  /* ── v6: Researcher rows ── */
+  .researcher-row { display:flex; gap:12px; align-items:flex-start; padding:12px 1rem; border-bottom:1px solid var(--border); }
+  .researcher-row:last-child { border-bottom:none; }
+</style>
+</head>
+<body>
+
+<!-- Search overlay -->
+<div id="search-overlay" class="overlay" onclick="closeOverlay('search-overlay')">
+  <div class="overlay-panel" onclick="event.stopPropagation()">
+    <div class="overlay-header">
+      <input class="search-input" type="text" placeholder="Search explorations, insights, people…" autofocus id="search-field" oninput="handleSearch(this.value)">
+      <button class="overlay-close" onclick="closeOverlay('search-overlay')">✕</button>
+    </div>
+    <div id="search-results">
+      <div class="search-section-label">Explorations</div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);">☕</div><div><div class="search-result-title">Caffeine &amp; sleep quality</div><div class="search-result-sub">Active · Week 3 of 8</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EAF3DE;">🏃</div><div><div class="search-result-title">Movement &amp; energy</div><div class="search-result-sub">Available to start</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;">💓</div><div><div class="search-result-title">Stress &amp; recovery</div><div class="search-result-sub">Available to start</div></div></div>
+      <div class="search-section-label">Community</div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);color:var(--green-dark);font-size:13px;font-weight:600;">SJ</div><div><div class="search-result-title">Sam Johnson</div><div class="search-result-sub">Amsterdam · Caffeine &amp; sleep · Week 6</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;color:#534AB7;font-size:13px;font-weight:600;">MC</div><div><div class="search-result-title">Maya Chen</div><div class="search-result-sub">London · Caffeine &amp; sleep · Week 3</div></div></div>
+      <div class="search-section-label">Insights &amp; publications</div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div><div><div class="search-result-title">Caffeine half-life and sleep onset</div><div class="search-result-sub">kind community insight</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications overlay -->
+<div id="notif-overlay" class="overlay" onclick="closeOverlay('notif-overlay')">
+  <div class="overlay-panel" onclick="event.stopPropagation()">
+    <div class="overlay-header" style="border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:0;">
+      <div style="font-size:16px;font-weight:600;color:var(--text);flex:1;">Notifications</div>
+      <button class="overlay-close" onclick="closeOverlay('notif-overlay')">✕</button>
+    </div>
+    <div class="notif-item notif-unread" style="border-radius:var(--radius-md);margin-top:10px;padding:8px 10px;">
+      <div class="notif-avatar" style="background:var(--green-light);">
+        <img src="https://i.pravatar.cc/72?img=11" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:var(--green-dark);">SJ</span>
+      </div>
+      <div><div class="notif-body"><strong>Sam Johnson</strong> reached week 6 — their best sleep score yet.</div><div class="notif-time">2 hours ago</div></div>
+    </div>
+    <div class="notif-item notif-unread" style="border-radius:var(--radius-md);padding:8px 10px;">
+      <div class="notif-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div>
+      <div><div class="notif-body">New personal insight: your sleep onset is <strong>18 min faster</strong> on days with a pre-1pm caffeine cutoff.</div><div class="notif-time">This morning</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div>
+      <div><div class="notif-body">A new kind community publication is in preparation — <strong>247 participants</strong> contributing data, including you.</div><div class="notif-time">Yesterday</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-avatar" style="background:#FDF0E4;">
+        <img src="https://i.pravatar.cc/72?img=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#8A4A1A;">TR</span>
+      </div>
+      <div><div class="notif-body"><strong>Tom Richards</strong> completed their 8-week protocol and published N-of-1 results.</div><div class="notif-time">2 days ago</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">✓</div>
+      <div><div class="notif-body">You hit a <strong>9-day streak</strong> — your personal best. Keep logging to maintain it.</div><div class="notif-time">3 days ago</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Exploration detail overlay -->
+<div id="detail-overlay" class="detail-overlay">
+  <div class="detail-inner" id="detail-content"></div>
+</div>
+
+<!-- Explorer profile panel (z:300, stacks above follow panel) -->
+<div id="explorer-panel" class="slide-panel" style="z-index:300;">
+  <div class="slide-panel-inner" id="explorer-panel-content"></div>
+</div>
+
+<!-- Following / Followers panel (z:200) -->
+<div id="follow-panel" class="slide-panel" style="z-index:200;">
+  <div class="slide-panel-inner">
+    <div class="detail-header" style="position:sticky;top:0;z-index:10;">
+      <button class="detail-back" onclick="closeFollowPanel()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="detail-title-text" id="follow-panel-title">Following</div>
+    </div>
+    <div id="follow-panel-list" style="padding:0 0.5rem;"></div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- Nav -->
+  <div class="nav">
+    <div>
+      <div class="nav-logo">kind</div>
+      <div class="nav-sub">health exploration</div>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-icon-btn" onclick="openOverlay('search-overlay')" title="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      </button>
+      <button class="nav-icon-btn" onclick="openOverlay('notif-overlay')" title="Notifications">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <div class="nav-avatar-btn" onclick="showScreen('profile')" title="Profile">
+        <img src="https://i.pravatar.cc/72?img=10" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
+        <span class="av-fallback">EG</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="showScreen('home')">Home</div>
+    <div class="tab" onclick="showScreen('exploration')">Exploration</div>
+    <div class="tab" onclick="showScreen('insight')">Insight</div>
+    <div class="tab" onclick="showScreen('community')">Community</div>
+    <div class="tab" onclick="showScreen('profile')">Profile</div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen active">
+    <div style="margin-bottom:1rem;">
+      <div class="section-title">Good morning, Emma</div>
+      <div class="section-sub">Day 12 of your caffeine reduction exploration. You're doing great.</div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Sleep quality</div><div class="metric-value">7.4<span class="metric-unit">/10</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">+1.2 from week 1</div></div>
+      <div class="metric-card"><div class="metric-label">Caffeine today</div><div class="metric-value">80<span class="metric-unit">mg</span></div><div style="font-size:11px;color:#8A4A1A;margin-top:4px;font-weight:500;">target: 100mg</div></div>
+      <div class="metric-card"><div class="metric-label">Last cutoff</div><div class="metric-value">1<span class="metric-unit">pm</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">target: before 2pm</div></div>
+      <div class="metric-card"><div class="metric-label">Active streak</div><div class="metric-value">9<span class="metric-unit">days</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">personal best!</div></div>
+    </div>
+    <div id="log-toggle"><button class="log-btn" onclick="document.getElementById('log-toggle').style.display='none';document.getElementById('log-form').style.display='block'">Log today's data</button></div>
+    <div id="log-form" class="log-form" style="display:none">
+      <div class="section-title" style="margin-bottom:1rem;">Today's log</div>
+      <div class="input-row"><label class="input-label">How did you sleep last night?</label><div class="range-row"><input type="range" min="1" max="10" value="7" step="1" oninput="document.getElementById('sleep-val').textContent=this.value"><div class="range-val" id="sleep-val">7</div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;"><span>Poor</span><span>Excellent</span></div></div>
+      <div class="input-row"><label class="input-label">Total caffeine consumed (mg)</label><div class="range-row"><input type="range" min="0" max="400" value="80" step="10" oninput="document.getElementById('caf-val').textContent=this.value"><div class="range-val" id="caf-val">80</div></div></div>
+      <div class="input-row"><label class="input-label">Last caffeine intake</label><select><option>Before 12pm</option><option selected>12pm – 2pm</option><option>2pm – 4pm</option><option>After 4pm</option></select></div>
+      <div class="input-row"><label class="input-label">Time to fall asleep</label><select><option>Under 10 min</option><option selected>10–20 min</option><option>20–40 min</option><option>Over 40 min</option></select></div>
+      <div class="input-row"><label class="input-label">Energy levels today</label><div class="range-row"><input type="range" min="1" max="10" value="6" step="1" oninput="document.getElementById('energy-val').textContent=this.value"><div class="range-val" id="energy-val">6</div></div></div>
+      <div class="submit-row"><button class="btn-secondary" onclick="document.getElementById('log-toggle').style.display='block';document.getElementById('log-form').style.display='none'">Cancel</button><button class="btn-primary" onclick="showLogConfirm()">Save log</button></div>
+    </div>
+    <div id="log-confirm" class="card" style="display:none;background:var(--green-light);border-color:var(--green-dark);"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--green-dark);opacity:0.8;">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>
+    <div class="chip-row" id="feed-chips">
+      <div class="chip active" onclick="filterFeed('all',this)">All</div>
+      <div class="chip" onclick="filterFeed('milestone',this)">Milestones</div>
+      <div class="chip" onclick="filterFeed('insight',this)">Insights</div>
+      <div class="chip" onclick="filterFeed('activity',this)">Activity</div>
+      <div class="chip" onclick="filterFeed('science',this)">Science</div>
+      <div class="chip" onclick="filterFeed('tip',this)">Tips</div>
+    </div>
+    <div id="feed">
+      <div class="feed-item" data-type="milestone">
+        <div class="feed-header">
+          <div class="feed-avatar" style="background:var(--green-light);">
+            <img src="https://i.pravatar.cc/68?img=11" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:var(--green-dark);">SJ</span>
+          </div>
+          <div class="feed-meta"><div class="feed-name">Sam Johnson <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 hours ago · Caffeine &amp; sleep</div></div>
+        </div>
+        <div class="feed-body">Completed week 6 — the first week where sleep score averaged above <strong>8.0</strong>. Something clicked this week.</div>
+        <div class="feed-highlight">Sleep avg: <strong>8.2</strong> &nbsp;·&nbsp; Streak: <strong>21 days</strong></div>
+      </div>
+      <div class="feed-item" data-type="insight">
+        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Your insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">This morning · Caffeine &amp; sleep</div></div></div>
+        <div class="feed-body">On the 4 days where your last caffeine was before 1pm, sleep onset was on average <strong>18 minutes faster</strong> than on later-cutoff days.</div>
+        <div class="feed-highlight">Try keeping your cutoff at 1pm this week to confirm the trend.</div>
+      </div>
+      <div class="feed-item" data-type="activity">
+        <div class="feed-header">
+          <div class="feed-avatar" style="background:#EEEDFE;">
+            <img src="https://i.pravatar.cc/68?img=9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#534AB7;">MC</span>
+          </div>
+          <div class="feed-meta"><div class="feed-name">Maya Chen <span class="badge badge-purple" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">4 hours ago · Caffeine &amp; sleep</div></div>
+        </div>
+        <div class="feed-body">Logged day 21 — switching from afternoon espresso to herbal tea made the cutoff feel much easier to stick to. Small swap, big difference.</div>
+      </div>
+      <div class="feed-item" data-type="science">
+        <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div><div class="feed-meta"><div class="feed-name">kind science <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Science</span></div><div class="feed-time">Yesterday · Citizen science</div></div></div>
+        <div class="feed-body">Across <strong>247 active participants</strong>, sleep onset improves most sharply between weeks 3 and 5. Your data is contributing to this finding.</div>
+        <div class="feed-highlight">2 open-access publications in preparation. Data collection until May 2026.</div>
+      </div>
+      <div class="feed-item" data-type="tip">
+        <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">✓</div><div class="feed-meta"><div class="feed-name">Wellbeing tip <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Tip</span></div><div class="feed-time">Yesterday · Sleep quality</div></div></div>
+        <div class="feed-body">Caffeine's half-life is 5–7 hours. A 200mg coffee at 3pm still leaves ~100mg active at 9pm — roughly equivalent to a weak espresso right before bed.</div>
+      </div>
+      <div class="feed-item" data-type="milestone">
+        <div class="feed-header">
+          <div class="feed-avatar" style="background:#FDF0E4;">
+            <img src="https://i.pravatar.cc/68?img=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#8A4A1A;">TR</span>
+          </div>
+          <div class="feed-meta"><div class="feed-name">Tom Richards <span class="badge badge-amber" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 days ago · Caffeine &amp; sleep</div></div>
+        </div>
+        <div class="feed-body">Completed the full 8-week protocol. Sleep quality went from a baseline of <strong>5.0</strong> to a week-8 average of <strong>8.4</strong>. Genuinely surprised by how clear the effect was.</div>
+        <div class="feed-highlight">N-of-1 report generated &nbsp;·&nbsp; Data contributed to citizen science dataset</div>
+      </div>
+      <div class="feed-item" data-type="activity">
+        <div class="feed-header">
+          <div class="feed-avatar" style="background:#EAF3DE;">
+            <img src="https://i.pravatar.cc/68?img=5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#3B6D11;">PL</span>
+          </div>
+          <div class="feed-meta"><div class="feed-name">Priya Lawson <span class="badge badge-green" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">2 days ago · Stress &amp; recovery</div></div>
+        </div>
+        <div class="feed-body">Added a second exploration: stress and recovery. Combining daily HRV readings with the existing sleep log. Only day 3 but patterns are already interesting.</div>
+      </div>
+      <div class="feed-item" data-type="insight">
+        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Community insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">3 days ago · Movement &amp; energy</div></div></div>
+        <div class="feed-body">Explorers tracking both movement and caffeine who log <strong>20+ min of outdoor activity</strong> report 0.9 points higher sleep quality that evening.</div>
+        <div class="feed-highlight">Based on 89 participants tracking both areas simultaneously.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLORATION -->
+  <div id="exploration" class="screen">
+    <!-- Explore section with chat search -->
+    <div style="margin-bottom:1.5rem;">
+      <div class="section-title">Explore</div>
+      <div class="section-sub" style="margin-bottom:0.75rem;">Discover areas of health and wellbeing to explore, guided by science.</div>
+      <div style="position:relative;">
+        <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+        </div>
+        <input id="explore-search-input" type="text" placeholder="Find an area of health and wellbeing to explore…"
+          style="width:100%;padding:12px 16px 12px 42px;border:1.5px solid var(--border-med);border-radius:var(--radius-lg);font-size:14px;font-family:var(--font-sans);background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s;"
+          oninput="handleExploreSearch(this.value)"
+          onfocus="this.style.borderColor='var(--green-dark)'"
+          onblur="this.style.borderColor='var(--border-med)'">
+      </div>
+      <div id="explore-chat" style="display:none;margin-top:0.75rem;"></div>
+    </div>
+
+    <div class="card-title" style="padding:0 0 8px;">Active</div>
+    <div class="explore-area active-area" onclick="openExploration('caffeine')">
+      <div class="explore-icon" style="background:var(--green-light);">☕</div>
+      <div style="flex:1;"><div class="explore-title">Caffeine &amp; sleep quality</div><div class="explore-desc">8-week reduction protocol · Week 3 of 8</div><div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">Active</span><span class="badge badge-teal">9-day streak</span></div></div>
+      <div class="explore-status"><div style="font-size:20px;font-weight:600;color:var(--green-dark);text-align:right;">38%</div><div style="font-size:10px;color:var(--text-muted);">complete</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Protocol — caffeine &amp; sleep</div>
+      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 1–2: Baseline <span class="badge badge-teal" style="margin-left:6px;">Complete</span></div><div class="timeline-desc">Normal intake tracked to establish personal baseline sleep and energy metrics.</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot active"></div><div class="timeline-content"><div class="timeline-phase">Weeks 3–5: Gradual reduction <span class="badge badge-amber" style="margin-left:6px;">Active</span></div><div class="timeline-desc">Reducing total intake 25% per week, moving last consumption progressively earlier.</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 6–7: Low-caffeine phase</div><div class="timeline-desc">Under 100mg/day, all before 1pm. Rigorous sleep tracking continues.</div></div></div>
+      <div class="timeline-item" style="margin-bottom:0;"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Week 8: N-of-1 analysis report</div><div class="timeline-desc">Personal report comparing baseline to intervention outcomes.</div></div></div>
+    </div>
+    <div class="card-title" style="padding:0.25rem 0 8px;">Available to start</div>
+    <div class="explore-area" onclick="openExploration('movement')"><div class="explore-icon" style="background:#EAF3DE;">🏃</div><div style="flex:1;"><div class="explore-title">Movement &amp; energy</div><div class="explore-desc">6-week protocol tracking daily activity against mood and energy</div><div style="margin-top:5px;"><span class="badge badge-green">89 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('eating')"><div class="explore-icon" style="background:#FDF0E4;">🕐</div><div style="flex:1;"><div class="explore-title">Time-restricted eating</div><div class="explore-desc">6-week eating window exploration, energy and mood tracked daily</div><div style="margin-top:5px;"><span class="badge badge-amber">12 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('stress')"><div class="explore-icon" style="background:#EEEDFE;">💓</div><div style="flex:1;"><div class="explore-title">Stress &amp; recovery</div><div class="explore-desc">8-week HRV and subjective stress tracking with daily check-ins</div><div style="margin-top:5px;"><span class="badge badge-purple">34 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('supplements')"><div class="explore-icon" style="background:#FDF0E4;">💊</div><div style="flex:1;"><div class="explore-title">Supplements &amp; sleep</div><div class="explore-desc">Single-supplement trials (magnesium, vitamin D, ashwagandha) with sleep tracking</div><div style="margin-top:5px;"><span class="badge badge-amber">New</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('screen')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-title">Screen time &amp; sleep onset</div><div class="explore-desc">4-week evening screen reduction protocol, sleep onset tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
+    <div style="margin-top:0.25rem;" class="science-banner"><div class="science-title">Multi-area exploration</div><div class="science-text">Running more than one exploration simultaneously lets you — and the wider community — understand how these health levers interact. Your combined data may reveal correlations that single-variable studies miss.</div></div>
+  </div>
+
+  <!-- INSIGHT (unchanged from v5) -->
+  <div id="insight" class="screen">
+    <div style="margin-bottom:1rem;"><div class="section-title">Insight</div><div class="section-sub">Your personal findings alongside discoveries from the wider kind community and research world.</div></div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="showSubPanel('your-insights', this)">Your insights</button>
+      <button class="sub-tab" onclick="showSubPanel('community-insights', this)">Community insights</button>
+    </div>
+    <div id="your-insights" class="sub-panel active">
+      <div class="card">
+        <div class="card-title">Sleep quality over time</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Avg. sleep score by week</div>
+        <div class="chart-bar-wrap"><div class="chart-bar" style="height:50%;"></div><div class="chart-bar" style="height:58%;"></div><div class="chart-bar" style="height:74%;"></div></div>
+        <div class="chart-labels"><div class="chart-label">Wk 1<br>5.2</div><div class="chart-label">Wk 2<br>6.0</div><div class="chart-label">Wk 3<br>7.4</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Caffeine vs sleep correlation</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Days with lower caffeine (green) vs higher (orange)</div>
+        <div class="chart-bar-wrap"><div class="chart-bar" style="height:80%;"></div><div class="chart-bar caffeine" style="height:45%;"></div><div class="chart-bar" style="height:75%;"></div><div class="chart-bar caffeine" style="height:40%;"></div><div class="chart-bar" style="height:85%;"></div><div class="chart-bar" style="height:78%;"></div><div class="chart-bar caffeine" style="height:50%;"></div></div>
+        <div style="display:flex;gap:12px;margin-top:6px;"><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--green-dark);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">Low caffeine day</span></div><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--orange);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">Higher caffeine day</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Key observations</div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Sleep onset improving</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">You're falling asleep 14 min faster than in your baseline week.</div></div></div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Cutoff time matters</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Your sleep score is 1.8 points higher on days with no caffeine after 2pm.</div></div></div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Energy levels stable</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Despite lower caffeine, self-reported energy scores have held at 6.2 avg.</div></div></div>
+        <div class="insight-row" style="border-bottom:none;"><div class="insight-icon" style="background:#FDF0E4;color:#8A4A1A;">!</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Weekend pattern</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Weekend caffeine tends to be 40mg higher — worth watching going into weeks 4 and 5.</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Protocol adherence</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;color:var(--text-muted)">This week</span><span style="font-size:12px;font-weight:600;color:var(--green-dark)">80%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;margin-bottom:4px;"><span style="font-size:12px;color:var(--text-muted)">Overall (12 days)</span><span style="font-size:12px;font-weight:600;color:var(--green-dark)">83%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:83%"></div></div>
+      </div>
+    </div>
+    <div id="community-insights" class="sub-panel">
+      <div style="margin-bottom:0.5rem;"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">From the kind community</div><div style="font-size:12px;color:var(--text-muted);">Derived from 247 active participants across all explorations.</div></div>
+      <div class="card" style="margin-top:0.75rem;">
+        <div class="card-title">Community findings</div>
+        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:var(--green-light);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22401F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div><div class="comm-insight-title">Cutoff time is the strongest lever</div><div class="comm-insight-body">Moving last caffeine intake to before 2pm is associated with a <strong>+1.6 point</strong> average sleep quality improvement by week 4.</div><div class="stat-pill"><strong>247</strong> participants · weeks 1–8</div></div></div>
+        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:#EAF3DE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><div><div class="comm-insight-title">Movement amplifies the sleep effect</div><div class="comm-insight-body">Those logging <strong>20+ minutes of outdoor activity</strong> report sleep scores 0.9 points higher that evening.</div><div class="stat-pill"><strong>89</strong> participants tracking both areas</div></div></div>
+        <div class="comm-insight-item" style="border-bottom:none;"><div class="comm-insight-icon" style="background:#EEEDFE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="comm-insight-title">Weeks 3–5 are the critical window</div><div class="comm-insight-body">Sleep onset improvements are steepest in weeks 3–5. Those who stay adherent in this window show the most durable long-term gains.</div><div class="stat-pill"><strong>183</strong> participants at week 5+</div></div></div>
+      </div>
+      <div class="pub-card"><div class="pub-source" style="color:var(--green-dark);">kind · In preparation</div><div class="pub-title">Real-world caffeine reduction and sleep quality: an N-of-1 cohort study across 247 participants</div><div class="pub-meta">kind research team &amp; contributors · Expected June 2026 · Open access</div><div class="pub-tags"><span class="badge badge-teal">Caffeine &amp; sleep</span><span class="badge badge-blue">N-of-1 design</span></div></div>
+      <div class="pub-card"><div class="pub-source" style="color:#185FA5;">Sleep Medicine · 2025</div><div class="pub-title">Chronotype moderates the association between caffeine timing and sleep onset latency</div><div class="pub-meta">van der Berg et al. · Sleep Medicine, Vol. 118 · Peer reviewed</div><div class="pub-tags"><span class="badge badge-blue">Caffeine timing</span><span class="badge badge-amber">Relevant to your data</span></div></div>
+      <div class="science-banner" style="margin-top:0.5rem;"><div class="science-title">Contribute to the research</div><div class="science-text">Your anonymised data is part of the kind dataset. When research papers are published using your data, you'll be acknowledged as a citizen science contributor.</div></div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY -->
+  <div id="community" class="screen">
+    <div style="margin-bottom:1rem;"><div class="section-title">Community</div><div class="section-sub">Others on similar explorations. Shared journeys, shared science.</div></div>
+    <div class="science-banner">
+      <div class="science-title">Citizen science contribution</div>
+      <div class="science-text">With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications on the real-world effects of caffeine regulation — science that belongs to everyone.</div>
+      <div style="margin-top:10px;display:flex;gap:6px;"><span class="badge badge-teal">247 participants</span><span class="badge badge-teal">2 papers pending</span></div>
+    </div>
+
+    <!-- Community search -->
+    <div style="margin-bottom:1rem;">
+      <div style="position:relative;">
+        <div style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></div>
+        <input id="comm-search-field" type="text" placeholder="Search explorers, explorations, researchers…"
+          style="width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--border);border-radius:999px;font-size:13px;font-family:var(--font-sans);background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s;"
+          oninput="handleCommSearch(this.value)"
+          onfocus="this.style.borderColor='var(--green-dark)';if(this.value.trim())document.getElementById('comm-search-results').style.display='block'"
+          onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div id="comm-search-results" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:6px;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+        <div style="display:flex;border-bottom:1px solid var(--border);">
+          <button class="cs-tab active" onclick="switchCommTab('individuals',this)">Individuals</button>
+          <button class="cs-tab" onclick="switchCommTab('explorations',this)">Explorations</button>
+          <button class="cs-tab" onclick="switchCommTab('researchers',this)">Researchers</button>
+        </div>
+        <div id="csp-individuals" class="cs-panel active" style="padding:0 0.75rem;"></div>
+        <div id="csp-explorations" class="cs-panel"></div>
+        <div id="csp-researchers" class="cs-panel"></div>
+      </div>
+    </div>
+
+    <!-- Explorers near you -->
+    <div class="card">
+      <div class="card-title">Explorers near you</div>
+      <div id="near-you-list"></div>
+    </div>
+
+    <div class="card"><div class="card-title">Community insight</div><div style="font-size:13px;color:var(--text-muted);line-height:1.6;">Across active participants this month, those who moved their caffeine cutoff to before 2pm reported an average sleep quality improvement of <strong style="color:var(--text);font-weight:600;">+1.6 points</strong> by week 4. You're on the same track.</div></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profile" class="screen">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:1.25rem;">
+      <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--orange);flex-shrink:0;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--green-dark);position:relative;">
+        <img src="https://i.pravatar.cc/128?img=10" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
+        <span>EG</span>
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:600;color:var(--text);">Emma Green</div>
+        <div style="font-size:13px;color:var(--text-muted);">Amsterdam · Joined March 2026</div>
+        <div style="margin-top:6px;display:flex;gap:4px;"><span class="badge badge-teal">Week 3 active</span><span class="badge badge-green">9-day streak</span></div>
+      </div>
+    </div>
+
+    <!-- Following / Followers bar -->
+    <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1rem;overflow:hidden;">
+      <div style="flex:1;padding:0.85rem 1rem;text-align:center;cursor:pointer;transition:background 0.15s;" onclick="openFollowPanel('following')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-following-count">25</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Following</div>
+      </div>
+      <div style="width:1px;background:var(--border);"></div>
+      <div style="flex:1;padding:0.85rem 1rem;text-align:center;cursor:pointer;transition:background 0.15s;" onclick="openFollowPanel('followers')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-followers-count">40</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Followers</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">My exploration summary</div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Active explorations</span><span style="font-size:13px;font-weight:600;color:var(--text);">1 of 5 available</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Baseline sleep score</span><span style="font-size:13px;font-weight:600;color:var(--text);">5.2 / 10</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Current sleep score</span><span style="font-size:13px;font-weight:600;color:var(--green-dark);">7.4 / 10</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="font-size:13px;color:var(--text-muted);">Total logs submitted</span><span style="font-size:13px;font-weight:600;color:var(--text);">12</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Data &amp; privacy</div>
+      <div class="toggle-row"><div><div class="toggle-label">Contribute to citizen science</div><div class="toggle-sub">Anonymised data used in research publications</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <div class="toggle-row"><div><div class="toggle-label">Visible in community</div><div class="toggle-sub">Others can see your progress (initials only)</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <div class="toggle-row" style="border-bottom:none;"><div><div class="toggle-label">Daily reminders</div><div class="toggle-sub">Gentle nudges to log each morning</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+    </div>
+    <div class="science-banner"><div class="science-title">Your contribution matters</div><div class="science-text">Your data — always anonymised, always with your consent — is part of something bigger. kind is working toward open-access citizen science publications so that insights from everyday health exploration benefit everyone. You can withdraw consent at any time.</div></div>
+  </div>
+
+</div><!-- end .app -->
+
+<script>
+/* ── Core UI ── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabs = ['home','exploration','insight','community','profile'];
+  const idx = tabs.indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+}
+function showLogConfirm() {
+  document.getElementById('log-form').style.display = 'none';
+  document.getElementById('log-confirm').style.display = 'block';
+  document.getElementById('log-toggle').style.display = 'none';
+}
+function filterFeed(type, el) {
+  document.querySelectorAll('#feed-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#feed .feed-item').forEach(item => {
+    item.style.display = (type === 'all' || item.dataset.type === type) ? 'block' : 'none';
+  });
+}
+function showSubPanel(id, btn) {
+  document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function openOverlay(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'search-overlay') setTimeout(() => document.getElementById('search-field').focus(), 50);
+}
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+function handleSearch(val) {
+  document.querySelectorAll('#search-results .search-result-row').forEach(row => {
+    row.style.display = val === '' || row.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none';
+  });
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeOverlay('search-overlay'); closeOverlay('notif-overlay');
+    closeDetail(); closeExplorerProfile(); closeFollowPanel();
+  }
+});
+
+/* ── Exploration detail ── */
+const EXPLORATIONS = {
+  caffeine: {
+    title:'Caffeine & sleep quality', icon:'☕', bg:'var(--green-light)', text:'var(--green-dark)',
+    active:true, duration:'8-week protocol', statusBadge:'Week 3 of 8', progress:38, streak:9, participants:247,
+    desc:'Understand how your caffeine habits affect sleep quality and energy. Adjust timing and quantity across 8 weeks and measure your personal response.',
+    kpis:[{label:'Avg sleep score',val:'7.4',unit:'/10',change:'+2.2 from baseline',up:true},{label:'Avg caffeine',val:'112',unit:'mg/day',change:'−88mg vs baseline',up:true}],
+    phases:[{name:'Weeks 1–2: Baseline',desc:'Normal intake tracked to establish personal baseline sleep and energy metrics.',status:'complete'},{name:'Weeks 3–5: Gradual reduction',desc:'Reducing total intake 25% per week, moving last consumption progressively earlier.',status:'active'},{name:'Weeks 6–7: Low-caffeine phase',desc:'Under 100mg/day, all before 1pm. Rigorous sleep tracking continues.',status:'upcoming'},{name:'Week 8: N-of-1 report',desc:'Personal report comparing baseline to intervention outcomes.',status:'upcoming'}],
+    chartLabel:'Sleep quality — last 7 days',
+    chart:[{day:'Mon',h:52,v:'5.2'},{day:'Tue',h:60,v:'6.0'},{day:'Wed',h:68,v:'6.8'},{day:'Thu',h:70,v:'7.0'},{day:'Fri',h:72,v:'7.2'},{day:'Sat',h:74,v:'7.4',hi:true},{day:'Sun',h:0,v:'—',empty:true}],
+    fields:[{type:'range',id:'cf_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'range',id:'cf_mg',label:'Total caffeine today',min:0,max:400,val:80,step:10,unit:'mg'},{type:'select',id:'cf_cutoff',label:'Last caffeine intake',opts:['Before 12pm','12pm – 2pm','2pm – 4pm','After 4pm'],sel:1},{type:'select',id:'cf_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:1},{type:'range',id:'cf_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']}]
+  },
+  movement:{title:'Movement & energy',icon:'🏃',bg:'#EAF3DE',text:'#3B6D11',active:false,duration:'6-week protocol',participants:89,desc:'Track how daily movement — especially outdoor activity — correlates with your energy levels, mood, and sleep quality over 6 weeks.',outcomes:[{icon:'⚡',label:'+0.9 pts avg sleep quality across 89 participants'},{icon:'😊',label:'Mood scores improve measurably from week 3'},{icon:'🌿',label:'Outdoor activity compounds the sleep benefit'}],phases:[{name:'Weeks 1–2: Baseline',desc:'Log daily activity at your normal pace to establish your baseline.',status:'upcoming'},{name:'Weeks 3–4: Structured movement',desc:'Add 20+ min of intentional daily activity, outdoor preferred.',status:'upcoming'},{name:'Weeks 5–6: Intensity variation',desc:'Alternate high and low intensity days. Track energy and mood response.',status:'upcoming'}],fields:[{type:'range',id:'mv_dur',label:'Activity duration',min:0,max:120,val:30,step:5,unit:'min'},{type:'select',id:'mv_type',label:'Activity type',opts:['Walking','Running','Cycling','Gym / weights','Yoga / stretching','Swimming','Other'],sel:0},{type:'checks',id:'mv_setting',label:'Activity setting',opts:['Outdoor','Indoor'],multi:false},{type:'range',id:'mv_ebefore',label:'Energy before activity',min:1,max:10,val:5,hints:['Low','High']},{type:'range',id:'mv_eafter',label:'Energy after activity',min:1,max:10,val:7,hints:['Low','High']},{type:'range',id:'mv_mood',label:'Mood today',min:1,max:10,val:6,hints:['Low','High']}]},
+  eating:{title:'Time-restricted eating',icon:'🕐',bg:'#FDF0E4',text:'#8A4A1A',active:false,duration:'6-week protocol',participants:12,desc:'Explore how compressing your eating window affects energy, hunger patterns, and mood. No calorie restriction — just timing.',outcomes:[{icon:'⚡',label:'Improved mid-afternoon energy in 68% of participants'},{icon:'😴',label:'Earlier last meal linked to faster sleep onset'},{icon:'🍽️',label:'Hunger adapts within 7–10 days for most people'}],phases:[{name:'Weeks 1–2: Baseline eating window',desc:'Log your natural eating times with no changes.',status:'upcoming'},{name:'Weeks 3–4: 10-hour window',desc:'Compress eating to a consistent 10-hour window daily.',status:'upcoming'},{name:'Weeks 5–6: 8-hour window',desc:'Try an 8-hour window. Log energy and hunger response throughout.',status:'upcoming'}],fields:[{type:'select',id:'te_first',label:'First meal today',opts:['Before 7am','7–8am','8–9am','9–10am','After 10am'],sel:2},{type:'select',id:'te_last',label:'Last meal today',opts:['Before 4pm','4–6pm','6–7pm','7–8pm','After 8pm'],sel:2},{type:'range',id:'te_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']},{type:'range',id:'te_hunger',label:'Hunger comfort today',min:1,max:10,val:6,hints:['Very hungry','Comfortable']},{type:'range',id:'te_mood',label:'Mood today',min:1,max:10,val:7,hints:['Low','High']}]},
+  stress:{title:'Stress & recovery',icon:'💓',bg:'#EEEDFE',text:'#534AB7',active:false,duration:'8-week protocol',participants:34,desc:'Use daily HRV readings alongside subjective stress check-ins to understand your recovery patterns and what moves the needle most.',outcomes:[{icon:'💓',label:'HRV improves by an avg of 8ms over 8 weeks'},{icon:'🧘',label:'Breathwork shows the fastest HRV response'},{icon:'🌿',label:'Nature exposure reduces subjective stress in 80% of participants'}],phases:[{name:'Weeks 1–2: Baseline HRV & stress',desc:'Measure morning HRV and log stress levels with no protocol changes.',status:'upcoming'},{name:'Weeks 3–5: Recovery practices',desc:'Introduce one daily recovery practice — breathwork, cold, nature, or journaling.',status:'upcoming'},{name:'Weeks 6–7: Stacking practices',desc:'Combine two practices. Track HRV response and subjective stress scores.',status:'upcoming'},{name:'Week 8: N-of-1 report',desc:'Personal report on which practices most improved your HRV and stress.',status:'upcoming'}],fields:[{type:'number',id:'sr_hrv',label:'Morning HRV (rMSSD)',placeholder:'45',unit:'ms',hint:'Typical range 20–100ms. Measure lying down before getting up.'},{type:'range',id:'sr_stress',label:'Subjective stress today',min:1,max:10,val:4,hints:['Very low','Very high']},{type:'checks',id:'sr_recovery',label:'Recovery practices today',opts:['Breathwork','Cold exposure','Nature walk','Journaling','Meditation','Rest day'],multi:true},{type:'range',id:'sr_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'range',id:'sr_wellbeing',label:'Overall wellbeing today',min:1,max:10,val:6,hints:['Low','High']}]},
+  supplements:{title:'Supplements & sleep',icon:'💊',bg:'#FDF0E4',text:'#8A4A1A',active:false,duration:'6-week protocol',participants:0,isNew:true,desc:'Run a single-supplement trial — magnesium, vitamin D, or ashwagandha — with rigorous sleep tracking to measure your personal response.',outcomes:[{icon:'🧲',label:'Magnesium glycinate improves sleep onset in ~60% of users'},{icon:'☀️',label:'Vitamin D correction linked to sleep quality gains'},{icon:'🌿',label:'Ashwagandha linked to reduced cortisol and faster sleep onset'}],phases:[{name:'Weeks 1–2: Baseline (no supplement)',desc:'Track sleep quality with no supplement to establish your baseline.',status:'upcoming'},{name:'Weeks 3–6: Supplement trial',desc:'Take your chosen supplement daily at a fixed time. Track sleep response each morning.',status:'upcoming'}],fields:[{type:'checks',id:'sp_which',label:'Supplement taken today',opts:['Magnesium glycinate','Vitamin D','Ashwagandha','None today'],multi:false},{type:'select',id:'sp_time',label:'Time taken',opts:['Morning','Afternoon','With dinner','Before bed','Not taken'],sel:4},{type:'range',id:'sp_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'select',id:'sp_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:1},{type:'range',id:'sp_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']}]},
+  screen:{title:'Screen time & sleep onset',icon:'📱',bg:'#E6F1FB',text:'#185FA5',active:false,duration:'4-week protocol',participants:51,desc:'Measure how your evening screen habits affect how quickly you fall asleep. Reduce exposure and track the change in real time.',outcomes:[{icon:'😴',label:'51 participants report avg 12 min faster sleep onset'},{icon:'📚',label:'Reading replaces screens in 78% of participants by week 3'},{icon:'🌙',label:'The effect is strongest in the first 7 days'}],phases:[{name:'Week 1: Baseline',desc:'Log your normal evening screen habits and sleep onset times.',status:'upcoming'},{name:'Weeks 2–3: 30-min screen-free window',desc:'Stop all screens 30 min before bed. Track sleep onset change.',status:'upcoming'},{name:'Week 4: 60-min screen-free window',desc:'Extend to 60 min. Compare sleep onset across all phases.',status:'upcoming'}],fields:[{type:'select',id:'sc_last',label:'Last screen use before bed',opts:['60+ min before','30–60 min before','15–30 min before','Right before bed'],sel:3},{type:'range',id:'sc_windup',label:'Screen-free wind-down time',min:0,max:90,val:0,step:5,unit:'min'},{type:'checks',id:'sc_activities',label:'Wind-down activities',opts:['Reading','Meditation','Stretching','Bath / shower','Journaling','Conversation'],multi:true},{type:'select',id:'sc_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:2},{type:'range',id:'sc_sleep',label:'Sleep quality last night',min:1,max:10,val:6,hints:['Poor','Excellent']}]}
+};
+
+function openExploration(id) {
+  document.getElementById('detail-content').innerHTML = renderDetail(id);
+  const el = document.getElementById('detail-overlay');
+  el.classList.add('open');
+  el.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function renderDetail(id) {
+  const e = EXPLORATIONS[id];
+  let h = '';
+  const badge = e.active ? '<span class="badge badge-amber">Active</span>' : '<span class="badge badge-teal">Available</span>';
+  h += `<div class="detail-header"><button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="detail-title-text">${e.title}</div>${badge}</div>`;
+  const partLine = e.isNew ? 'New · Be among the first' : `${e.participants} participants`;
+  h += `<div style="padding:1rem;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:1rem;"><div style="display:flex;align-items:flex-start;gap:14px;${e.active?'margin-bottom:1rem;':''}"><div style="width:52px;height:52px;border-radius:12px;background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${e.icon}</div><div style="flex:1;"><div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${e.duration} · ${partLine}</div><div style="font-size:13px;color:var(--text-muted);line-height:1.55;">${e.desc}</div>${e.active?`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">${e.statusBadge}</span><span class="badge badge-teal">${e.streak}-day streak</span></div>`:''}</div></div>${e.active?`<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;color:var(--text-muted);">Protocol progress</span><span style="font-size:12px;font-weight:600;color:var(--green-dark);">${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%;"></div></div>`:''}</div>`;
+  h += `<div style="padding:0 1rem;">`;
+  if (e.active && e.kpis) { h += `<div class="kpi-row">`; e.kpis.forEach(k => { h += `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div><span class="kpi-val">${k.val}</span><span class="kpi-unit"> ${k.unit}</span></div><div class="kpi-change" style="color:${k.up?'var(--green-dark)':'#8A4A1A'};">${k.change}</div></div>`; }); h += `</div>`; }
+  if (!e.active && e.outcomes) { h += `<div class="card"><div class="card-title">Expected outcomes</div>`; e.outcomes.forEach(o => { h += `<div class="outcome-row"><div style="font-size:18px;flex-shrink:0;">${o.icon}</div><div style="font-size:13px;color:var(--text-muted);padding-top:2px;">${o.label}</div></div>`; }); h += `</div>`; }
+  h += `<div class="card"><div class="card-title">Protocol</div>`;
+  e.phases.forEach(p => {
+    const dot = p.status==='active' ? 'background:var(--green-dark);width:12px;height:12px;margin-top:4px;' : 'background:var(--border-med);';
+    const badg = p.status==='complete' ? '<span class="badge badge-teal" style="margin-left:6px;font-size:10px;">Complete</span>' : p.status==='active' ? '<span class="badge badge-amber" style="margin-left:6px;font-size:10px;">Active</span>' : '';
+    h += `<div class="timeline-item"><div class="timeline-dot" style="${dot}"></div><div class="timeline-content"><div class="timeline-phase">${p.name}${badg}</div><div class="timeline-desc">${p.desc}</div></div></div>`;
+  });
+  h += `</div>`;
+  if (e.active && e.chart) {
+    h += `<div class="card"><div class="card-title">${e.chartLabel}</div><div class="chart-bar-wrap">`;
+    e.chart.forEach(d => { const col = d.empty ? 'var(--border)' : d.hi ? 'var(--orange)' : 'var(--green-dark)'; h += `<div class="chart-bar" style="height:${d.h}%;background:${col};min-height:${d.empty?'0':'3px'};"></div>`; });
+    h += `</div><div class="chart-labels">`;
+    e.chart.forEach(d => { h += `<div class="chart-label">${d.day}<br>${d.v}</div>`; });
+    h += `</div></div>`;
+  }
+  h += `<div id="detail-log-wrap"><div class="log-form"><div class="section-title" style="margin-bottom:1rem;">Today's log</div>${e.fields.map(renderField).join('')}<div class="submit-row"><button class="btn-secondary" onclick="closeDetail()">Cancel</button><button class="btn-primary" onclick="submitDetailLog('${id}')">Save log</button></div></div></div>`;
+  if (!e.active) h += `<button class="start-cta" id="start-btn-${id}" onclick="startExploration('${id}')">Start this exploration</button>`;
+  h += `</div>`;
+  return h;
+}
+function renderField(f) {
+  if (f.type === 'range') {
+    const vid = f.id + '_v';
+    const unit = f.unit ? `<span style="font-size:12px;color:var(--text-muted);margin-left:2px;">${f.unit}</span>` : '';
+    const hints = f.hints ? `<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:3px;"><span>${f.hints[0]}</span><span>${f.hints[1]}</span></div>` : '';
+    return `<div class="input-row"><label class="input-label">${f.label}</label><div class="range-row"><input type="range" min="${f.min}" max="${f.max}" value="${f.val}" step="${f.step||1}" oninput="document.getElementById('${vid}').textContent=this.value"><div class="range-val" id="${vid}">${f.val}</div>${unit}</div>${hints}</div>`;
+  }
+  if (f.type === 'select') { const opts = f.opts.map((o,i) => `<option${i===f.sel?' selected':''}>${o}</option>`).join(''); return `<div class="input-row"><label class="input-label">${f.label}</label><select id="${f.id}">${opts}</select></div>`; }
+  if (f.type === 'checks') { const chips = f.opts.map(o => `<div class="check-chip" onclick="toggleChip(this,${f.multi})"><span class="check-icon">✓ </span>${o}</div>`).join(''); return `<div class="input-row"><label class="input-label">${f.label}</label><div class="checkbox-group">${chips}</div></div>`; }
+  if (f.type === 'number') { return `<div class="input-row"><label class="input-label">${f.label}</label><div class="number-input-wrap"><input type="number" class="number-input" id="${f.id}" placeholder="${f.placeholder}" min="20" max="200"><span class="number-unit">${f.unit}</span></div>${f.hint?`<div class="field-hint">${f.hint}</div>`:''}</div>`; }
+  return '';
+}
+function toggleChip(el, multi) {
+  if (multi) { el.classList.toggle('checked'); }
+  else { el.closest('.checkbox-group').querySelectorAll('.check-chip').forEach(c => c.classList.remove('checked')); el.classList.add('checked'); }
+}
+function submitDetailLog(id) {
+  document.getElementById('detail-log-wrap').innerHTML = `<div class="log-success-card"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--green-dark);opacity:0.8;line-height:1.5;">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>`;
+  document.getElementById('detail-overlay').scrollTo({top:0,behavior:'smooth'});
+}
+function startExploration(id) {
+  const btn = document.getElementById('start-btn-' + id);
+  if (!btn) return;
+  btn.textContent = '✓ Added to your explorations';
+  btn.style.background = 'var(--green-dark)';
+  btn.disabled = true;
+}
+
+/* ── Explore chat ── */
+let exploreTimer;
+function handleExploreSearch(val) {
+  clearTimeout(exploreTimer);
+  const chatEl = document.getElementById('explore-chat');
+  if (!val.trim() || val.length < 2) { chatEl.style.display='none'; return; }
+  chatEl.style.display = 'block';
+  const safeVal = val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">EG</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div class="cb-txt"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
+  exploreTimer = setTimeout(() => {
+    const r = getExploreResponse(val);
+    const cards = r.ids.map(id => {
+      const e = EXPLORATIONS[id]; if (!e) return '';
+      const parts = e.isNew ? 'New · Be among the first' : `${e.participants} explorers`;
+      return `<div class="chat-exp-card" onclick="openExploration('${id}')">
+        <div style="width:40px;height:40px;border-radius:var(--radius-md);background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${e.icon}</div>
+        <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">${e.title}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${e.duration} · ${parts}</div></div>
+        <button style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--orange);color:white;border:none;cursor:pointer;font-family:var(--font-sans);flex-shrink:0;" onclick="event.stopPropagation();openExploration('${id}')">Explore</button>
+      </div>`;
+    }).join('');
+    chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">EG</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div style="max-width:88%;"><div class="cb-txt">${r.msg}</div>${cards}</div></div>`;
+  }, 800);
+}
+function getExploreResponse(q) {
+  q = q.toLowerCase();
+  if (q.match(/sleep|tired|fatigue|insomnia|rest|wake/)) return {msg:'Sleep quality is one of the most impactful areas to explore. These explorations have the strongest evidence and most active communities:',ids:['caffeine','screen']};
+  if (q.match(/caffeine|coffee|tea|espresso|energy drink/)) return {msg:`Caffeine timing is one of the most studied sleep levers. ${EXPLORATIONS.caffeine.participants} explorers are actively tracking this right now — and the community data is compelling.`,ids:['caffeine']};
+  if (q.match(/stress|anxiety|hrv|nervous|burnout|cortisol|overwhelm/)) return {msg:'Stress and HRV tracking gives you an objective window into your nervous system. Recovery practices in this protocol show measurable effects within just a few weeks:',ids:['stress','movement']};
+  if (q.match(/move|exercise|run|walk|gym|sport|workout|fitness|activity/)) return {msg:`Movement is one of the most consistently impactful levers for energy and mood. ${EXPLORATIONS.movement.participants} explorers are already seeing patterns emerge from week 3:`,ids:['movement']};
+  if (q.match(/eat|food|diet|fast|nutrition|meal|hunger|window|intermittent/)) return {msg:"Eating timing — not restriction — has a surprisingly strong effect on energy, mood, and sleep onset. No calorie counting, just awareness of when you eat:",ids:['eating']};
+  if (q.match(/screen|phone|blue light|social media|device|scroll|tiktok/)) return {msg:`Evening screen habits are one of the most underestimated sleep disruptors. ${EXPLORATIONS.screen.participants} explorers are tracking this — results in the first two weeks are often dramatic:`,ids:['screen']};
+  if (q.match(/supplement|magnesium|vitamin|ashwagandha|melatonin/)) return {msg:"Single-supplement N-of-1 trials let you rigorously test what actually works for your physiology — not just population averages:",ids:['supplements']};
+  if (q.match(/focus|brain|cognitive|memory|concentration/)) return {msg:"Cognitive performance links closely to sleep quality and stress regulation. Here are the two explorations most likely to surface insights about your focus:",ids:['caffeine','stress']};
+  return {msg:`I found a few explorations that could be relevant to "${q.slice(0,30)}". Each is a structured N-of-1 protocol with an active community — pick the one that resonates most:`,ids:['caffeine','movement','stress'].slice(0,2)};
+}
+
+/* ── Community data ── */
+const COMM_USERS = {
+  'sam-johnson':{name:'Sam Johnson',loc:'Amsterdam',img:11,initials:'SJ',meta:'Week 6 · Caffeine & sleep',bio:'Data nerd exploring how small habits create outsized health outcomes. Runner, reader, sleep optimiser.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:6,of:8,active:true},{id:'movement',name:'Movement & energy',icon:'🏃',bg:'#EAF3DE',w:2,of:6,active:true}],acts:[{t:'Completed week 6 — first week sleep score averaged above 8.0. Something clicked this week.',time:'2 hours ago',exp:'Caffeine & sleep',detail:'Sleep avg 8.2 · Caffeine 85mg · 21-day streak',nc:4},{t:'Morning run before work — energy lasted until 7pm. New personal best for sustained focus.',time:'Yesterday',exp:'Movement & energy',detail:'35 min outdoor run · Energy after: 9/10 · Mood: 8/10',nc:7},{t:'Moved caffeine cutoff to 12:30pm. Sleep onset down to 9 minutes.',time:'3 days ago',exp:'Caffeine & sleep',detail:'Caffeine 120mg · Cutoff 12:30pm · Sleep onset 9 min',nc:2}],badges:[{t:'Sleep +2.1',s:'teal'},{t:'21-day streak',s:'green'}],follower:true},
+  'maya-chen':{name:'Maya Chen',loc:'London',img:9,initials:'MC',meta:'Week 3 · Caffeine & sleep',bio:'Looking for sustainable ways to improve sleep without supplements. Coffee lover taking on the hardest protocol for me.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:3,of:8,active:true}],acts:[{t:'Switched afternoon espresso to herbal tea. Small swap, genuinely big difference to how I wind down.',time:'4 hours ago',exp:'Caffeine & sleep',detail:'Caffeine 80mg · Cutoff 1pm · Sleep onset 18 min',nc:9},{t:'Week 3 complete. Starting to feel the shift in how I wake up. More alert, less foggy.',time:'2 days ago',exp:'Caffeine & sleep',detail:'Sleep quality 7.2 · Energy 7/10 · Adherence 100%',nc:3}],badges:[{t:'Sleep +0.8',s:'teal'},{t:'Data sharing on',s:'amber'}],follower:true},
+  'tom-richards':{name:'Tom Richards',loc:'Amsterdam',img:3,initials:'TR',meta:'Protocol complete',bio:'Just finished the full 8-week caffeine protocol. Results genuinely surprised me. Now exploring what comes next.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:8,of:8,active:false}],acts:[{t:'Completed the full 8-week protocol. Sleep quality went from 5.0 to 8.4. Genuinely surprised by how clear the effect was.',time:'2 days ago',exp:'Caffeine & sleep',detail:'Baseline 5.0 → Week 8 avg 8.4 · 56-day streak · N-of-1 report generated',nc:14},{t:"N-of-1 report generated and data contributed to the citizen science dataset.",time:'2 days ago',exp:'Caffeine & sleep',detail:'Data contributed · 2 papers pending',nc:6}],badges:[{t:'N-of-1 report done',s:'blue'}],follower:true},
+  'priya-lawson':{name:'Priya Lawson',loc:'New York',img:5,initials:'PL',meta:'2 active explorations',bio:'Running stress recovery alongside caffeine to understand how they interact. The combined data is already fascinating.',exps:[{id:'stress',name:'Stress & recovery',icon:'💓',bg:'#EEEDFE',w:4,of:8,active:true},{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:2,of:8,active:true}],acts:[{t:'HRV jumped to 62ms after three consecutive days of nature walks. Remarkable consistency.',time:'5 hours ago',exp:'Stress & recovery',detail:'HRV 62ms · Stress 3/10 · Recovery practice: nature walk',nc:11},{t:'Combining breathwork with earlier caffeine cutoff — subjective stress feels meaningfully lower.',time:'Yesterday',exp:'Stress & recovery',detail:'Breathwork 10 min · HRV 58ms · Caffeine 100mg',nc:5}],badges:[{t:'Stress & recovery',s:'purple'},{t:'Caffeine & sleep',s:'amber'}],follower:false},
+  'lars-hoffman':{name:'Lars Hoffman',loc:'London',img:14,initials:'LH',meta:'Week 2 · Movement & energy',bio:'Trying to understand why morning runs affect my afternoon focus so profoundly.',exps:[{id:'movement',name:'Movement & energy',icon:'🏃',bg:'#EAF3DE',w:2,of:6,active:true}],acts:[{t:'30-min outdoor run before 8am. Energy and focus held high until 6pm.',time:'This morning',exp:'Movement & energy',detail:'30 min outdoor · Energy before: 5/10 · Energy after: 9/10',nc:3}],badges:[{t:'Active',s:'teal'}],follower:true},
+  'emma-b':{name:'Emma B.',loc:'Amsterdam',img:44,initials:'EB',meta:'Week 5 · Screen time & sleep',bio:'Replacing evening screens with reading has been transformative. Sleep onset is now under 10 minutes.',exps:[{id:'screen',name:'Screen time & sleep onset',icon:'📱',bg:'#E6F1FB',w:5,of:4,active:true}],acts:[{t:"Day 35 screen-free before bed. Sleep onset down to 8 minutes — started at 35.",time:'Last night',exp:'Screen time & sleep',detail:'Screen-free 60 min · Sleep onset 8 min · Sleep quality 9.0',nc:8}],badges:[{t:'Sleep +3.1',s:'blue'}],follower:false},
+  'sophie-turner':{name:'Sophie Turner',loc:'New York',img:21,initials:'ST',meta:'Week 4 · Time-restricted eating',bio:'Eight-hour eating window feels completely natural now. Mid-afternoon energy crash is gone.',exps:[{id:'eating',name:'Time-restricted eating',icon:'🕐',bg:'#FDF0E4',w:4,of:6,active:true}],acts:[{t:'Week 4 check-in. Hunger fully adapted by day 10. Energy in the afternoon is consistently higher.',time:'Yesterday',exp:'Time-restricted eating',detail:'Eating window 8hr · Energy 8/10 · Hunger comfort 8/10',nc:6},{t:'Mid-afternoon energy crash disappeared entirely in week 3.',time:'3 days ago',exp:'Time-restricted eating',detail:'Energy avg 7.8 this week vs 5.2 baseline',nc:4}],badges:[{t:'Energy +1.2',s:'green'}],follower:true},
+  'james-w':{name:'James W.',loc:'London',img:13,initials:'JW',meta:'Week 6 · Stress & recovery',bio:"Cold exposure and breathwork combination is transformative. HRV data backs up what I feel subjectively.",exps:[{id:'stress',name:'Stress & recovery',icon:'💓',bg:'#EEEDFE',w:6,of:8,active:true}],acts:[{t:'Cold shower + Wim Hof breathing this morning. HRV 74ms — personal best by 8ms.',time:'This morning',exp:'Stress & recovery',detail:'HRV 74ms (prev best 66ms) · Cold shower 3 min · Breathwork 20 min',nc:12}],badges:[{t:'HRV +9ms',s:'purple'}],follower:true}
+};
+
+const NEAR_YOU_IDS = ['tom-richards','priya-lawson','lars-hoffman','emma-b'];
+
+const BASIC_USERS = [
+  {id:'lucas-park',name:'Lucas Park',loc:'London',img:4,initials:'LP',meta:'Week 3 · Caffeine & sleep'},
+  {id:'inge-voss',name:'Inge Voss',loc:'Amsterdam',img:8,initials:'IV',meta:'Week 1 · Movement & energy'},
+  {id:'mark-douglas',name:'Mark Douglas',loc:'New York',img:12,initials:'MD',meta:'Week 5 · Stress & recovery'},
+  {id:'nina-fischer',name:'Nina Fischer',loc:'London',img:26,initials:'NF',meta:'Week 2 · Time-restricted eating'},
+  {id:'raj-kumar',name:'Raj Kumar',loc:'Amsterdam',img:57,initials:'RK',meta:'Protocol complete'},
+  {id:'lisa-cook',name:'Lisa Cook',loc:'New York',img:33,initials:'LC',meta:'Week 4 · Caffeine & sleep'},
+  {id:'peter-brown',name:'Peter Brown',loc:'London',img:53,initials:'PB',meta:'Week 6 · Movement & energy'},
+  {id:'sara-grant',name:'Sara Grant',loc:'Amsterdam',img:39,initials:'SG',meta:'Week 2 · Supplements & sleep'},
+  {id:'chris-norton',name:'Chris Norton',loc:'New York',img:18,initials:'CN',meta:'Week 3 · Screen time & sleep'},
+  {id:'eva-palmer',name:'Eva Palmer',loc:'Amsterdam',img:35,initials:'EP',meta:'Week 1 · Caffeine & sleep'},
+  {id:'zara-thomas',name:'Zara Thomas',loc:'London',img:47,initials:'ZT',meta:'Week 5 · Stress & recovery'},
+  {id:'kai-reed',name:'Kai Reed',loc:'New York',img:25,initials:'KR',meta:'Week 4 · Movement & energy'},
+  {id:'obi-evans',name:'Obi Evans',loc:'Amsterdam',img:52,initials:'OE',meta:'Week 2 · Time-restricted eating'},
+  {id:'fen-lim',name:'Fen Lim',loc:'London',img:30,initials:'FL',meta:'Protocol complete'},
+  {id:'dex-woods',name:'Dex Woods',loc:'New York',img:27,initials:'DW',meta:'Week 3 · Caffeine & sleep'},
+  {id:'mia-taylor',name:'Mia Taylor',loc:'Amsterdam',img:17,initials:'MT',meta:'Week 5 · Screen time & sleep'},
+  {id:'ben-nelson',name:'Ben Nelson',loc:'London',img:19,initials:'BN',meta:'Week 1 · Movement & energy'},
+  {id:'julia-lane',name:'Julia Lane',loc:'New York',img:22,initials:'JL',meta:'Week 4 · Stress & recovery'},
+  {id:'kim-oliver',name:'Kim Oliver',loc:'Amsterdam',img:23,initials:'KO',meta:'Week 2 · Caffeine & sleep'},
+  {id:'felix-white',name:'Felix White',loc:'London',img:24,initials:'FW',meta:'Week 6 · Supplements & sleep'},
+  {id:'anna-ross',name:'Anna Ross',loc:'New York',img:28,initials:'AR',meta:'Week 3 · Movement & energy'}
+];
+
+const FOLLOWER_ONLY = [
+  {id:'rob-lane',name:'Rob Lane',loc:'London',img:29,initials:'RL',meta:'Week 2 · Caffeine & sleep'},
+  {id:'tara-scott',name:'Tara Scott',loc:'New York',img:34,initials:'TS',meta:'Week 4 · Stress & recovery'},
+  {id:'will-evans',name:'Will Evans',loc:'Amsterdam',img:36,initials:'WE',meta:'Week 3 · Movement & energy'},
+  {id:'helen-baker',name:'Helen Baker',loc:'London',img:37,initials:'HB',meta:'Week 1 · Time-restricted eating'},
+  {id:'george-mill',name:'George Mill',loc:'New York',img:38,initials:'GM',meta:'Protocol complete'},
+  {id:'yara-patel',name:'Yara Patel',loc:'Amsterdam',img:40,initials:'YP',meta:'Week 5 · Caffeine & sleep'},
+  {id:'xander-king',name:'Xander King',loc:'London',img:41,initials:'XK',meta:'Week 2 · Screen time & sleep'},
+  {id:'dana-woods',name:'Dana Woods',loc:'New York',img:42,initials:'DW2',meta:'Week 4 · Movement & energy'},
+  {id:'cole-frost',name:'Cole Frost',loc:'Amsterdam',img:43,initials:'CF',meta:'Week 1 · Stress & recovery'},
+  {id:'lena-shaw',name:'Lena Shaw',loc:'London',img:45,initials:'LS',meta:'Week 3 · Caffeine & sleep'},
+  {id:'max-ford',name:'Max Ford',loc:'New York',img:46,initials:'MF',meta:'Week 6 · Movement & energy'},
+  {id:'sophie-nguyen',name:'Sophie Nguyen',loc:'Amsterdam',img:48,initials:'SN',meta:'Week 2 · Supplements & sleep'},
+  {id:'leo-martin',name:'Leo Martin',loc:'London',img:49,initials:'LM',meta:'Week 4 · Screen time & sleep'},
+  {id:'cara-hayes',name:'Cara Hayes',loc:'New York',img:50,initials:'CH',meta:'Week 5 · Stress & recovery'},
+  {id:'finn-bell',name:'Finn Bell',loc:'Amsterdam',img:51,initials:'FB',meta:'Week 3 · Movement & energy'}
+];
+
+const RESEARCHERS = [
+  {name:'Andrew Huberman',title:'Associate Professor of Neurobiology & Ophthalmology',org:'Huberman Lab · Stanford School of Medicine',img:52,initials:'AH',areas:['Sleep & circadian biology','Stress & recovery','Neuroplasticity'],kind_exps:2,verified:true},
+  {name:'Dr Sarah Williams',title:'Research Fellow in Sleep Medicine',org:'Oxford Sleep & Circadian Neuroscience Institute',img:46,initials:'SW',areas:['Sleep quality','Caffeine & adenosine','Chronobiology'],kind_exps:1,verified:true},
+  {name:'Dr James Fyfe',title:'Senior Lecturer in Exercise Physiology',org:'University College London',img:28,initials:'JF',areas:['Movement & energy','Exercise timing','Metabolic health'],kind_exps:2,verified:true}
+];
+
+let followingSet = new Set(['sam-johnson','maya-chen','sophie-turner','james-w','lucas-park','inge-voss','mark-douglas','nina-fischer','raj-kumar','lisa-cook','peter-brown','sara-grant','chris-norton','eva-palmer','zara-thomas','kai-reed','obi-evans','fen-lim','dex-woods','mia-taylor','ben-nelson','julia-lane','kim-oliver','felix-white','anna-ross']);
+
+const followerIds = new Set([...followingSet,'tom-richards','priya-lawson','lars-hoffman','emma-b','rob-lane','tara-scott','will-evans','helen-baker','george-mill','yara-patel','xander-king','dana-woods','cole-frost','lena-shaw','max-ford']);
+
+const nicedSet = new Set();
+
+/* ── Avatar helper ── */
+const AV_BG = ['var(--green-light)','#EEEDFE','#FDF0E4','#E6F1FB','#EAF3DE'];
+const AV_TC = ['var(--green-dark)','#534AB7','#8A4A1A','#185FA5','#3B6D11'];
+function avBg(img){return AV_BG[(img||0)%AV_BG.length];}
+function avTc(img){return AV_TC[(img||0)%AV_TC.length];}
+function avEl(img, initials, size) {
+  const fs = size>=60?20:size>=36?13:11;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;flex-shrink:0;background:${avBg(img)};display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:600;color:${avTc(img)};position:relative;">
+    <img src="https://i.pravatar.cc/${size*2}?img=${img}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
+    <span>${initials}</span></div>`;
+}
+
+/* ── Explorer row renderer ── */
+function renderExplorerRow(uid, user) {
+  const isF = followingSet.has(uid);
+  const badgesHTML = (user.badges||[]).map(b=>`<span class="badge badge-${b.s}" style="font-size:10px;">${b.t}</span>`).join('');
+  return `<div class="explorer-row" onclick="openExplorerProfile('${uid}')">
+    ${avEl(user.img, user.initials, 42)}
+    <div style="flex:1;min-width:0;">
+      <div class="profile-name">${user.name}</div>
+      <div class="profile-meta">${user.loc} · ${user.meta||''}</div>
+      ${badgesHTML?`<div class="profile-badges">${badgesHTML}</div>`:''}
+    </div>
+    <button class="follow-btn${isF?' following':''}" data-uid="${uid}" onclick="event.stopPropagation();toggleFollow('${uid}',this)">${isF?'Following':'Follow'}</button>
+  </div>`;
+}
+
+function renderNearYou() {
+  const el = document.getElementById('near-you-list'); if(!el) return;
+  el.innerHTML = NEAR_YOU_IDS.map(id=>renderExplorerRow(id,COMM_USERS[id])).join('');
+}
+
+/* ── Follow toggle ── */
+function toggleFollow(uid, btn) {
+  if (followingSet.has(uid)) { followingSet.delete(uid); } else { followingSet.add(uid); }
+  const isF = followingSet.has(uid);
+  document.querySelectorAll(`.follow-btn[data-uid="${uid}"]`).forEach(b=>{
+    b.textContent = isF ? 'Following' : 'Follow';
+    b.classList.toggle('following', isF);
+  });
+  const countEl = document.getElementById('profile-following-count');
+  if (countEl) countEl.textContent = followingSet.size;
+}
+
+/* ── Explorer profile panel ── */
+function openExplorerProfile(uid) {
+  const user = COMM_USERS[uid]; if (!user) return;
+  document.getElementById('explorer-panel-content').innerHTML = buildExplorerProfile(uid, user);
+  const p = document.getElementById('explorer-panel');
+  p.classList.add('open'); p.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closeExplorerProfile() {
+  document.getElementById('explorer-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function buildExplorerProfile(uid, user) {
+  const isF = followingSet.has(uid);
+  const isFollower = user.follower || followerIds.has(uid);
+  const mutualText = isFollower ? '· Follows you' : '';
+  let h = `<div class="detail-header" style="position:sticky;top:0;z-index:10;">
+    <button class="detail-back" onclick="closeExplorerProfile()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="detail-title-text">${user.name}</div>
+  </div>`;
+  h += `<div style="padding:1.25rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);">
+    <div style="display:flex;gap:14px;align-items:flex-start;">
+      ${avEl(user.img,user.initials,64)}
+      <div style="flex:1;">
+        <div style="font-size:18px;font-weight:700;color:var(--text);">${user.name}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">📍 ${user.loc}</div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.55;margin-top:6px;">${user.bio}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <button class="follow-btn${isF?' following':''}" data-uid="${uid}" onclick="toggleFollow('${uid}',this)">${isF?'Following':'Follow'}</button>
+          ${mutualText?`<span style="font-size:12px;color:var(--text-muted);">${mutualText}</span>`:''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+  h += `<div style="padding:0.75rem 1rem 0;">
+    <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.75rem;">Explorations</div>`;
+  user.exps.forEach(exp=>{
+    h+=`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:var(--radius-md);background:${exp.bg};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${exp.icon}</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text);">${exp.name}</div><div style="font-size:12px;color:var(--text-muted);">${exp.active?`Week ${exp.w} of ${exp.of}`:'Complete'}</div></div>
+      ${exp.active?`<span class="badge badge-amber">Active</span>`:`<span class="badge badge-teal">Complete</span>`}
+    </div>`;
+  });
+  h+=`</div>`;
+  h+=`<div style="padding:0.75rem 1rem;">
+    <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.75rem;">Recent activity</div>`;
+  user.acts.forEach((act,i)=>{
+    const key=`${uid}-${i}`; const niced=nicedSet.has(key);
+    h+=`<div class="act-card" id="actcard-${uid}-${i}" onclick="toggleActExpand('${uid}',${i})">
+      <div style="font-size:11px;font-weight:500;color:var(--green-dark);background:var(--green-light);padding:2px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;">${act.exp}</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:6px;">${act.t}</div>
+      <div class="act-detail" id="actd-${uid}-${i}">${act.detail}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;" onclick="event.stopPropagation()">
+        <div style="font-size:11px;color:var(--text-muted);">${act.time}</div>
+        <div style="display:flex;gap:6px;">
+          <button class="nice-btn${niced?' niced':''}" id="nicebtn-${uid}-${i}" onclick="toggleNice('${uid}',${i})">👌 nice <span class="nc">${act.nc+(niced?1:0)}</span></button>
+          <button class="msg-btn" onclick="toggleMsg('${uid}',${i})">💬 message</button>
+        </div>
+      </div>
+      <div class="msg-box" id="msgbox-${uid}-${i}">
+        <textarea class="msg-ta" placeholder="Write an encouraging message…" rows="3"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+          <button style="padding:7px 14px;font-size:12px;background:transparent;border:1px solid var(--border-med);border-radius:var(--radius-md);cursor:pointer;color:var(--text);font-family:var(--font-sans);" onclick="toggleMsg('${uid}',${i})">Cancel</button>
+          <button style="padding:7px 14px;font-size:12px;background:var(--orange);border:none;border-radius:var(--radius-md);cursor:pointer;color:white;font-family:var(--font-sans);font-weight:600;" onclick="sendMsg('${uid}',${i})">Send</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+  return h;
+}
+function toggleActExpand(uid,i) {
+  const card=document.getElementById(`actcard-${uid}-${i}`);
+  if(card) card.classList.toggle('expanded');
+}
+function toggleNice(uid,i) {
+  const key=`${uid}-${i}`;
+  const btn=document.getElementById(`nicebtn-${uid}-${i}`); if(!btn) return;
+  const wasNiced=nicedSet.has(key);
+  if(wasNiced){nicedSet.delete(key);}else{nicedSet.add(key);}
+  btn.classList.toggle('niced',!wasNiced);
+  const nc=btn.querySelector('.nc'); if(!nc) return;
+  const base=COMM_USERS[uid]?.acts[i]?.nc||0;
+  nc.textContent = base + (nicedSet.has(key)?1:0);
+}
+function toggleMsg(uid,i) {
+  const box=document.getElementById(`msgbox-${uid}-${i}`); if(box) box.classList.toggle('open');
+}
+function sendMsg(uid,i) {
+  const box=document.getElementById(`msgbox-${uid}-${i}`); if(!box) return;
+  const ta=box.querySelector('.msg-ta');
+  if(ta&&ta.value.trim()) {
+    box.innerHTML='<div style="font-size:12px;color:var(--green-dark);padding:8px 10px;background:var(--green-light);border-radius:var(--radius-md);">Message sent! 🎉</div>';
+    setTimeout(()=>box.classList.remove('open'),2200);
+  }
+}
+
+/* ── Following / Followers panel ── */
+function openFollowPanel(type) {
+  const titleEl=document.getElementById('follow-panel-title');
+  const listEl=document.getElementById('follow-panel-list');
+  if(!titleEl||!listEl) return;
+  const isFollowing = type==='following';
+  titleEl.textContent = isFollowing ? `Following ${followingSet.size}` : 'Followers 40';
+  let users=[];
+  if(isFollowing){
+    followingSet.forEach(id=>{
+      const u=COMM_USERS[id]||BASIC_USERS.find(x=>x.id===id);
+      if(u) users.push({id,...u});
+    });
+  } else {
+    followerIds.forEach(id=>{
+      const u=COMM_USERS[id]||BASIC_USERS.find(x=>x.id===id)||FOLLOWER_ONLY.find(x=>x.id===id);
+      if(u) users.push({id,...u});
+    });
+  }
+  users.sort((a,b)=>a.name.localeCompare(b.name));
+  listEl.innerHTML = users.map(u=>{
+    const isF=followingSet.has(u.id);
+    const isFollowerOfEmma=followerIds.has(u.id);
+    let statusHint='';
+    if(isF&&isFollowerOfEmma) statusHint='<span style="font-size:10px;color:var(--green-dark);background:var(--green-light);padding:2px 6px;border-radius:999px;font-weight:600;">Mutual</span>';
+    else if(isFollowerOfEmma&&!isF) statusHint='<span style="font-size:10px;color:var(--text-muted);">Follows you</span>';
+    const hasFullProfile=!!COMM_USERS[u.id];
+    const clickFn=hasFullProfile?`openExplorerProfile('${u.id}')`:`;`;
+    return `<div class="explorer-row" style="padding:10px 0.25rem;" onclick="${clickFn}">
+      ${avEl(u.img,u.initials,42)}
+      <div style="flex:1;min-width:0;">
+        <div class="profile-name">${u.name}</div>
+        <div class="profile-meta">${u.loc||''} · ${u.meta||''}</div>
+        <div style="margin-top:3px;display:flex;gap:4px;">${statusHint}</div>
+      </div>
+      <button class="follow-btn${isF?' following':''}" data-uid="${u.id}" onclick="event.stopPropagation();toggleFollow('${u.id}',this)">${isF?'Following':'Follow'}</button>
+    </div>`;
+  }).join('');
+  const panel=document.getElementById('follow-panel');
+  panel.classList.add('open'); panel.scrollTop=0;
+  document.body.style.overflow='hidden';
+}
+function closeFollowPanel() {
+  document.getElementById('follow-panel').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── Community search ── */
+let commTimer;
+function handleCommSearch(val) {
+  clearTimeout(commTimer);
+  const resultsEl=document.getElementById('comm-search-results');
+  if(!val.trim()){resultsEl.style.display='none';return;}
+  resultsEl.style.display='block';
+  commTimer=setTimeout(()=>renderCommSearch(val),280);
+}
+function renderCommSearch(val) {
+  const q=val.toLowerCase();
+  const allU=[...Object.entries(COMM_USERS).map(([id,u])=>({id,...u})),...BASIC_USERS];
+  const matchU=allU.filter(u=>u.name.toLowerCase().includes(q)||(u.loc||'').toLowerCase().includes(q)||(u.meta||'').toLowerCase().includes(q)).slice(0,8);
+  const indEl=document.getElementById('csp-individuals');
+  if(indEl) indEl.innerHTML=matchU.length
+    ? matchU.map(u=>renderExplorerRow(u.id,u)).join('')
+    : '<div style="padding:1.25rem;text-align:center;font-size:13px;color:var(--text-muted);">No explorers found</div>';
+  const expEl=document.getElementById('csp-explorations');
+  if(expEl){
+    const matchE=Object.entries(EXPLORATIONS).filter(([,e])=>e.title.toLowerCase().includes(q)||e.desc.toLowerCase().includes(q));
+    expEl.innerHTML=matchE.length
+      ? matchE.map(([id,e])=>{
+          const parts=e.isNew?'New · Be first':`${e.participants} explorers`;
+          return `<div class="explore-area" style="margin:0;border-radius:0;border-left:none;border-right:none;border-top:none;border-bottom:1px solid var(--border);" onclick="openExploration('${id}');document.getElementById('comm-search-results').style.display='none'">
+            <div class="explore-icon" style="background:${e.bg||'var(--green-light)'};">${e.icon}</div>
+            <div style="flex:1;"><div class="explore-title">${e.title}</div><div class="explore-desc">${e.duration} · ${parts}</div></div>
+            <div><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">View</div></div>
+          </div>`;
+        }).join('')
+      : '<div style="padding:1.25rem;text-align:center;font-size:13px;color:var(--text-muted);">No explorations found</div>';
+  }
+  const resEl=document.getElementById('csp-researchers');
+  if(resEl){
+    const matchR=RESEARCHERS.filter(r=>r.name.toLowerCase().includes(q)||r.org.toLowerCase().includes(q)||r.areas.some(a=>a.toLowerCase().includes(q)));
+    const showR=matchR.length?matchR:RESEARCHERS;
+    resEl.innerHTML=showR.map(r=>`
+      <div class="researcher-row">
+        ${avEl(r.img,r.initials,44)}
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);">${r.name}</div>
+            ${r.verified?`<span class="badge badge-blue" style="font-size:10px;">✓ Verified</span>`:''}
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">${r.title}</div>
+          <div style="font-size:12px;color:var(--green-dark);font-weight:500;margin-top:2px;">${r.org}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">${r.areas.map(a=>`<span class="badge badge-teal" style="font-size:10px;">${a}</span>`).join('')}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${r.kind_exps} exploration${r.kind_exps!==1?'s':''} on kind</div>
+        </div>
+      </div>`).join('');
+  }
+}
+function switchCommTab(tab,btn) {
+  document.querySelectorAll('.cs-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cs-panel').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  btn.classList.add('active');
+  const panel=document.getElementById('csp-'+tab);
+  if(panel){panel.style.display='block';panel.classList.add('active');}
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderNearYou();
+  document.addEventListener('click',e=>{
+    const r=document.getElementById('comm-search-results');
+    const f=document.getElementById('comm-search-field');
+    if(r&&!r.contains(e.target)&&e.target!==f) r.style.display='none';
+  });
+});
+</script>
+</body>
+</html>

@@ -40,22 +40,10 @@ jobs:
       - name: Export Expo web build
         run: npx expo export --platform web --output-dir dist
 
-      - name: Preserve legacy app URL path
+      - name: Publish attached HTML as latest web app
         run: |
-          cat > dist/kind_health_exploration_app_6.html <<'EOF'
-          <!doctype html>
-          <html lang="en">
-            <head>
-              <meta charset="utf-8" />
-              <meta http-equiv="refresh" content="0; url=/Kind/" />
-              <link rel="canonical" href="https://benfehnert.github.io/Kind/" />
-              <title>ProtocolPath</title>
-            </head>
-            <body>
-              <p>Redirecting to the latest app version...</p>
-            </body>
-          </html>
-          EOF
+          cp kind_health_exploration_app_6.html dist/index.html
+          cp kind_health_exploration_app_6.html dist/kind_health_exploration_app_6.html
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
