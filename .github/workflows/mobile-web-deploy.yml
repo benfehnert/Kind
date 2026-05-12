@@ -1,10 +1,14 @@
-name: Build and Deploy Mobile Web
+name: Build and Deploy Web Surfaces
 
 on:
   push:
     branches:
       - main
       - staging
+    paths:
+      - apps/mobile/**
+      - apps/kind-website/**
+      - .github/workflows/mobile-web-deploy.yml
   workflow_dispatch:
 
 permissions:
@@ -20,15 +24,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: apps/mobile
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Detect changed packages
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mobile:
+              - 'apps/mobile/**'
+            website:
+              - 'apps/kind-website/**'
+
+      - name: Prepare output structure
+        run: |
+          mkdir -p out
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            mkdir -p out/staging/app
+          else
+            mkdir -p out/app
+          fi
+
+      - name: Restore cached Expo web build
+        id: mobile-cache
+        uses: actions/cache@v4
+        with:
+          path: apps/mobile/.web-dist-cache
+          key: mobile-web-${{ github.ref_name }}-${{ hashFiles('apps/mobile/**') }}
+
       - name: Setup Node.js
+        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -36,20 +63,42 @@ jobs:
           cache-dependency-path: apps/mobile/package-lock.json
 
       - name: Install dependencies
+        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
+        working-directory: apps/mobile
         run: npm ci --legacy-peer-deps
 
       - name: Export Expo web build
+        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
+        working-directory: apps/mobile
         run: npx expo export --platform web --output-dir dist
 
-      - name: Publish attached HTML as latest web app
+      - name: Save exported mobile build for reuse
+        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         run: |
-          cp kind_health_exploration_app_6.html dist/index.html
-          cp kind_health_exploration_app_6.html dist/kind_health_exploration_app_6.html
+          rm -rf apps/mobile/.web-dist-cache
+          cp -R apps/mobile/dist apps/mobile/.web-dist-cache
 
-      - name: Add Kind marketing site (static pages)
+      - name: Recover mobile build from cache
+        if: steps.changes.outputs.mobile != 'true' && steps.mobile-cache.outputs.cache-hit == 'true' && github.event_name != 'workflow_dispatch'
         run: |
-          mkdir -p dist/kind-site
-          cp -R ../kind-website/. dist/kind-site/
+          rm -rf apps/mobile/dist
+          cp -R apps/mobile/.web-dist-cache apps/mobile/dist
+
+      - name: Include attached prototype HTML in mobile output
+        run: |
+          cp apps/mobile/prototype.html apps/mobile/dist/prototype.html
+
+      - name: Assemble Pages content for main branch
+        if: github.ref_name == 'main'
+        run: |
+          cp -R apps/kind-website/. out/
+          cp -R apps/mobile/dist/. out/app/
+
+      - name: Assemble Pages content for staging branch
+        if: github.ref_name == 'staging'
+        run: |
+          cp -R apps/kind-website/. out/staging/
+          cp -R apps/mobile/dist/. out/staging/app/
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
@@ -57,7 +106,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/mobile/dist
+          path: out
 
   deploy:
     runs-on: ubuntu-latest
