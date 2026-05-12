@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: apps/mobile/.web-dist-cache
-          key: mobile-web-v2-${{ github.ref_name }}-${{ hashFiles('apps/mobile/**') }}
+          key: mobile-web-v3-${{ github.ref_name }}-${{ hashFiles('apps/mobile/**') }}
 
       - name: Setup Node.js
         if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
@@ -71,10 +71,17 @@ jobs:
         if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         working-directory: apps/mobile
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
-            BASE_URL="/staging/app"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [[ "${REPO_NAME}" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
+            SITE_PREFIX=""
           else
-            BASE_URL="/app"
+            SITE_PREFIX="/${REPO_NAME}"
+          fi
+
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            BASE_URL="${SITE_PREFIX}/staging/app"
+          else
+            BASE_URL="${SITE_PREFIX}/app"
           fi
 
           export BASE_URL
