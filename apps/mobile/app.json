@@ -12,9 +12,6 @@
       "supportsTablet": true
     },
     "android": {},
-    "web": {},
-    "experiments": {
-      "baseUrl": "/Kind"
-    }
+    "web": {}
   }
 }

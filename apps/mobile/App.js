@@ -1,822 +1,931 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
-  ActivityIndicator,
-  Button,
   FlatList,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
-const API_BASE_URL = "http://localhost:4000";
 const Tab = createBottomTabNavigator();
 
-// Set to true to preview the UI without a running backend
-const DEMO_MODE = true;
-
-const MOCK_DAILY = [
-  { date: "2026-04-20", completed_count: 4, total_count: 5, adherence_rate: 0.8 },
-  { date: "2026-04-21", completed_count: 3, total_count: 5, adherence_rate: 0.6 },
-  { date: "2026-04-22", completed_count: 5, total_count: 5, adherence_rate: 1.0 },
-  { date: "2026-04-23", completed_count: 2, total_count: 5, adherence_rate: 0.4 },
-  { date: "2026-04-24", completed_count: 4, total_count: 5, adherence_rate: 0.8 },
-  { date: "2026-04-25", completed_count: 0, total_count: 0, adherence_rate: 0 },
-  { date: "2026-04-26", completed_count: 0, total_count: 0, adherence_rate: 0 }
-];
-const MOCK_CATEGORIES = [
-  { category: "sleep",     completed_count: 8,  total_count: 10, adherence_rate: 0.8 },
-  { category: "stress",    completed_count: 6,  total_count: 10, adherence_rate: 0.6 },
-  { category: "movement",  completed_count: 9,  total_count: 10, adherence_rate: 0.9 },
-  { category: "nutrition", completed_count: 5,  total_count: 10, adherence_rate: 0.5 }
-];
-const MOCK_WEEKLY = { completed_count: 18, total_count: 25, weekly_adherence: 0.72 };
-const MOCK_NUDGE = "You're doing great — 72% adherence is solid progress! Your movement habit is especially strong this week at 90%. Keep it up, and try nudging your nutrition consistency just a little higher next week.";
-
-async function demoApiFetch(path) {
-  await new Promise((r) => setTimeout(r, 400));
-  const make = (body) => ({ ok: true, json: async () => body });
-  if (path.startsWith("/adherence/daily"))      return make(MOCK_DAILY);
-  if (path.startsWith("/adherence/categories")) return make(MOCK_CATEGORIES);
-  if (path.startsWith("/adherence/weekly"))     return make(MOCK_WEEKLY);
-  if (path.startsWith("/coaching/nudge"))       return make({ nudge: MOCK_NUDGE });
-  if (path.startsWith("/plans/today"))          return make({ plan: null, items: [] });
-  if (path.startsWith("/protocols"))            return make({ items: [] });
-  return { ok: false, status: 404, json: async () => ({}) };
-}
-const GOAL_OPTIONS = [
-  { key: "better_sleep", label: "Better sleep" },
-  { key: "reduce_stress", label: "Reduce stress" },
-  { key: "more_energy", label: "More energy" },
-  { key: "improve_fitness", label: "Improve fitness" },
-  { key: "improve_nutrition", label: "Improve nutrition" }
-];
-
-function TodayScreen({ apiFetch }) {
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState([]);
-  const [error, setError] = useState("");
-
-  async function loadToday() {
-    try {
-      setLoading(true);
-      setError("");
-      const response = await apiFetch("/plans/today");
-      if (!response.ok) {
-        throw new Error("Failed to load today plan");
-      }
-      const json = await response.json();
-      setItems(json.items || []);
-    } catch (_err) {
-      setError("Unable to fetch today plan. Check API and network settings.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadToday();
-  }, []);
-
-  async function updateItemStatus(itemId, status) {
-    await apiFetch(`/plan-items/${itemId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
-    });
-    await loadToday();
-  }
-
-  async function generateTodayPlan() {
-    await apiFetch("/plans/generate", { method: "POST" });
-    await loadToday();
-  }
-
-  if (loading) {
-    return (
-      <ScreenLayout title="Today">
-        <ActivityIndicator />
-      </ScreenLayout>
-    );
-  }
-
-  return (
-    <ScreenLayout title="Today">
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <View style={styles.generateButtonWrap}>
-        <Button title="Generate Today Plan" onPress={generateTodayPlan} />
-      </View>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text>No plan items yet.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardText}>{item.instructions}</Text>
-            <Text style={styles.cardText}>Status: {item.status}</Text>
-            <View style={styles.row}>
-              <Button title="Done" onPress={() => updateItemStatus(item.id, "done")} />
-              <Button title="Partial" onPress={() => updateItemStatus(item.id, "partial")} />
-              <Button title="Skip" onPress={() => updateItemStatus(item.id, "skipped")} />
-            </View>
-          </View>
-        )}
-      />
-    </ScreenLayout>
-  );
-}
-
-const CATEGORY_LABELS = {
-  sleep: "😴 Sleep",
-  stress: "🧘 Stress",
-  movement: "🏃 Movement",
-  nutrition: "🥗 Nutrition"
+const COLORS = {
+  greenDark: "#22401F",
+  greenLight: "#E6ECD0",
+  orange: "#F4A261",
+  orangeDark: "#D4743E",
+  bg: "#F7F8F2",
+  surface: "#FFFFFF",
+  text: "#1F2A1F",
+  textMuted: "#6E7A67",
+  border: "#DADFD2",
+  borderMed: "#C4CCBA",
+  blue: "#E6F1FB",
+  purple: "#EEEDFE"
 };
 
-const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
-const BAR_MAX_HEIGHT = 80;
-
-function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
-  return d.toISOString().slice(0, 10);
-}
-
-function shiftWeek(weekStart, days) {
-  const d = new Date(weekStart);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function ProgressScreen({ apiFetch }) {
-  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
-  const [dailyData, setDailyData] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
-  const [weeklyStats, setWeeklyStats] = useState({ adherence: 0, daysActive: 0, itemsDone: 0 });
-  const [nudge, setNudge] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [nudgeLoading, setNudgeLoading] = useState(false);
-
-  const currentWeek = getMonday(new Date());
-  const isCurrentWeek = weekStart === currentWeek;
-
-  async function fetchNudge(ws, weeklyAdherence, categories) {
-    try {
-      setNudgeLoading(true);
-      const res = await apiFetch("/coaching/nudge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          week_start: ws,
-          weekly_adherence: Number(weeklyAdherence),
-          categories: categories.map((c) => ({
-            category: c.category,
-            adherence_rate: Number(c.adherence_rate)
-          }))
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setNudge(json.nudge || null);
-      }
-    } catch (_err) {
-      // nudge is optional; stay hidden on failure
-    } finally {
-      setNudgeLoading(false);
-    }
+const FEED_ITEMS = [
+  {
+    id: "f1",
+    type: "milestone",
+    title: "Sam Johnson reached week 6",
+    body: "First week with average sleep score above 8.0.",
+    meta: "2 hours ago"
+  },
+  {
+    id: "f2",
+    type: "insight",
+    title: "Your insight",
+    body: "Sleep onset is 18 minutes faster when caffeine cutoff is before 1pm.",
+    meta: "This morning"
+  },
+  {
+    id: "f3",
+    type: "science",
+    title: "kind science",
+    body: "247 participants are contributing to open citizen science publications.",
+    meta: "Yesterday"
+  },
+  {
+    id: "f4",
+    type: "tip",
+    title: "Wellbeing tip",
+    body: "Caffeine half-life is 5-7 hours; timing often matters more than amount.",
+    meta: "Yesterday"
   }
+];
 
-  async function loadData(ws) {
-    try {
-      setLoading(true);
-      setNudge(null);
-      const [dailyRes, catRes, weeklyRes] = await Promise.all([
-        apiFetch(`/adherence/daily?week_start=${ws}`),
-        apiFetch(`/adherence/categories?week_start=${ws}`),
-        apiFetch(`/adherence/weekly?week_start=${ws}`)
-      ]);
-
-      const daily = dailyRes.ok ? await dailyRes.json() : [];
-      const categories = catRes.ok ? await catRes.json() : [];
-      const weekly = weeklyRes.ok ? await weeklyRes.json() : {};
-
-      const safeDaily = Array.isArray(daily) ? daily : [];
-      const safeCats = Array.isArray(categories) ? categories : [];
-
-      setDailyData(safeDaily);
-      setCategoryData(safeCats);
-
-      const daysActive = safeDaily.filter((d) => Number(d.total_count) > 0).length;
-      const itemsDone = safeDaily.reduce((s, d) => s + Number(d.completed_count), 0);
-      const adherence = weekly.weekly_adherence != null ? Number(weekly.weekly_adherence) : 0;
-
-      setWeeklyStats({ adherence, daysActive, itemsDone });
-
-      const totalItems = safeDaily.reduce((s, d) => s + Number(d.total_count), 0);
-      if (totalItems > 0) {
-        fetchNudge(ws, adherence, safeCats);
-      }
-    } catch (_err) {
-      setDailyData([]);
-      setCategoryData([]);
-      setWeeklyStats({ adherence: 0, daysActive: 0, itemsDone: 0 });
-    } finally {
-      setLoading(false);
-    }
+const EXPLORATIONS = [
+  {
+    id: "caffeine",
+    icon: "☕",
+    title: "Caffeine & sleep quality",
+    desc: "8-week reduction protocol",
+    status: "active",
+    progress: "Week 3 of 8"
+  },
+  {
+    id: "movement",
+    icon: "🏃",
+    title: "Movement & energy",
+    desc: "6-week protocol",
+    status: "available",
+    progress: "89 explorers active"
+  },
+  {
+    id: "stress",
+    icon: "💓",
+    title: "Stress & recovery",
+    desc: "8-week protocol",
+    status: "available",
+    progress: "34 explorers active"
+  },
+  {
+    id: "screen",
+    icon: "📱",
+    title: "Screen time & sleep onset",
+    desc: "4-week protocol",
+    status: "available",
+    progress: "51 explorers active"
   }
+];
 
-  useEffect(() => {
-    loadData(weekStart);
-  }, [weekStart]);
+const PEOPLE = [
+  { id: "p1", name: "Sam Johnson", meta: "Amsterdam · Week 6", initials: "SJ" },
+  { id: "p2", name: "Maya Chen", meta: "London · Week 3", initials: "MC" },
+  { id: "p3", name: "Tom Richards", meta: "Amsterdam · Complete", initials: "TR" },
+  { id: "p4", name: "Priya Lawson", meta: "New York · Week 4", initials: "PL" }
+];
 
+const SEARCH_INDEX = [
+  "Caffeine & sleep quality",
+  "Movement & energy",
+  "Stress & recovery",
+  "Screen time & sleep onset",
+  "Sam Johnson",
+  "Maya Chen",
+  "Community insight",
+  "Citizen science"
+];
+
+function AppHeader({ onSearch, onNotifications }) {
   return (
-    <ScreenLayout title="Progress">
-      <View style={progressStyles.weekNav}>
-        <Pressable style={progressStyles.navBtn} onPress={() => setWeekStart(shiftWeek(weekStart, -7))}>
-          <Text style={progressStyles.navBtnText}>‹ Prev</Text>
+    <View style={styles.nav}>
+      <View>
+        <Text style={styles.navLogo}>kind</Text>
+        <Text style={styles.navSub}>health exploration</Text>
+      </View>
+      <View style={styles.navActions}>
+        <Pressable style={styles.iconButton} onPress={onSearch}>
+          <Text style={styles.iconText}>⌕</Text>
         </Pressable>
-        <Text style={progressStyles.weekLabel}>{weekStart}</Text>
-        <Pressable
-          style={[progressStyles.navBtn, isCurrentWeek && progressStyles.navBtnDisabled]}
-          onPress={() => !isCurrentWeek && setWeekStart(shiftWeek(weekStart, 7))}
-          disabled={isCurrentWeek}
-        >
-          <Text style={[progressStyles.navBtnText, isCurrentWeek && progressStyles.navBtnTextDisabled]}>
-            Next ›
-          </Text>
+        <Pressable style={styles.iconButton} onPress={onNotifications}>
+          <Text style={styles.iconText}>◉</Text>
         </Pressable>
       </View>
+    </View>
+  );
+}
 
-      {loading ? (
-        <ActivityIndicator style={{ marginTop: 32 }} />
+function SearchModal({ visible, onClose }) {
+  const [q, setQ] = useState("");
+  const results = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    if (!query) {
+      return SEARCH_INDEX;
+    }
+    return SEARCH_INDEX.filter((item) => item.toLowerCase().includes(query));
+  }, [q]);
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable style={styles.modalPanel} onPress={() => {}}>
+          <View style={styles.modalHeaderRow}>
+            <TextInput
+              value={q}
+              onChangeText={setQ}
+              placeholder="Search explorations, insights, people"
+              placeholderTextColor={COLORS.textMuted}
+              style={styles.searchInput}
+              autoFocus
+            />
+            <Pressable style={styles.closeBtn} onPress={onClose}>
+              <Text style={styles.closeBtnText}>X</Text>
+            </Pressable>
+          </View>
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <View style={styles.searchResultRow}>
+                <Text style={styles.searchResultText}>{item}</Text>
+              </View>
+            )}
+          />
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function NotificationsModal({ visible, onClose }) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable style={styles.modalPanel} onPress={() => {}}>
+          <View style={styles.modalTitleRow}>
+            <Text style={styles.sectionTitle}>Notifications</Text>
+            <Pressable style={styles.closeBtn} onPress={onClose}>
+              <Text style={styles.closeBtnText}>X</Text>
+            </Pressable>
+          </View>
+          <View style={styles.notificationItem}>
+            <Text style={styles.notificationTitle}>Sam Johnson reached week 6.</Text>
+            <Text style={styles.notificationMeta}>2 hours ago</Text>
+          </View>
+          <View style={styles.notificationItem}>
+            <Text style={styles.notificationTitle}>
+              New personal insight: 18 min faster sleep onset with early caffeine cutoff.
+            </Text>
+            <Text style={styles.notificationMeta}>This morning</Text>
+          </View>
+          <View style={styles.notificationItem}>
+            <Text style={styles.notificationTitle}>
+              247 participants are contributing to a new citizen science publication.
+            </Text>
+            <Text style={styles.notificationMeta}>Yesterday</Text>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function HomeScreen() {
+  const [showLog, setShowLog] = useState(false);
+  const [feedType, setFeedType] = useState("all");
+
+  const feed = useMemo(
+    () => FEED_ITEMS.filter((item) => (feedType === "all" ? true : item.type === feedType)),
+    [feedType]
+  );
+
+  return (
+    <ScrollView contentContainerStyle={styles.screenPad}>
+      <Text style={styles.sectionTitle}>Good morning, Emma</Text>
+      <Text style={styles.sectionSub}>Day 12 of your caffeine reduction exploration.</Text>
+
+      <View style={styles.metricGrid}>
+        <MetricCard label="Sleep quality" value="7.4" unit="/10" />
+        <MetricCard label="Caffeine today" value="80" unit="mg" />
+        <MetricCard label="Last cutoff" value="1" unit="pm" />
+        <MetricCard label="Active streak" value="9" unit="days" />
+      </View>
+
+      {!showLog ? (
+        <Pressable style={styles.ctaBtn} onPress={() => setShowLog(true)}>
+          <Text style={styles.ctaBtnText}>Log today's data</Text>
+        </Pressable>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={progressStyles.statsRow}>
-            <View style={progressStyles.statCard}>
-              <Text style={progressStyles.statValue}>{Math.round(weeklyStats.adherence * 100)}%</Text>
-              <Text style={progressStyles.statLabel}>Adherence</Text>
-            </View>
-            <View style={progressStyles.statCard}>
-              <Text style={progressStyles.statValue}>{weeklyStats.daysActive}</Text>
-              <Text style={progressStyles.statLabel}>Days Active</Text>
-            </View>
-            <View style={progressStyles.statCard}>
-              <Text style={progressStyles.statValue}>{weeklyStats.itemsDone}</Text>
-              <Text style={progressStyles.statLabel}>Items Done</Text>
-            </View>
-          </View>
-
-          <View style={progressStyles.card}>
-            <Text style={progressStyles.sectionTitle}>Daily Adherence</Text>
-            <View style={progressStyles.barChart}>
-              {DAY_LABELS.map((label, i) => {
-                const day = dailyData[i];
-                const rate = day ? Number(day.adherence_rate) : 0;
-                const hasData = day && Number(day.total_count) > 0;
-                const barHeight = hasData ? Math.max(2, Math.round(rate * BAR_MAX_HEIGHT)) : 2;
-                return (
-                  <View key={i} style={progressStyles.barCol}>
-                    <View style={progressStyles.barTrack}>
-                      <View
-                        style={[
-                          progressStyles.bar,
-                          { height: barHeight },
-                          !hasData && progressStyles.barMuted
-                        ]}
-                      />
-                    </View>
-                    <Text style={progressStyles.barLabel}>{label}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-          {categoryData.length > 0 && (
-            <View style={progressStyles.card}>
-              <Text style={progressStyles.sectionTitle}>Categories</Text>
-              {categoryData.map((cat) => (
-                <View key={cat.category} style={progressStyles.catRow}>
-                  <Text style={progressStyles.catLabel}>
-                    {CATEGORY_LABELS[cat.category] || cat.category}
-                  </Text>
-                  <View style={progressStyles.progressTrack}>
-                    <View
-                      style={[
-                        progressStyles.progressFill,
-                        { width: `${Math.round(Number(cat.adherence_rate) * 100)}%` }
-                      ]}
-                    />
-                  </View>
-                  <Text style={progressStyles.catPct}>
-                    {Math.round(Number(cat.adherence_rate) * 100)}%
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {nudgeLoading && (
-            <View style={progressStyles.nudgeCard}>
-              <Text style={progressStyles.nudgeLabel}>✨ AI Coach</Text>
-              <ActivityIndicator color="#15803d" />
-            </View>
-          )}
-          {!nudgeLoading && nudge && (
-            <View style={progressStyles.nudgeCard}>
-              <Text style={progressStyles.nudgeLabel}>✨ AI Coach</Text>
-              <Text style={progressStyles.nudgeText}>{nudge}</Text>
-            </View>
-          )}
-        </ScrollView>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Today's log</Text>
+          <Text style={styles.cardBody}>This section is now native and ready for form wiring.</Text>
+          <Pressable style={styles.secondaryBtn} onPress={() => setShowLog(false)}>
+            <Text style={styles.secondaryBtnText}>Hide log</Text>
+          </Pressable>
+        </View>
       )}
-    </ScreenLayout>
-  );
-}
 
-function ProtocolsScreen() {
-  const [protocols, setProtocols] = useState([]);
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+        {[
+          { key: "all", label: "All" },
+          { key: "milestone", label: "Milestones" },
+          { key: "insight", label: "Insights" },
+          { key: "science", label: "Science" },
+          { key: "tip", label: "Tips" }
+        ].map((chip) => (
+          <Pressable
+            key={chip.key}
+            style={[styles.chip, feedType === chip.key && styles.chipActive]}
+            onPress={() => setFeedType(chip.key)}
+          >
+            <Text style={[styles.chipText, feedType === chip.key && styles.chipTextActive]}>{chip.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/protocols`)
-      .then((res) => res.json())
-      .then((json) => setProtocols(json.items || []))
-      .catch(() => setProtocols([]));
-  }, []);
-
-  return (
-    <ScreenLayout title="Protocols">
-      <FlatList
-        data={protocols}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text>No protocols found.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardText}>{item.description}</Text>
-            <Text style={styles.badge}>Evidence: {item.evidence_tier}</Text>
-          </View>
-        )}
-      />
-    </ScreenLayout>
-  );
-}
-
-function ProfileScreen({ user, onLogout }) {
-  return (
-    <ScreenLayout title="Profile">
-      <Text style={styles.cardText}>Signed in as: {user?.email || "Unknown user"}</Text>
-      <View style={styles.generateButtonWrap}>
-        <Button title="Log Out" onPress={onLogout} />
-      </View>
-      <Text style={styles.cardText}>Data privacy controls (placeholder)</Text>
-    </ScreenLayout>
-  );
-}
-
-function OnboardingScreen({ submitGoals }) {
-  const [selected, setSelected] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  function toggleGoal(goalKey) {
-    setSelected((current) =>
-      current.includes(goalKey) ? current.filter((goal) => goal !== goalKey) : [...current, goalKey]
-    );
-  }
-
-  async function complete() {
-    if (!selected.length) {
-      setError("Select at least one goal.");
-      return;
-    }
-    setError("");
-    setSaving(true);
-    await submitGoals(selected);
-    setSaving(false);
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <Text style={styles.title}>Choose your goals</Text>
-      <Text style={styles.cardText}>We will auto-activate protocols based on these goals.</Text>
-      {GOAL_OPTIONS.map((goal) => (
-        <Pressable
-          key={goal.key}
-          style={[styles.goalPill, selected.includes(goal.key) ? styles.goalPillActive : null]}
-          onPress={() => toggleGoal(goal.key)}
-        >
-          <Text style={selected.includes(goal.key) ? styles.goalTextActive : styles.goalText}>
-            {goal.label}
-          </Text>
-        </Pressable>
+      {feed.map((item) => (
+        <View key={item.id} style={styles.card}>
+          <Text style={styles.cardTitle}>{item.title}</Text>
+          <Text style={styles.cardBody}>{item.body}</Text>
+          <Text style={styles.cardMeta}>{item.meta}</Text>
+        </View>
       ))}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {saving ? <ActivityIndicator /> : <Button title="Finish onboarding" onPress={complete} />}
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
-function ScreenLayout({ title, children }) {
+function ExplorationScreen() {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    if (!query) {
+      return EXPLORATIONS;
+    }
+    return EXPLORATIONS.filter(
+      (item) => item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
+    );
+  }, [q]);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {children}
-    </SafeAreaView>
+    <ScrollView contentContainerStyle={styles.screenPad}>
+      <Text style={styles.sectionTitle}>Explore</Text>
+      <Text style={styles.sectionSub}>Discover and start guided health explorations.</Text>
+      <TextInput
+        value={q}
+        onChangeText={setQ}
+        style={styles.searchInputInline}
+        placeholder="Find an area of health to explore"
+        placeholderTextColor={COLORS.textMuted}
+      />
+
+      {filtered.map((item) => (
+        <View key={item.id} style={styles.exploreCard}>
+          <View style={styles.exploreIconWrap}>
+            <Text style={styles.exploreIcon}>{item.icon}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.exploreTitle}>{item.title}</Text>
+            <Text style={styles.exploreDesc}>{item.desc}</Text>
+            <Text style={styles.exploreMeta}>{item.progress}</Text>
+          </View>
+          <View style={item.status === "active" ? styles.badgeAmber : styles.badgeGreen}>
+            <Text style={styles.badgeText}>{item.status === "active" ? "Active" : "Start"}</Text>
+          </View>
+        </View>
+      ))}
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Protocol timeline</Text>
+        <Text style={styles.cardBody}>Weeks 1-2 baseline, weeks 3-5 reduction, weeks 6-7 low-caffeine, week 8 report.</Text>
+      </View>
+    </ScrollView>
+  );
+}
+
+function InsightScreen() {
+  const [tab, setTab] = useState("your");
+
+  return (
+    <ScrollView contentContainerStyle={styles.screenPad}>
+      <Text style={styles.sectionTitle}>Insight</Text>
+      <Text style={styles.sectionSub}>Personal findings and community science.</Text>
+
+      <View style={styles.subTabs}>
+        <Pressable style={[styles.subTab, tab === "your" && styles.subTabActive]} onPress={() => setTab("your")}>
+          <Text style={[styles.subTabText, tab === "your" && styles.subTabTextActive]}>Your insights</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.subTab, tab === "community" && styles.subTabActive]}
+          onPress={() => setTab("community")}
+        >
+          <Text style={[styles.subTabText, tab === "community" && styles.subTabTextActive]}>Community insights</Text>
+        </Pressable>
+      </View>
+
+      {tab === "your" ? (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sleep quality trend</Text>
+            <Text style={styles.cardBody}>Week 1: 5.2 to Week 2: 6.0 to Week 3: 7.4</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Key observations</Text>
+            <Text style={styles.cardBody}>Cutoff time before 2pm correlates with stronger sleep quality.</Text>
+          </View>
+        </>
+      ) : (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>From 247 participants</Text>
+            <Text style={styles.cardBody}>Earlier caffeine cutoff is associated with +1.6 points in sleep quality by week 4.</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Open publication pipeline</Text>
+            <Text style={styles.cardBody}>2 community-backed papers currently in preparation.</Text>
+          </View>
+        </>
+      )}
+    </ScrollView>
+  );
+}
+
+function CommunityScreen() {
+  const [q, setQ] = useState("");
+  const [following, setFollowing] = useState(() => new Set(["p1", "p2"]));
+
+  const people = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    if (!query) {
+      return PEOPLE;
+    }
+    return PEOPLE.filter((p) => p.name.toLowerCase().includes(query) || p.meta.toLowerCase().includes(query));
+  }, [q]);
+
+  const toggleFollow = (id) => {
+    setFollowing((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.screenPad}>
+      <Text style={styles.sectionTitle}>Community</Text>
+      <Text style={styles.sectionSub}>Shared journeys, shared science.</Text>
+      <View style={styles.banner}>
+        <Text style={styles.bannerTitle}>Citizen science contribution</Text>
+        <Text style={styles.bannerText}>
+          Your anonymized data can contribute to open publications with community-level insights.
+        </Text>
+      </View>
+
+      <TextInput
+        value={q}
+        onChangeText={setQ}
+        style={styles.searchInputInline}
+        placeholder="Search explorers"
+        placeholderTextColor={COLORS.textMuted}
+      />
+
+      {people.map((p) => {
+        const isFollowing = following.has(p.id);
+        return (
+          <View key={p.id} style={styles.personRow}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{p.initials}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.personName}>{p.name}</Text>
+              <Text style={styles.personMeta}>{p.meta}</Text>
+            </View>
+            <Pressable
+              style={[styles.followBtn, isFollowing && styles.followBtnActive]}
+              onPress={() => toggleFollow(p.id)}
+            >
+              <Text style={[styles.followBtnText, isFollowing && styles.followBtnTextActive]}>
+                {isFollowing ? "Following" : "Follow"}
+              </Text>
+            </Pressable>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+function ProfileScreen() {
+  const [shareData, setShareData] = useState(true);
+  const [visibleCommunity, setVisibleCommunity] = useState(true);
+  const [dailyReminders, setDailyReminders] = useState(true);
+
+  return (
+    <ScrollView contentContainerStyle={styles.screenPad}>
+      <Text style={styles.sectionTitle}>Profile</Text>
+      <Text style={styles.sectionSub}>Emma Green · Amsterdam</Text>
+
+      <View style={styles.metricGrid}>
+        <MetricCard label="Following" value="25" unit="" />
+        <MetricCard label="Followers" value="40" unit="" />
+        <MetricCard label="Sleep score" value="7.4" unit="/10" />
+        <MetricCard label="Logs" value="12" unit="" />
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Data & privacy</Text>
+        <SettingRow
+          title="Contribute to citizen science"
+          subtitle="Anonymized data used in open publications"
+          value={shareData}
+          onValueChange={setShareData}
+        />
+        <SettingRow
+          title="Visible in community"
+          subtitle="Others can view your progress"
+          value={visibleCommunity}
+          onValueChange={setVisibleCommunity}
+        />
+        <SettingRow
+          title="Daily reminders"
+          subtitle="Gentle nudges to log each morning"
+          value={dailyReminders}
+          onValueChange={setDailyReminders}
+          noBorder
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+function MetricCard({ label, value, unit }) {
+  return (
+    <View style={styles.metricCard}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.metricValue}>
+        {value}
+        <Text style={styles.metricUnit}>{unit}</Text>
+      </Text>
+    </View>
+  );
+}
+
+function SettingRow({ title, subtitle, value, onValueChange, noBorder }) {
+  return (
+    <View style={[styles.settingRow, noBorder && { borderBottomWidth: 0 }]}> 
+      <View style={{ flex: 1, paddingRight: 10 }}>
+        <Text style={styles.settingTitle}>{title}</Text>
+        <Text style={styles.settingSub}>{subtitle}</Text>
+      </View>
+      <Switch value={value} onValueChange={onValueChange} trackColor={{ true: COLORS.greenDark }} />
+    </View>
   );
 }
 
 export default function App() {
-  const [token, setToken] = useState("");
-  const [refreshToken, setRefreshToken] = useState("");
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [email, setEmail] = useState("demo@example.com");
-  const [password, setPassword] = useState("demo1234");
-  const [authError, setAuthError] = useState("");
-
-  async function clearSession() {
-    if (refreshToken) {
-      try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken })
-        });
-      } catch (_err) {
-        // Ignore logout network failures and clear local session.
-      }
-    }
-    setToken("");
-    setRefreshToken("");
-    setUser(null);
-    setProfile(null);
-  }
-
-  async function fetchProfile(nextToken) {
-    const response = await fetch(`${API_BASE_URL}/me`, {
-      headers: { Authorization: `Bearer ${nextToken}` }
-    });
-    if (!response.ok) {
-      return;
-    }
-    const json = await response.json();
-    setUser(json.user);
-    setProfile(json.profile);
-  }
-
-  async function login() {
-    try {
-      setAuthError("");
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-      const json = await response.json();
-      setToken(json.token);
-      setRefreshToken(json.refreshToken);
-      setUser(json.user);
-      await fetchProfile(json.token);
-    } catch (_err) {
-      setAuthError("Unable to log in. Confirm API is running and credentials are valid.");
-    }
-  }
-
-  async function apiFetch(path, options = {}) {
-    const request = async (accessToken) =>
-      fetch(`${API_BASE_URL}${path}`, {
-        ...options,
-        headers: {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-
-    let response = await request(token);
-    if (response.status !== 401 || !refreshToken) {
-      return response;
-    }
-
-    const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken })
-    });
-
-    if (!refreshResponse.ok) {
-      await clearSession();
-      return response;
-    }
-
-    const refreshJson = await refreshResponse.json();
-    setToken(refreshJson.token);
-    setRefreshToken(refreshJson.refreshToken);
-    await fetchProfile(refreshJson.token);
-    response = await request(refreshJson.token);
-    return response;
-  }
-
-  async function submitOnboardingGoals(goals) {
-    const response = await apiFetch("/onboarding/complete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        goals,
-        constraints: { work_hours: "9-6" },
-        preferences: { reminder_windows: ["07:00-08:00", "20:00-21:00"] }
-      })
-    });
-    if (response.ok) {
-      await fetchProfile(token);
-    }
-  }
-
-  if (DEMO_MODE) {
-    return (
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        <Tab.Navigator screenOptions={{ headerShown: false }}>
-          <Tab.Screen name="Today">{() => <TodayScreen apiFetch={demoApiFetch} />}</Tab.Screen>
-          <Tab.Screen name="Progress">{() => <ProgressScreen apiFetch={demoApiFetch} />}</Tab.Screen>
-          <Tab.Screen name="Protocols" component={ProtocolsScreen} />
-          <Tab.Screen name="Profile">
-            {() => <ProfileScreen user={{ email: "demo@example.com" }} onLogout={() => {}} />}
-          </Tab.Screen>
-        </Tab.Navigator>
-      </NavigationContainer>
-    );
-  }
-
-  if (!token) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" />
-        <Text style={styles.title}>ProtocolPath</Text>
-        <Text style={styles.cardText}>Sign in to access your personalized plan.</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          placeholder="Email"
-          autoCapitalize="none"
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-        />
-        {authError ? <Text style={styles.error}>{authError}</Text> : null}
-        <Button title="Log In" onPress={login} />
-      </SafeAreaView>
-    );
-  }
-
-  const needsOnboarding = !profile || !Array.isArray(profile.goals) || profile.goals.length === 0;
-  if (needsOnboarding) {
-    return <OnboardingScreen submitGoals={submitOnboardingGoals} />;
-  }
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
-        <Tab.Screen name="Today">{() => <TodayScreen apiFetch={apiFetch} />}</Tab.Screen>
-        <Tab.Screen name="Progress">{() => <ProgressScreen apiFetch={apiFetch} />}</Tab.Screen>
-        <Tab.Screen name="Protocols" component={ProtocolsScreen} />
-        <Tab.Screen name="Profile">
-          {() => <ProfileScreen user={user} onLogout={clearSession} />}
-        </Tab.Screen>
-      </Tab.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safe}>
+        <StatusBar style="light" />
+        <AppHeader onSearch={() => setSearchOpen(true)} onNotifications={() => setNotificationsOpen(true)} />
+        <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
+        <NotificationsModal visible={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={{
+              headerShown: false,
+              tabBarActiveTintColor: COLORS.greenDark,
+              tabBarInactiveTintColor: COLORS.textMuted,
+              tabBarStyle: { backgroundColor: COLORS.surface, borderTopColor: COLORS.border }
+            }}
+          >
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Exploration" component={ExplorationScreen} />
+            <Tab.Screen name="Insight" component={InsightScreen} />
+            <Tab.Screen name="Community" component={CommunityScreen} />
+            <Tab.Screen name="Profile" component={ProfileScreen} />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 16,
-    paddingTop: 12
+    backgroundColor: COLORS.bg
   },
-  title: {
-    fontSize: 28,
+  nav: {
+    backgroundColor: COLORS.greenDark,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  navLogo: {
+    color: "white",
+    fontSize: 30,
     fontWeight: "700",
+    lineHeight: 30
+  },
+  navSub: {
+    color: COLORS.orange,
+    fontSize: 11,
+    letterSpacing: 0.5
+  },
+  navActions: {
+    flexDirection: "row",
+    gap: 8
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)"
+  },
+  iconText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700"
+  },
+  screenPad: {
+    padding: 16,
+    paddingBottom: 120
+  },
+  sectionTitle: {
+    color: COLORS.text,
+    fontSize: 22,
+    fontWeight: "700"
+  },
+  sectionSub: {
+    color: COLORS.textMuted,
+    marginTop: 4,
+    marginBottom: 12,
+    lineHeight: 20
+  },
+  metricGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
     marginBottom: 12
   },
+  metricCard: {
+    width: "48%",
+    backgroundColor: COLORS.greenLight,
+    borderRadius: 10,
+    padding: 10
+  },
+  metricLabel: {
+    color: COLORS.greenDark,
+    fontSize: 11,
+    marginBottom: 6
+  },
+  metricValue: {
+    color: COLORS.text,
+    fontSize: 24,
+    fontWeight: "700"
+  },
+  metricUnit: {
+    color: COLORS.textMuted,
+    fontSize: 12
+  },
+  ctaBtn: {
+    backgroundColor: COLORS.orange,
+    borderRadius: 12,
+    alignItems: "center",
+    paddingVertical: 14,
+    marginBottom: 12
+  },
+  ctaBtnText: {
+    color: "white",
+    fontWeight: "700"
+  },
   card: {
-    backgroundColor: "white",
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
     borderRadius: 12,
     padding: 14,
     marginBottom: 10
   },
   cardTitle: {
-    fontSize: 16,
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 6
+  },
+  cardBody: {
+    color: COLORS.textMuted,
+    lineHeight: 20
+  },
+  cardMeta: {
+    marginTop: 8,
+    color: COLORS.textMuted,
+    fontSize: 12
+  },
+  secondaryBtn: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: COLORS.borderMed,
+    borderRadius: 8,
+    paddingVertical: 9,
+    alignItems: "center"
+  },
+  secondaryBtnText: {
+    color: COLORS.text,
+    fontWeight: "600"
+  },
+  chipRow: {
+    marginBottom: 12
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: COLORS.borderMed,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginRight: 8,
+    backgroundColor: COLORS.surface
+  },
+  chipActive: {
+    backgroundColor: COLORS.greenDark,
+    borderColor: COLORS.greenDark
+  },
+  chipText: {
+    color: COLORS.textMuted,
+    fontSize: 12
+  },
+  chipTextActive: {
+    color: "white"
+  },
+  exploreCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10
+  },
+  exploreIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: COLORS.greenLight,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  exploreIcon: {
+    fontSize: 20
+  },
+  exploreTitle: {
+    color: COLORS.text,
+    fontWeight: "700"
+  },
+  exploreDesc: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginTop: 2
+  },
+  exploreMeta: {
+    color: COLORS.greenDark,
+    fontSize: 11,
+    marginTop: 5,
+    fontWeight: "600"
+  },
+  badgeAmber: {
+    backgroundColor: "#FDF0E4",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  badgeGreen: {
+    backgroundColor: COLORS.greenLight,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  badgeText: {
+    color: COLORS.greenDark,
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  subTabs: {
+    flexDirection: "row",
+    borderColor: COLORS.borderMed,
+    borderWidth: 1,
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 12
+  },
+  subTab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: COLORS.surface
+  },
+  subTabActive: {
+    backgroundColor: COLORS.greenDark
+  },
+  subTabText: {
+    color: COLORS.textMuted,
+    fontWeight: "600",
+    fontSize: 12
+  },
+  subTabTextActive: {
+    color: "white"
+  },
+  banner: {
+    backgroundColor: COLORS.greenLight,
+    borderColor: COLORS.borderMed,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12
+  },
+  bannerTitle: {
+    color: COLORS.greenDark,
     fontWeight: "700",
     marginBottom: 4
   },
-  cardText: {
-    fontSize: 14,
-    color: "#334155",
-    marginBottom: 4
+  bannerText: {
+    color: COLORS.greenDark,
+    lineHeight: 19
   },
-  row: {
+  personRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8
+    alignItems: "center",
+    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1,
+    paddingVertical: 10,
+    gap: 10
   },
-  badge: {
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.greenLight,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  avatarText: {
+    color: COLORS.greenDark,
+    fontWeight: "700"
+  },
+  personName: {
+    color: COLORS.text,
+    fontWeight: "700"
+  },
+  personMeta: {
+    color: COLORS.textMuted,
     fontSize: 12,
-    color: "#0f766e"
+    marginTop: 2
   },
-  error: {
-    color: "#dc2626",
+  followBtn: {
+    borderWidth: 1,
+    borderColor: COLORS.greenDark,
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 6
+  },
+  followBtnActive: {
+    backgroundColor: COLORS.greenDark
+  },
+  followBtnText: {
+    color: COLORS.greenDark,
+    fontWeight: "700",
+    fontSize: 12
+  },
+  followBtnTextActive: {
+    color: "white"
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border
+  },
+  settingTitle: {
+    color: COLORS.text,
+    fontWeight: "600"
+  },
+  settingSub: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginTop: 2
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "flex-start"
+  },
+  modalPanel: {
+    marginTop: 70,
+    marginHorizontal: 10,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    maxHeight: "80%",
+    padding: 10
+  },
+  modalHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginBottom: 8
   },
-  input: {
-    backgroundColor: "white",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 10
+  modalTitleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8
   },
-  generateButtonWrap: {
-    marginBottom: 10
-  },
-  goalPill: {
-    backgroundColor: "white",
-    borderColor: "#cbd5e1",
+  searchInput: {
+    flex: 1,
     borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 8
+    color: COLORS.text
   },
-  goalPillActive: {
-    backgroundColor: "#0f766e",
-    borderColor: "#0f766e"
-  },
-  goalText: {
-    color: "#0f172a"
-  },
-  goalTextActive: {
-    color: "white"
-  }
-});
-
-const progressStyles = StyleSheet.create({
-  weekNav: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12
-  },
-  weekLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#334155"
-  },
-  navBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#e2e8f0",
-    borderRadius: 8
-  },
-  navBtnDisabled: {
-    backgroundColor: "#f1f5f9"
-  },
-  navBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#0f766e"
-  },
-  navBtnTextDisabled: {
-    color: "#94a3b8"
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 12,
-    alignItems: "center"
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#0f766e"
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#64748b",
-    marginTop: 2
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#0f172a",
-    marginBottom: 12
-  },
-  barChart: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    height: 110,
-    alignItems: "flex-end"
-  },
-  barCol: {
-    flex: 1,
-    alignItems: "center"
-  },
-  barTrack: {
-    width: 24,
-    height: 80,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 4,
-    justifyContent: "flex-end",
-    overflow: "hidden"
-  },
-  bar: {
-    width: "100%",
-    backgroundColor: "#0f766e",
-    borderRadius: 4
-  },
-  barMuted: {
-    backgroundColor: "#cbd5e1"
-  },
-  barLabel: {
-    fontSize: 11,
-    color: "#94a3b8",
-    marginTop: 4
-  },
-  catRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10
-  },
-  catLabel: {
-    width: 110,
-    fontSize: 13,
-    color: "#334155"
-  },
-  progressTrack: {
-    flex: 1,
-    height: 8,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 4,
-    overflow: "hidden"
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#0f766e",
-    borderRadius: 4
-  },
-  catPct: {
-    width: 38,
-    textAlign: "right",
-    fontSize: 13,
-    color: "#64748b"
-  },
-  nudgeCard: {
-    backgroundColor: "#f0fdf4",
-    borderColor: "#bbf7d0",
+  searchInputInline: {
     borderWidth: 1,
+    borderColor: COLORS.borderMed,
     borderRadius: 12,
-    padding: 14,
-    marginBottom: 12
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    marginBottom: 12,
+    backgroundColor: COLORS.surface,
+    color: COLORS.text
   },
-  nudgeLabel: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#15803d",
-    marginBottom: 6
+  closeBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.bg
   },
-  nudgeText: {
-    fontSize: 14,
-    color: "#166534",
+  closeBtnText: {
+    color: COLORS.textMuted,
+    fontWeight: "700"
+  },
+  searchResultRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 10,
+    paddingHorizontal: 4
+  },
+  searchResultText: {
+    color: COLORS.text
+  },
+  notificationItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 10
+  },
+  notificationTitle: {
+    color: COLORS.text,
     lineHeight: 20
+  },
+  notificationMeta: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    marginTop: 3
   }
 });
