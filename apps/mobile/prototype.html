@@ -129,7 +129,8 @@
   .btn-primary:hover { background: var(--orange-dark); }
   .insight-row  { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .insight-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
-  .feed-item    { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .feed-item    { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .feed-item:hover { border-color: var(--border-med); box-shadow: 0 2px 12px rgba(31,42,31,0.06); }
   .feed-header  { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .feed-avatar  { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; overflow:hidden; position:relative; }
   .feed-meta    { flex: 1; }
@@ -244,8 +245,15 @@
   .typing-dot:nth-child(2){animation-delay:0.2s} .typing-dot:nth-child(3){animation-delay:0.4s}
   @keyframes tp{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
   /* ── v6: Researcher rows ── */
-  .researcher-row { display:flex; gap:12px; align-items:flex-start; padding:12px 1rem; border-bottom:1px solid var(--border); }
+  .researcher-row { display:flex; gap:12px; align-items:flex-start; padding:12px 1rem; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.12s; }
+  .researcher-row:hover { background: var(--bg); }
   .researcher-row:last-child { border-bottom:none; }
+  .explorers-badge { cursor: pointer; display: inline-flex; align-items: center; }
+  .explorers-badge:focus { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .privacy-action-btn { width: 100%; padding: 12px 14px; margin-top: 8px; border-radius: var(--radius-md); border: 1.5px solid var(--border-med); background: var(--surface); font-size: 14px; font-weight: 600; font-family: var(--font-sans); color: var(--green-dark); cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+  .privacy-action-btn:hover { background: var(--green-light); border-color: var(--green-dark); }
+  #proto-toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); z-index: 400; max-width: 420px; width: calc(100% - 32px); padding: 12px 16px; background: var(--green-dark); color: #fff; border-radius: var(--radius-lg); font-size: 13px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  #proto-toast.show { opacity: 1; pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -326,6 +334,24 @@
   </div>
 </div>
 
+<!-- Explorers on an exploration (opened from badge) -->
+<div id="explorers-panel" class="slide-panel" style="z-index:250;">
+  <div class="slide-panel-inner">
+    <div class="detail-header" style="position:sticky;top:0;z-index:10;">
+      <button class="detail-back" onclick="closeExplorersPanel()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="detail-title-text" id="explorers-panel-title">Explorers</div>
+    </div>
+    <div id="explorers-panel-list" style="padding:0 0.75rem;"></div>
+  </div>
+</div>
+
+<!-- Researcher profile -->
+<div id="researcher-panel" class="slide-panel" style="z-index:350;">
+  <div class="slide-panel-inner" id="researcher-panel-content"></div>
+</div>
+
+<div id="proto-toast" role="status" aria-live="polite"></div>
+
 <div class="app">
 
   <!-- Nav -->
@@ -390,7 +416,7 @@
       <div class="chip" onclick="filterFeed('tip',this)">Tips</div>
     </div>
     <div id="feed">
-      <div class="feed-item" data-type="milestone">
+      <div class="feed-item" data-type="milestone" onclick="openFeedMilestone('sam-johnson',0)">
         <div class="feed-header">
           <div class="feed-avatar" style="background:var(--green-light);">
             <img src="https://i.pravatar.cc/68?img=11" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:var(--green-dark);">SJ</span>
@@ -400,12 +426,12 @@
         <div class="feed-body">Completed week 6 — the first week where sleep score averaged above <strong>8.0</strong>. Something clicked this week.</div>
         <div class="feed-highlight">Sleep avg: <strong>8.2</strong> &nbsp;·&nbsp; Streak: <strong>21 days</strong></div>
       </div>
-      <div class="feed-item" data-type="insight">
+      <div class="feed-item" data-type="insight" onclick="gotoInsightTab(false)">
         <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Your insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">This morning · Caffeine &amp; sleep</div></div></div>
         <div class="feed-body">On the 4 days where your last caffeine was before 1pm, sleep onset was on average <strong>18 minutes faster</strong> than on later-cutoff days.</div>
         <div class="feed-highlight">Try keeping your cutoff at 1pm this week to confirm the trend.</div>
       </div>
-      <div class="feed-item" data-type="activity">
+      <div class="feed-item" data-type="activity" onclick="openExplorerProfile('maya-chen')">
         <div class="feed-header">
           <div class="feed-avatar" style="background:#EEEDFE;">
             <img src="https://i.pravatar.cc/68?img=9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#534AB7;">MC</span>
@@ -414,16 +440,16 @@
         </div>
         <div class="feed-body">Logged day 21 — switching from afternoon espresso to herbal tea made the cutoff feel much easier to stick to. Small swap, big difference.</div>
       </div>
-      <div class="feed-item" data-type="science">
+      <div class="feed-item" data-type="science" onclick="showScreen('community')">
         <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div><div class="feed-meta"><div class="feed-name">kind science <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Science</span></div><div class="feed-time">Yesterday · Citizen science</div></div></div>
         <div class="feed-body">Across <strong>247 active participants</strong>, sleep onset improves most sharply between weeks 3 and 5. Your data is contributing to this finding.</div>
         <div class="feed-highlight">2 open-access publications in preparation. Data collection until May 2026.</div>
       </div>
-      <div class="feed-item" data-type="tip">
+      <div class="feed-item" data-type="tip" onclick="openExploration('caffeine')">
         <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">✓</div><div class="feed-meta"><div class="feed-name">Wellbeing tip <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Tip</span></div><div class="feed-time">Yesterday · Sleep quality</div></div></div>
         <div class="feed-body">Caffeine's half-life is 5–7 hours. A 200mg coffee at 3pm still leaves ~100mg active at 9pm — roughly equivalent to a weak espresso right before bed.</div>
       </div>
-      <div class="feed-item" data-type="milestone">
+      <div class="feed-item" data-type="milestone" onclick="openFeedMilestone('tom-richards',0)">
         <div class="feed-header">
           <div class="feed-avatar" style="background:#FDF0E4;">
             <img src="https://i.pravatar.cc/68?img=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#8A4A1A;">TR</span>
@@ -433,7 +459,7 @@
         <div class="feed-body">Completed the full 8-week protocol. Sleep quality went from a baseline of <strong>5.0</strong> to a week-8 average of <strong>8.4</strong>. Genuinely surprised by how clear the effect was.</div>
         <div class="feed-highlight">N-of-1 report generated &nbsp;·&nbsp; Data contributed to citizen science dataset</div>
       </div>
-      <div class="feed-item" data-type="activity">
+      <div class="feed-item" data-type="activity" onclick="openExplorerProfile('priya-lawson')">
         <div class="feed-header">
           <div class="feed-avatar" style="background:#EAF3DE;">
             <img src="https://i.pravatar.cc/68?img=5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#3B6D11;">PL</span>
@@ -442,7 +468,7 @@
         </div>
         <div class="feed-body">Added a second exploration: stress and recovery. Combining daily HRV readings with the existing sleep log. Only day 3 but patterns are already interesting.</div>
       </div>
-      <div class="feed-item" data-type="insight">
+      <div class="feed-item" data-type="insight" onclick="gotoInsightTab(true)">
         <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Community insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">3 days ago · Movement &amp; energy</div></div></div>
         <div class="feed-body">Explorers tracking both movement and caffeine who log <strong>20+ min of outdoor activity</strong> report 0.9 points higher sleep quality that evening.</div>
         <div class="feed-highlight">Based on 89 participants tracking both areas simultaneously.</div>
@@ -483,11 +509,11 @@
       <div class="timeline-item" style="margin-bottom:0;"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Week 8: N-of-1 analysis report</div><div class="timeline-desc">Personal report comparing baseline to intervention outcomes.</div></div></div>
     </div>
     <div class="card-title" style="padding:0.25rem 0 8px;">Available to start</div>
-    <div class="explore-area" onclick="openExploration('movement')"><div class="explore-icon" style="background:#EAF3DE;">🏃</div><div style="flex:1;"><div class="explore-title">Movement &amp; energy</div><div class="explore-desc">6-week protocol tracking daily activity against mood and energy</div><div style="margin-top:5px;"><span class="badge badge-green">89 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('eating')"><div class="explore-icon" style="background:#FDF0E4;">🕐</div><div style="flex:1;"><div class="explore-title">Time-restricted eating</div><div class="explore-desc">6-week eating window exploration, energy and mood tracked daily</div><div style="margin-top:5px;"><span class="badge badge-amber">12 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('stress')"><div class="explore-icon" style="background:#EEEDFE;">💓</div><div style="flex:1;"><div class="explore-title">Stress &amp; recovery</div><div class="explore-desc">8-week HRV and subjective stress tracking with daily check-ins</div><div style="margin-top:5px;"><span class="badge badge-purple">34 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('movement')"><div class="explore-icon" style="background:#EAF3DE;">🏃</div><div style="flex:1;"><div class="explore-title">Movement &amp; energy</div><div class="explore-desc">6-week protocol tracking daily activity against mood and energy</div><div style="margin-top:5px;"><span class="badge badge-green explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('movement')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('movement');}">89 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('eating')"><div class="explore-icon" style="background:#FDF0E4;">🕐</div><div style="flex:1;"><div class="explore-title">Time-restricted eating</div><div class="explore-desc">6-week eating window exploration, energy and mood tracked daily</div><div style="margin-top:5px;"><span class="badge badge-amber explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('eating')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('eating');}">12 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('stress')"><div class="explore-icon" style="background:#EEEDFE;">💓</div><div style="flex:1;"><div class="explore-title">Stress &amp; recovery</div><div class="explore-desc">8-week HRV and subjective stress tracking with daily check-ins</div><div style="margin-top:5px;"><span class="badge badge-purple explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('stress')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('stress');}">34 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
     <div class="explore-area" onclick="openExploration('supplements')"><div class="explore-icon" style="background:#FDF0E4;">💊</div><div style="flex:1;"><div class="explore-title">Supplements &amp; sleep</div><div class="explore-desc">Single-supplement trials (magnesium, vitamin D, ashwagandha) with sleep tracking</div><div style="margin-top:5px;"><span class="badge badge-amber">New</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('screen')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-title">Screen time &amp; sleep onset</div><div class="explore-desc">4-week evening screen reduction protocol, sleep onset tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('screen')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-title">Screen time &amp; sleep onset</div><div class="explore-desc">4-week evening screen reduction protocol, sleep onset tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('screen')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('screen');}">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
     <div style="margin-top:0.25rem;" class="science-banner"><div class="science-title">Multi-area exploration</div><div class="science-text">Running more than one exploration simultaneously lets you — and the wider community — understand how these health levers interact. Your combined data may reveal correlations that single-variable studies miss.</div></div>
   </div>
 
@@ -617,10 +643,12 @@
     <div class="card">
       <div class="card-title">Data &amp; privacy</div>
       <div class="toggle-row"><div><div class="toggle-label">Contribute to citizen science</div><div class="toggle-sub">Anonymised data used in research publications</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
-      <div class="toggle-row"><div><div class="toggle-label">Visible in community</div><div class="toggle-sub">Others can see your progress (initials only)</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
-      <div class="toggle-row" style="border-bottom:none;"><div><div class="toggle-label">Daily reminders</div><div class="toggle-sub">Gentle nudges to log each morning</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <div class="toggle-row"><div><div class="toggle-label">Visible in community</div><div class="toggle-sub">Others can see your progress and follow you</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <div class="toggle-row" style="border-bottom:none;"><div><div class="toggle-label">Daily reminders</div><div class="toggle-sub">Support to keep on track</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+      <button type="button" class="privacy-action-btn" onclick="showProtoToast('Prototype: opens a timeline of how your anonymised data contributed to community findings and publications.')">See how my data has been used</button>
+      <button type="button" class="privacy-action-btn" onclick="showProtoToast('Prototype: prepares a downloadable export of your anonymised exploration logs.')">Download my anonymised data</button>
     </div>
-    <div class="science-banner"><div class="science-title">Your contribution matters</div><div class="science-text">Your data — always anonymised, always with your consent — is part of something bigger. kind is working toward open-access citizen science publications so that insights from everyday health exploration benefit everyone. You can withdraw consent at any time.</div></div>
+    <div class="science-banner"><div class="science-title">Your contribution matters</div><div class="science-text">Your data — always anonymised, used with your consent — is part of something bigger. Kind is operating as an open-access citizen science platform supporting scientific publications from everyday health exploration. You can see how your data is used and download your data at any time.</div></div>
   </div>
 
 </div><!-- end .app -->
@@ -666,9 +694,39 @@ function handleSearch(val) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeOverlay('search-overlay'); closeOverlay('notif-overlay');
-    closeDetail(); closeExplorerProfile(); closeFollowPanel();
+    closeResearcherProfile();
+    closeExplorerProfile();
+    closeExplorersPanel();
+    closeFollowPanel();
+    closeDetail();
   }
 });
+
+function showProtoToast(msg) {
+  const t = document.getElementById('proto-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showProtoToast._tm);
+  showProtoToast._tm = setTimeout(() => { t.classList.remove('show'); }, 3200);
+}
+function gotoInsightTab(community) {
+  showScreen('insight');
+  setTimeout(() => {
+    const tabs = document.querySelectorAll('#insight .sub-tab');
+    if (tabs.length >= 2) (community ? tabs[1] : tabs[0]).click();
+  }, 0);
+}
+function openFeedMilestone(uid, actIndex) {
+  openExplorerProfile(uid);
+  setTimeout(() => {
+    const card = document.getElementById('actcard-' + uid + '-' + actIndex);
+    if (card) {
+      card.classList.add('expanded');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 100);
+}
 
 /* ── Exploration detail ── */
 const EXPLORATIONS = {
@@ -690,6 +748,9 @@ const EXPLORATIONS = {
 };
 
 function openExploration(id) {
+  closeResearcherProfile();
+  closeExplorerProfile();
+  closeExplorersPanel();
   document.getElementById('detail-content').innerHTML = renderDetail(id);
   const el = document.getElementById('detail-overlay');
   el.classList.add('open');
@@ -698,14 +759,16 @@ function openExploration(id) {
 }
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
-  document.body.style.overflow = '';
+  if (!document.getElementById('explorer-panel')?.classList.contains('open') && !document.getElementById('explorers-panel')?.classList.contains('open') && !document.getElementById('researcher-panel')?.classList.contains('open') && !document.getElementById('follow-panel')?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
 }
 function renderDetail(id) {
   const e = EXPLORATIONS[id];
   let h = '';
   const badge = e.active ? '<span class="badge badge-amber">Active</span>' : '<span class="badge badge-teal">Available</span>';
   h += `<div class="detail-header"><button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="detail-title-text">${e.title}</div>${badge}</div>`;
-  const partLine = e.isNew ? 'New · Be among the first' : `${e.participants} participants`;
+  const partLine = e.isNew ? 'New · Be among the first' : `<span>${e.participants} participants</span> · <span class="explorers-badge" role="button" tabindex="0" style="font-weight:600;color:var(--green-dark);text-decoration:underline;text-underline-offset:2px;" onclick="event.stopPropagation();openExplorersPanel('${id}')">See explorers</span>`;
   h += `<div style="padding:1rem;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:1rem;"><div style="display:flex;align-items:flex-start;gap:14px;${e.active?'margin-bottom:1rem;':''}"><div style="width:52px;height:52px;border-radius:12px;background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${e.icon}</div><div style="flex:1;"><div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${e.duration} · ${partLine}</div><div style="font-size:13px;color:var(--text-muted);line-height:1.55;">${e.desc}</div>${e.active?`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">${e.statusBadge}</span><span class="badge badge-teal">${e.streak}-day streak</span></div>`:''}</div></div>${e.active?`<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;color:var(--text-muted);">Protocol progress</span><span style="font-size:12px;font-weight:600;color:var(--green-dark);">${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%;"></div></div>`:''}</div>`;
   h += `<div style="padding:0 1rem;">`;
   if (e.active && e.kpis) { h += `<div class="kpi-row">`; e.kpis.forEach(k => { h += `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div><span class="kpi-val">${k.val}</span><span class="kpi-unit"> ${k.unit}</span></div><div class="kpi-change" style="color:${k.up?'var(--green-dark)':'#8A4A1A'};">${k.change}</div></div>`; }); h += `</div>`; }
@@ -850,10 +913,30 @@ const FOLLOWER_ONLY = [
 ];
 
 const RESEARCHERS = [
-  {name:'Andrew Huberman',title:'Associate Professor of Neurobiology & Ophthalmology',org:'Huberman Lab · Stanford School of Medicine',img:52,initials:'AH',areas:['Sleep & circadian biology','Stress & recovery','Neuroplasticity'],kind_exps:2,verified:true},
-  {name:'Dr Sarah Williams',title:'Research Fellow in Sleep Medicine',org:'Oxford Sleep & Circadian Neuroscience Institute',img:46,initials:'SW',areas:['Sleep quality','Caffeine & adenosine','Chronobiology'],kind_exps:1,verified:true},
-  {name:'Dr James Fyfe',title:'Senior Lecturer in Exercise Physiology',org:'University College London',img:28,initials:'JF',areas:['Movement & energy','Exercise timing','Metabolic health'],kind_exps:2,verified:true}
+  { id: 'andrew-huberman', name: 'Andrew Huberman', title: 'Associate Professor of Neurobiology & Ophthalmology', org: 'Huberman Lab · Stanford School of Medicine', img: 52, initials: 'AH', areas: ['Sleep & circadian biology', 'Stress & recovery', 'Neuroplasticity'], verified: true,
+    explorations: [{ expId: 'caffeine', note: 'Sleep & stimulus — educational protocol narrative.' }, { expId: 'stress', note: 'Recovery practices and nervous-system science content.' }] },
+  { id: 'dr-sarah-williams', name: 'Dr Sarah Williams', title: 'Research Fellow in Sleep Medicine', org: 'Oxford Sleep & Circadian Neuroscience Institute', img: 46, initials: 'SW', areas: ['Sleep quality', 'Caffeine & adenosine', 'Chronobiology'], verified: true,
+    explorations: [{ expId: 'caffeine', note: 'Primary protocol design: caffeine windows and sleep metrics.' }, { expId: 'screen', note: 'Evening light and sleep onset collaboration.' }] },
+  { id: 'dr-james-fyfe', name: 'Dr James Fyfe', title: 'Senior Lecturer in Exercise Physiology', org: 'University College London', img: 28, initials: 'JF', areas: ['Movement & energy', 'Exercise timing', 'Metabolic health'], verified: true,
+    explorations: [{ expId: 'movement', note: 'Outdoor activity dose–response module.' }, { expId: 'eating', note: 'Metabolic timing pilot module.' }] }
 ];
+
+const EXPLORATION_FOLLOWERS = {
+  caffeine: ['sam-johnson', 'maya-chen', 'tom-richards', 'priya-lawson', 'lars-hoffman', 'emma-b', 'sophie-turner', 'james-w', 'lucas-park', 'inge-voss', 'mark-douglas', 'nina-fischer', 'raj-kumar', 'lisa-cook', 'peter-brown', 'sara-grant', 'chris-norton', 'eva-palmer', 'zara-thomas', 'kai-reed', 'obi-evans'],
+  movement: ['sam-johnson', 'maya-chen', 'lars-hoffman', 'emma-b', 'sophie-turner', 'james-w', 'lucas-park', 'inge-voss', 'mark-douglas', 'nina-fischer', 'raj-kumar', 'lisa-cook', 'peter-brown', 'sara-grant', 'chris-norton', 'eva-palmer'],
+  eating: ['sophie-turner', 'nina-fischer', 'obi-evans', 'fen-lim', 'helen-baker', 'yara-patel', 'george-mill'],
+  stress: ['priya-lawson', 'james-w', 'mark-douglas', 'julia-lane', 'zara-thomas', 'rob-lane', 'tara-scott', 'cara-hayes'],
+  screen: ['emma-b', 'chris-norton', 'mia-taylor', 'leo-martin', 'xander-king', 'nina-fischer'],
+  supplements: []
+};
+
+const nicedResearcherExp = new Set();
+const RESEARCHER_NICE_BASE = {
+  'andrew-huberman|caffeine': 31, 'andrew-huberman|stress': 15,
+  'dr-sarah-williams|caffeine': 56, 'dr-sarah-williams|screen': 22,
+  'dr-james-fyfe|movement': 40, 'dr-james-fyfe|eating': 12
+};
+let followingResearchersSet = new Set(['dr-sarah-williams']);
 
 let followingSet = new Set(['sam-johnson','maya-chen','sophie-turner','james-w','lucas-park','inge-voss','mark-douglas','nina-fischer','raj-kumar','lisa-cook','peter-brown','sara-grant','chris-norton','eva-palmer','zara-thomas','kai-reed','obi-evans','fen-lim','dex-woods','mia-taylor','ben-nelson','julia-lane','kim-oliver','felix-white','anna-ross']);
 
@@ -906,8 +989,140 @@ function toggleFollow(uid, btn) {
 }
 
 /* ── Explorer profile panel ── */
+function getUserForProfile(uid) {
+  if (COMM_USERS[uid]) return COMM_USERS[uid];
+  const b = BASIC_USERS.find(x => x.id === uid);
+  if (!b) return null;
+  return {
+    name: b.name, loc: b.loc, img: b.img, initials: b.initials, meta: b.meta,
+    bio: 'Explorer on kind — building their personal health story.',
+    exps: [{ id: 'caffeine', name: 'Caffeine & sleep quality', icon: '☕', bg: 'var(--green-light)', w: 3, of: 8, active: true }],
+    acts: [{ t: 'Sharing progress with the kind community.', time: 'Recently', exp: 'Health exploration', detail: 'Logs and milestones when they choose to share.', nc: 0 }],
+    badges: [], follower: followerIds.has(uid)
+  };
+}
+function openExplorersPanel(expId) {
+  const ids = EXPLORATION_FOLLOWERS[expId];
+  const e = EXPLORATIONS[expId];
+  if (!e) return;
+  if (!ids || !ids.length) {
+    showProtoToast('No public explorer list for this exploration yet — be among the first.');
+    return;
+  }
+  document.getElementById('explorers-panel-title').textContent = e.title + ' — explorers';
+  const list = ids.map(uid => {
+    const u = getUserForProfile(uid);
+    return u ? renderExplorerRow(uid, u) : '';
+  }).join('');
+  document.getElementById('explorers-panel-list').innerHTML = list || '<div style="padding:1rem;color:var(--text-muted);font-size:13px;">No profiles to show.</div>';
+  const p = document.getElementById('explorers-panel');
+  p.classList.add('open');
+  p.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closeExplorersPanel() {
+  const p = document.getElementById('explorers-panel');
+  if (p) p.classList.remove('open');
+  if (!document.getElementById('explorer-panel')?.classList.contains('open') && !document.getElementById('researcher-panel')?.classList.contains('open') && !document.getElementById('follow-panel')?.classList.contains('open') && !document.getElementById('detail-overlay')?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
+}
+
+function openResearcherProfile(rid) {
+  const r = RESEARCHERS.find(x => x.id === rid);
+  if (!r) return;
+  closeExplorersPanel();
+  document.getElementById('researcher-panel-content').innerHTML = buildResearcherProfile(rid, r);
+  const p = document.getElementById('researcher-panel');
+  p.classList.add('open');
+  p.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+function closeResearcherProfile() {
+  const p = document.getElementById('researcher-panel');
+  if (p) p.classList.remove('open');
+  if (!document.getElementById('explorer-panel')?.classList.contains('open') && !document.getElementById('explorers-panel')?.classList.contains('open') && !document.getElementById('follow-panel')?.classList.contains('open') && !document.getElementById('detail-overlay')?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
+}
+function toggleFollowResearcher(rid, btn) {
+  if (followingResearchersSet.has(rid)) followingResearchersSet.delete(rid);
+  else followingResearchersSet.add(rid);
+  const isF = followingResearchersSet.has(rid);
+  btn.textContent = isF ? 'Following' : 'Follow researcher';
+  btn.classList.toggle('following', isF);
+}
+function researcherNiceKey(rid, expId) { return rid + '|' + expId; }
+function toggleResearcherNice(rid, expId, btn) {
+  const k = researcherNiceKey(rid, expId);
+  if (nicedResearcherExp.has(k)) nicedResearcherExp.delete(k);
+  else nicedResearcherExp.add(k);
+  const on = nicedResearcherExp.has(k);
+  btn.classList.toggle('niced', on);
+  const nc = btn.querySelector('.nc');
+  if (nc) {
+    const base = RESEARCHER_NICE_BASE[k] || 6;
+    nc.textContent = base + (on ? 1 : 0);
+  }
+}
+function startExplorationFromResearcher(expId) {
+  closeResearcherProfile();
+  closeExplorersPanel();
+  openExploration(expId);
+  setTimeout(() => {
+    const b = document.getElementById('start-btn-' + expId);
+    if (b && !b.disabled) startExploration(expId);
+  }, 80);
+}
+function buildResearcherProfile(rid, r) {
+  const isF = followingResearchersSet.has(rid);
+  let h = `<div class="detail-header" style="position:sticky;top:0;z-index:10;">
+    <button class="detail-back" onclick="closeResearcherProfile()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="detail-title-text">${r.name.replace(/</g,'')}</div>
+  </div>`;
+  h += `<div style="padding:1.25rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);">
+    <div style="display:flex;gap:14px;align-items:flex-start;">
+      ${avEl(r.img, r.initials, 64)}
+      <div style="flex:1;">
+        <div style="font-size:18px;font-weight:700;color:var(--text);">${r.name}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${r.title}</div>
+        <div style="font-size:12px;color:var(--green-dark);font-weight:500;margin-top:4px;">${r.org}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;">${r.areas.map(a => `<span class="badge badge-teal" style="font-size:10px;">${a}</span>`).join('')}</div>
+        <div style="margin-top:12px;">
+          <button class="follow-btn${isF ? ' following' : ''}" type="button" onclick="toggleFollowResearcher('${rid}',this)">${isF ? 'Following' : 'Follow researcher'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  h += `<div style="padding:0.75rem 1rem 0;"><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.75rem;">Explorations on kind</div>`;
+  r.explorations.forEach(ex => {
+    const e = EXPLORATIONS[ex.expId];
+    if (!e) return;
+    const k = researcherNiceKey(rid, ex.expId);
+    const n = nicedResearcherExp.has(k);
+    const base = RESEARCHER_NICE_BASE[k] || 6;
+    h += `<div class="card" style="margin:0 0 12px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="width:44px;height:44px;border-radius:var(--radius-md);background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;" role="button" tabindex="0" onclick="closeResearcherProfile();openExploration('${ex.expId}')">${e.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;color:var(--text);cursor:pointer;" onclick="closeResearcherProfile();openExploration('${ex.expId}')">${e.title}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.5;">${ex.note}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;" onclick="event.stopPropagation()">
+            <button type="button" class="nice-btn${n ? ' niced' : ''}" onclick="toggleResearcherNice('${rid}','${ex.expId}',this)">👌 nice <span class="nc">${base + (n ? 1 : 0)}</span></button>
+            <button type="button" style="padding:8px 14px;font-size:12px;font-weight:600;border-radius:999px;border:1.5px solid var(--green-dark);background:transparent;color:var(--green-dark);cursor:pointer;font-family:var(--font-sans);" onclick="closeResearcherProfile();openExploration('${ex.expId}')">Open exploration</button>
+            <button type="button" class="start-cta" style="width:auto;padding:8px 14px;font-size:13px;margin:0;" onclick="startExplorationFromResearcher('${ex.expId}')">Start this exploration</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  h += `</div>`;
+  return h;
+}
+
 function openExplorerProfile(uid) {
-  const user = COMM_USERS[uid]; if (!user) return;
+  closeExplorersPanel();
+  const user = getUserForProfile(uid); if (!user) return;
   document.getElementById('explorer-panel-content').innerHTML = buildExplorerProfile(uid, user);
   const p = document.getElementById('explorer-panel');
   p.classList.add('open'); p.scrollTop = 0;
@@ -915,7 +1130,9 @@ function openExplorerProfile(uid) {
 }
 function closeExplorerProfile() {
   document.getElementById('explorer-panel').classList.remove('open');
-  document.body.style.overflow = '';
+  if (!document.getElementById('explorers-panel')?.classList.contains('open') && !document.getElementById('researcher-panel')?.classList.contains('open') && !document.getElementById('follow-panel')?.classList.contains('open') && !document.getElementById('detail-overlay')?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
 }
 function buildExplorerProfile(uid, user) {
   const isF = followingSet.has(uid);
@@ -1028,8 +1245,7 @@ function openFollowPanel(type) {
     let statusHint='';
     if(isF&&isFollowerOfEmma) statusHint='<span style="font-size:10px;color:var(--green-dark);background:var(--green-light);padding:2px 6px;border-radius:999px;font-weight:600;">Mutual</span>';
     else if(isFollowerOfEmma&&!isF) statusHint='<span style="font-size:10px;color:var(--text-muted);">Follows you</span>';
-    const hasFullProfile=!!COMM_USERS[u.id];
-    const clickFn=hasFullProfile?`openExplorerProfile('${u.id}')`:`;`;
+    const clickFn = `openExplorerProfile('${u.id}')`;
     return `<div class="explorer-row" style="padding:10px 0.25rem;" onclick="${clickFn}">
       ${avEl(u.img,u.initials,42)}
       <div style="flex:1;min-width:0;">
@@ -1046,7 +1262,9 @@ function openFollowPanel(type) {
 }
 function closeFollowPanel() {
   document.getElementById('follow-panel').classList.remove('open');
-  document.body.style.overflow='';
+  if (!document.getElementById('explorer-panel')?.classList.contains('open') && !document.getElementById('explorers-panel')?.classList.contains('open') && !document.getElementById('researcher-panel')?.classList.contains('open') && !document.getElementById('detail-overlay')?.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
 }
 
 /* ── Community search ── */
@@ -1071,7 +1289,7 @@ function renderCommSearch(val) {
     const matchE=Object.entries(EXPLORATIONS).filter(([,e])=>e.title.toLowerCase().includes(q)||e.desc.toLowerCase().includes(q));
     expEl.innerHTML=matchE.length
       ? matchE.map(([id,e])=>{
-          const parts=e.isNew?'New · Be first':`${e.participants} explorers`;
+          const parts = e.isNew ? 'New · Be first' : `<span class="explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('${id}');document.getElementById('comm-search-results').style.display='none'">${e.participants} explorers</span>`;
           return `<div class="explore-area" style="margin:0;border-radius:0;border-left:none;border-right:none;border-top:none;border-bottom:1px solid var(--border);" onclick="openExploration('${id}');document.getElementById('comm-search-results').style.display='none'">
             <div class="explore-icon" style="background:${e.bg||'var(--green-light)'};">${e.icon}</div>
             <div style="flex:1;"><div class="explore-title">${e.title}</div><div class="explore-desc">${e.duration} · ${parts}</div></div>
@@ -1085,7 +1303,9 @@ function renderCommSearch(val) {
     const matchR=RESEARCHERS.filter(r=>r.name.toLowerCase().includes(q)||r.org.toLowerCase().includes(q)||r.areas.some(a=>a.toLowerCase().includes(q)));
     const showR=matchR.length?matchR:RESEARCHERS;
     resEl.innerHTML=showR.map(r=>`
-      <div class="researcher-row">
+      <div class="researcher-row" role="button" tabindex="0"
+        onclick="openResearcherProfile('${r.id}');document.getElementById('comm-search-results').style.display='none';"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openResearcherProfile('${r.id}');document.getElementById('comm-search-results').style.display='none';}">
         ${avEl(r.img,r.initials,44)}
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -1095,7 +1315,7 @@ function renderCommSearch(val) {
           <div style="font-size:12px;color:var(--text-muted);margin-top:1px;">${r.title}</div>
           <div style="font-size:12px;color:var(--green-dark);font-weight:500;margin-top:2px;">${r.org}</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">${r.areas.map(a=>`<span class="badge badge-teal" style="font-size:10px;">${a}</span>`).join('')}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${r.kind_exps} exploration${r.kind_exps!==1?'s':''} on kind</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${r.explorations.length} exploration${r.explorations.length !== 1 ? 's' : ''} on kind</div>
         </div>
       </div>`).join('');
   }
