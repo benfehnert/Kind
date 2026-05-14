@@ -10,10 +10,24 @@ if (hamburger) {
   });
 }
 
-// Active nav link
-const links = document.querySelectorAll('.nav__links a, .nav__mobile a');
-links.forEach(link => {
-  if (link.href === window.location.href) link.classList.add('active');
+// Active nav link (pathname match so hashes/query work; exclude CTA / mobile buttons)
+function currentNavFilename() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  let name = parts.length ? parts[parts.length - 1] : 'index.html';
+  if (!name.includes('.')) name = 'index.html';
+  return name;
+}
+
+document.querySelectorAll('.nav__links a:not(.nav__cta), .nav__mobile a:not(.btn)').forEach(link => {
+  try {
+    const linkName = new URL(link.getAttribute('href'), window.location.href).pathname
+      .split('/')
+      .filter(Boolean)
+      .pop() || 'index.html';
+    if (linkName === currentNavFilename()) link.classList.add('active');
+  } catch (_) {
+    /* ignore */
+  }
 });
 
 // FAQ accordion
