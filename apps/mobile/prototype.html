@@ -17,7 +17,7 @@
     --bg:           #F7F8F2;
     --surface:      #FFFFFF;
     --text:         #1F2A1F;
-    --text-muted:   #A8B3A0;
+    --text-muted:   #666666;
     --border:       #DADFD2;
     --border-med:   #C4CCBA;
     --font-sans:    'Albert Sans', sans-serif;
@@ -26,7 +26,7 @@
     --radius-lg:    12px;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#161D15; --surface:#1F2B1E; --text:#EEF2E8; --text-muted:#7A8F76; --border:rgba(255,255,255,0.10); --border-med:rgba(255,255,255,0.18); --green-light:#2A3C28; }
+    :root { --bg:#161D15; --surface:#1F2B1E; --text:#EEF2E8; --text-muted:#A8A8A8; --border:rgba(255,255,255,0.10); --border-med:rgba(255,255,255,0.18); --green-light:#2A3C28; }
   }
   body { font-family: var(--font-sans); background: var(--bg); display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
   .app { max-width: 480px; width: 100%; background: var(--bg); padding: 0 0 80px; }
@@ -81,7 +81,7 @@
   .section-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.55; }
   .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
   .metric-card  { background: var(--green-light); border-radius: var(--radius-md); padding: 0.85rem; }
-  .metric-label { font-size: 11px; color: var(--green-dark); opacity: 0.7; margin-bottom: 4px; }
+  .metric-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
   .metric-value { font-size: 22px; font-weight: 600; color: var(--text); }
   .metric-unit  { font-size: 12px; color: var(--text-muted); margin-left: 2px; }
   .progress-bar  { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 8px; }
@@ -101,7 +101,7 @@
   .profile-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
   .science-banner { background: var(--green-light); border: 1px solid var(--border-med); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
   .science-title  { font-size: 13px; font-weight: 600; color: var(--green-dark); margin-bottom: 4px; }
-  .science-text   { font-size: 12px; color: var(--green-dark); opacity: 0.8; line-height: 1.55; }
+  .science-text   { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
   .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .toggle-label { font-size: 14px; color: var(--text); font-weight: 500; }
   .toggle-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
@@ -153,6 +153,10 @@
   .explore-desc   { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
   .explore-status { margin-left: auto; flex-shrink: 0; text-align: right; }
   .start-btn { font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+  .coming-soon-box { background: #FDF0E4; border: 1.5px solid var(--orange); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .coming-soon-label { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--orange); color: white; margin-bottom: 0.6rem; letter-spacing: 0.02em; }
+  .coming-soon-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .coming-soon-desc { font-size: 12px; color: #8A4A1A; line-height: 1.5; opacity: 0.95; }
   .sub-tabs { display: flex; margin-bottom: 1.25rem; border: 1px solid var(--border-med); border-radius: var(--radius-md); overflow: hidden; }
   .sub-tab { flex: 1; padding: 9px 8px; font-size: 13px; font-weight: 500; text-align: center; cursor: pointer; color: var(--text-muted); background: transparent; border: none; font-family: var(--font-sans); transition: all 0.12s; }
   .sub-tab.active { background: var(--green-dark); color: white; font-weight: 600; }
@@ -182,7 +186,7 @@
   .detail-title-text { font-size: 15px; font-weight: 600; color: white; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .kpi-row { display: flex; gap: 8px; margin-bottom: 1rem; }
   .kpi-card { flex: 1; background: var(--green-light); border-radius: var(--radius-md); padding: 10px 12px; }
-  .kpi-label  { font-size: 11px; color: var(--green-dark); opacity: 0.7; margin-bottom: 4px; }
+  .kpi-label  { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
   .kpi-val    { font-size: 20px; font-weight: 600; color: var(--text); }
   .kpi-unit   { font-size: 12px; color: var(--text-muted); }
   .kpi-change { font-size: 11px; margin-top: 3px; }
@@ -406,7 +410,7 @@
       <div class="input-row"><label class="input-label">Energy levels today</label><div class="range-row"><input type="range" min="1" max="10" value="6" step="1" oninput="document.getElementById('energy-val').textContent=this.value"><div class="range-val" id="energy-val">6</div></div></div>
       <div class="submit-row"><button class="btn-secondary" onclick="document.getElementById('log-toggle').style.display='block';document.getElementById('log-form').style.display='none'">Cancel</button><button class="btn-primary" onclick="showLogConfirm()">Save log</button></div>
     </div>
-    <div id="log-confirm" class="card" style="display:none;background:var(--green-light);border-color:var(--green-dark);"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--green-dark);opacity:0.8;">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>
+    <div id="log-confirm" class="card" style="display:none;background:var(--green-light);border-color:var(--green-dark);"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--text-muted);">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>
     <div class="chip-row" id="feed-chips">
       <div class="chip active" onclick="filterFeed('all',this)">All</div>
       <div class="chip" onclick="filterFeed('milestone',this)">Milestones</div>
@@ -514,6 +518,11 @@
     <div class="explore-area" onclick="openExploration('stress')"><div class="explore-icon" style="background:#EEEDFE;">💓</div><div style="flex:1;"><div class="explore-title">Stress &amp; recovery</div><div class="explore-desc">8-week HRV and subjective stress tracking with daily check-ins</div><div style="margin-top:5px;"><span class="badge badge-purple explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('stress')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('stress');}">34 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
     <div class="explore-area" onclick="openExploration('supplements')"><div class="explore-icon" style="background:#FDF0E4;">💊</div><div style="flex:1;"><div class="explore-title">Supplements &amp; sleep</div><div class="explore-desc">Single-supplement trials (magnesium, vitamin D, ashwagandha) with sleep tracking</div><div style="margin-top:5px;"><span class="badge badge-amber">New</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
     <div class="explore-area" onclick="openExploration('screen')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-title">Screen time &amp; sleep onset</div><div class="explore-desc">4-week evening screen reduction protocol, sleep onset tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('screen')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('screen');}">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
+    <div class="coming-soon-box" aria-label="Treatment exploration — coming soon">
+      <div class="coming-soon-label">Coming soon</div>
+      <div class="coming-soon-title">Treatment exploration</div>
+      <div class="coming-soon-desc">Focus on an existing or new treatment or prescription and explore how well it works for you.</div>
+    </div>
     <div style="margin-top:0.25rem;" class="science-banner"><div class="science-title">Multi-area exploration</div><div class="science-text">Running more than one exploration simultaneously lets you — and the wider community — understand how these health levers interact. Your combined data may reveal correlations that single-variable studies miss.</div></div>
   </div>
 
@@ -809,7 +818,7 @@ function toggleChip(el, multi) {
   else { el.closest('.checkbox-group').querySelectorAll('.check-chip').forEach(c => c.classList.remove('checked')); el.classList.add('checked'); }
 }
 function submitDetailLog(id) {
-  document.getElementById('detail-log-wrap').innerHTML = `<div class="log-success-card"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--green-dark);opacity:0.8;line-height:1.5;">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>`;
+  document.getElementById('detail-log-wrap').innerHTML = `<div class="log-success-card"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>`;
   document.getElementById('detail-overlay').scrollTo({top:0,behavior:'smooth'});
 }
 function startExploration(id) {
