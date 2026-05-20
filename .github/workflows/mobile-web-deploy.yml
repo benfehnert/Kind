@@ -38,9 +38,17 @@ jobs:
               - 'apps/kind-website/**'
 
       - name: Prepare output structure
+        run: mkdir -p out/app
+
+      - name: Compute base URL
+        id: base-url
         run: |
-          mkdir -p out
-          mkdir -p out/app
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [[ "${REPO_NAME}" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
+            echo "value=/app" >> $GITHUB_OUTPUT
+          else
+            echo "value=/${REPO_NAME}/app" >> $GITHUB_OUTPUT
+          fi
 
       - name: Restore cached Expo web build
         id: mobile-cache
@@ -65,19 +73,9 @@ jobs:
       - name: Export Expo web build
         if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         working-directory: apps/mobile
-        run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          if [[ "${REPO_NAME}" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
-            SITE_PREFIX=""
-          else
-            SITE_PREFIX="/${REPO_NAME}"
-          fi
-
-          BASE_URL="${SITE_PREFIX}/app"
-
-          export BASE_URL
-          node -e "const fs=require('fs');const p='app.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.expo=c.expo||{};c.expo.experiments=c.expo.experiments||{};c.expo.experiments.baseUrl=process.env.BASE_URL;fs.writeFileSync(p, JSON.stringify(c,null,2)+'\\n');" 
-          npx expo export --platform web --output-dir dist
+        env:
+          BASE_URL: ${{ steps.base-url.outputs.value }}
+        run: npm run build
 
       - name: Save exported mobile build for reuse
         if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
@@ -91,13 +89,12 @@ jobs:
           rm -rf apps/mobile/dist
           cp -R apps/mobile/.web-dist-cache apps/mobile/dist
 
-      - name: Include attached prototype HTML in mobile output
-        run: |
-          cp apps/mobile/prototype.html apps/mobile/dist/prototype.html
+      - name: Build website
+        run: npm run build --prefix apps/kind-website
 
-      - name: Assemble Pages content for main branch
+      - name: Assemble Pages content
         run: |
-          cp -R apps/kind-website/. out/
+          cp -R apps/kind-website/dist/. out/
           cp -R apps/mobile/dist/. out/app/
 
       - name: Setup GitHub Pages
