@@ -2,6 +2,10 @@
   "name": "kind-website",
   "private": true,
   "scripts": {
+    "build": "node -e \"const fs=require('fs');const skip=new Set(['node_modules','dist','package.json','package-lock.json']);fs.rmSync('dist',{recursive:true,force:true});fs.mkdirSync('dist');for(const f of fs.readdirSync('.'))if(!skip.has(f))fs.cpSync(f,'dist/'+f,{recursive:true})\"",
     "serve": "npx --yes serve -l 3333 ."
+  },
+  "devDependencies": {
+    "wrangler": "^4.93.0"
   }
 }
