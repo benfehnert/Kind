@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Onest:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="cookie-consent.css" />
 </head>
 <body>
 
@@ -19,10 +20,10 @@
       <span class="brand-logo__strap">health exploration</span>
     </a>
     <div class="nav__links">
-      <a href="index.html">Home</a>
-      <a href="individuals.html">Individuals</a>
-      <a href="researchers.html">Researchers</a>
-      <a href="faq.html">FAQ</a>
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="individuals.html" data-nav="individuals">Individuals</a>
+      <a href="researchers.html" data-nav="researchers">Researchers</a>
+      <a href="faq.html" data-nav="faq">FAQ</a>
       <a href="individuals.html#waitlist" class="nav__cta">Join Waitlist</a>
     </div>
     <button class="nav__hamburger" aria-label="Menu">
@@ -30,10 +31,10 @@
     </button>
   </div>
   <div class="nav__mobile">
-    <a href="index.html">Home</a>
-    <a href="individuals.html">Individuals</a>
-    <a href="researchers.html">Researchers</a>
-    <a href="faq.html">FAQ</a>
+    <a href="index.html" data-nav="home">Home</a>
+    <a href="individuals.html" data-nav="individuals">Individuals</a>
+    <a href="researchers.html" data-nav="researchers">Researchers</a>
+    <a href="faq.html" data-nav="faq">FAQ</a>
     <a href="individuals.html#waitlist" class="btn btn--coral">Join Waitlist</a>
   </div>
 </nav>
@@ -284,9 +285,8 @@
           <span class="brand-logo__word">kind</span>
           <span class="brand-logo__strap">health exploration</span>
         </div>
-        <p>Health exploration — formative understanding and support to improve health and wellbeing.</p>
         <p style="margin-top: 12px; font-size: 0.85rem;">
-          <a href="mailto:bf@kind-health.app" style="color: var(--accent);">bf@kind-health.app</a>
+          <a href="mailto:hello@kind-health.app" style="color: var(--accent);">hello@kind-health.app</a>
         </p>
       </div>
       <div class="footer__col">
@@ -294,14 +294,21 @@
         <ul>
           <li><a href="individuals.html">For individuals</a></li>
           <li><a href="researchers.html">For researchers</a></li>
-          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="faq.html" data-nav="faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="#" data-kind-cookie-settings>Cookie preferences</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h4>Join us</h4>
         <ul>
-          <li><a href="individuals.html#waitlist">Individual waitlist</a></li>
-          <li><a href="researchers.html#waitlist">Researcher waitlist</a></li>
+          <li><a href="individuals.html">Individual waitlist</a></li>
+          <li><a href="researchers.html">Researcher waitlist</a></li>
         </ul>
       </div>
     </div>
@@ -314,6 +321,8 @@
   </div>
 </footer>
 
+
+<script src="cookie-consent.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

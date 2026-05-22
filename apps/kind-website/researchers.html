@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Onest:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="cookie-consent.css" />
 </head>
 <body class="path-researchers">
 
@@ -19,10 +20,10 @@
       <span class="brand-logo__strap">health exploration</span>
     </a>
     <div class="nav__links">
-      <a href="index.html">Home</a>
-      <a href="individuals.html">Individuals</a>
-      <a href="researchers.html">Researchers</a>
-      <a href="faq.html">FAQ</a>
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="individuals.html" data-nav="individuals">Individuals</a>
+      <a href="researchers.html" data-nav="researchers">Researchers</a>
+      <a href="faq.html" data-nav="faq">FAQ</a>
       <a href="#waitlist" class="nav__cta">Join Waitlist</a>
     </div>
     <button class="nav__hamburger" aria-label="Menu">
@@ -30,10 +31,10 @@
     </button>
   </div>
   <div class="nav__mobile">
-    <a href="index.html">Home</a>
-    <a href="individuals.html">Individuals</a>
-    <a href="researchers.html">Researchers</a>
-    <a href="faq.html">FAQ</a>
+    <a href="index.html" data-nav="home">Home</a>
+    <a href="individuals.html" data-nav="individuals">Individuals</a>
+    <a href="researchers.html" data-nav="researchers">Researchers</a>
+    <a href="faq.html" data-nav="faq">FAQ</a>
     <a href="#waitlist" class="btn btn--primary">Join Waitlist</a>
   </div>
 </nav>
@@ -285,6 +286,59 @@
   </div>
 </section>
 
+<!-- FAQ preview -->
+<section class="section section--alt researchers-faq-preview" id="faq">
+  <div class="container" style="max-width: 760px;">
+    <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+      <span class="eyebrow">FAQ</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        What kind of research can I conduct through Kind?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Kind supports real-world, observational, and intervention-based explorations across a range of health domains. You can design structured protocols that individuals follow and track, gather anonymised data from consenting participants, run retrospective analyses across existing platform data, and publish pre-print findings associated with your name and institution. Kind is not designed for randomised controlled trials (RCTs) requiring clinical oversight, but it is well-suited to naturalistic studies, N-of-1 designs, citizen science explorations, and longitudinal observational work. If you're unsure whether your research question is a good fit, get in touch and we'll discuss it.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        What data will I have access to as a researcher?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Researchers access anonymised, aggregated data from participants who have explicitly consented to share their data for research purposes. This includes exploration adherence data, self-reported outcome measures, and any tracking data participants have chosen to link (such as wearable data). Individual-level data is never identifiable. The specific data available will depend on the exploration design and what participants have consented to share. Kind's researcher dashboard provides tools to query, visualise, and export data in formats suitable for analysis.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        How do I recruit participants for my exploration?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Once your exploration is published on Kind, eligible individuals are surfaced it through the AI matching system based on their profile and goals. You can define eligibility criteria (e.g. age range, health profile, existing conditions to exclude) and the platform will match participants accordingly. Individuals choose to opt in — they're never assigned to a study without their knowledge and explicit consent. Kind's community of engaged health explorers means recruitment is significantly faster and more cost-effective than traditional approaches, particularly for lifestyle and supplementation interventions where motivation is key to adherence.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        When can I start using Kind as a researcher?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>We're actively building the platform and recruiting research partners ahead of the public beta, planned for late 2026. Early research partners will have the opportunity to co-design the researcher experience, contribute the first wave of explorations, and have their content and protocols featured prominently as the community grows. If you join the researcher waitlist, we'll be in touch to discuss how you could be involved in the early partnership phase — which will run from Q3 2026 ahead of the broader beta launch.</p>
+      </div>
+    </div>
+
+    <p class="researchers-faq-more">
+      <a href="faq.html">More FAQs →</a>
+    </p>
+  </div>
+</section>
+
 <!-- Waitlist -->
 <section id="waitlist" class="waitlist-section" style="background: linear-gradient(135deg, #C45F4A 0%, #8B3A2A 100%);">
   <div class="container">
@@ -361,9 +415,8 @@
           <span class="brand-logo__word">kind</span>
           <span class="brand-logo__strap">health exploration</span>
         </div>
-        <p>Health exploration — formative understanding and support to improve health and wellbeing.</p>
         <p style="margin-top: 12px; font-size: 0.85rem;">
-          <a href="mailto:bf@kind-health.app" style="color: var(--accent);">bf@kind-health.app</a>
+          <a href="mailto:hello@kind-health.app" style="color: var(--accent);">hello@kind-health.app</a>
         </p>
       </div>
       <div class="footer__col">
@@ -371,14 +424,21 @@
         <ul>
           <li><a href="individuals.html">For individuals</a></li>
           <li><a href="researchers.html">For researchers</a></li>
-          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="faq.html" data-nav="faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="#" data-kind-cookie-settings>Cookie preferences</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h4>Join us</h4>
         <ul>
-          <li><a href="individuals.html#waitlist">Individual waitlist</a></li>
-          <li><a href="#waitlist">Researcher waitlist</a></li>
+          <li><a href="individuals.html">Individual waitlist</a></li>
+          <li><a href="researchers.html">Researcher waitlist</a></li>
         </ul>
       </div>
     </div>
@@ -391,6 +451,8 @@
   </div>
 </footer>
 
+
+<script src="cookie-consent.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

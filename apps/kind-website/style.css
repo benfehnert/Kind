@@ -169,8 +169,124 @@ p  { color: var(--slate); line-height: 1.7; }
   padding: 6px 14px; border-radius: 100px;
 }
 .hero h1 { max-width: 720px; margin: 0 auto 24px; }
-.hero p { max-width: 560px; margin: 0 auto 40px; font-size: 1.15rem; }
-.hero__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.hero > .container > p { max-width: 560px; margin: 0 auto 32px; font-size: 1.15rem; }
+.hero__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+
+/* Hero feature highlights (from Individuals page) */
+.hero-features {
+  margin-top: 56px;
+  text-align: left;
+}
+.hero-features .feature-row {
+  margin-bottom: 72px;
+}
+.hero-features .feature-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Hero product endorsement */
+.hero-endorsement {
+  max-width: 620px;
+  margin: 0 auto 32px;
+  text-align: left;
+}
+
+/* Individual waitlist in home hero (below endorsement) */
+.hero-waitlist {
+  max-width: 560px;
+  margin: 0 auto 56px;
+  text-align: left;
+}
+.hero-waitlist .waitlist-form {
+  padding: 28px 32px 22px;
+}
+.hero-waitlist .waitlist-form .success-message {
+  padding: 28px 32px 22px;
+}
+.hero-waitlist .waitlist-form-el .form-group:last-of-type {
+  margin-bottom: 12px;
+}
+.hero-waitlist .waitlist-form-el .form-submit {
+  margin-top: 4px;
+}
+.hero-waitlist .waitlist-form-el .form-note {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+.hero-waitlist .form-group input:focus,
+.hero-waitlist .form-group select:focus {
+  border-color: var(--accent);
+}
+.hero-waitlist .success-message h3 {
+  color: var(--accent);
+}
+.hero-endorsement__card {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px 24px;
+  box-shadow: var(--shadow-lg);
+}
+.hero-endorsement__label {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--green-light);
+  padding: 5px 12px;
+  border-radius: 100px;
+}
+.hero-endorsement__quote {
+  margin: 0 0 20px;
+  padding: 0;
+  border: none;
+}
+.hero-endorsement__quote p {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--charcoal);
+}
+.hero-endorsement__footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.hero-endorsement__avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--green-light);
+  border: 2px solid var(--accent);
+  color: var(--green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-endorsement__name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--charcoal);
+  line-height: 1.3;
+}
+.hero-endorsement__role {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--slate);
+  line-height: 1.4;
+}
 
 /* ── Value grid ── */
 .value-grid {
@@ -300,8 +416,42 @@ p  { color: var(--slate); line-height: 1.7; }
 .waitlist-inner h2 { color: white; margin-bottom: 16px; }
 .waitlist-inner p  { color: rgba(255,255,255,0.85); font-size: 1.1rem; margin-bottom: 40px; }
 .waitlist-form {
+  position: relative;
   background: white; border-radius: var(--radius-lg);
   padding: 40px 36px; box-shadow: var(--shadow-lg);
+}
+/* Success state sits out of flow until shown — avoids empty space below the form */
+.waitlist-form .success-message {
+  display: none;
+  position: absolute;
+  inset: 0;
+  padding: 40px 36px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.waitlist-form.is-success .waitlist-form-el {
+  display: none;
+}
+.waitlist-form.is-success .success-message {
+  display: block;
+  position: relative;
+  inset: auto;
+}
+.path-individuals .waitlist-form {
+  padding: 28px 32px 22px;
+}
+.path-individuals .waitlist-form .success-message {
+  padding: 28px 32px 22px;
+}
+.path-individuals .waitlist-form-el .form-group:last-of-type {
+  margin-bottom: 12px;
+}
+.path-individuals .waitlist-form-el .form-submit {
+  margin-top: 4px;
+}
+.path-individuals .waitlist-form-el .form-note {
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 .form-group { margin-bottom: 20px; text-align: left; }
 .form-group label {
@@ -337,7 +487,7 @@ p  { color: var(--slate); line-height: 1.7; }
   margin-top: 16px; text-align: center;
 }
 .success-message {
-  display: none; text-align: center; padding: 20px;
+  text-align: center;
 }
 .success-message .check {
   margin-bottom: 12px;
@@ -347,6 +497,36 @@ p  { color: var(--slate); line-height: 1.7; }
 }
 .success-message h3 { color: var(--green); margin-bottom: 8px; }
 .success-message p  { color: var(--slate); font-size: 0.95rem; }
+
+/* ── Legal pages (cookie policy, etc.) ── */
+.legal-page h2 {
+  font-size: 1.25rem;
+  margin: 2rem 0 0.75rem;
+  color: var(--charcoal);
+}
+.legal-page h3 {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--green);
+}
+.legal-page p,
+.legal-page li {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--slate);
+  margin-bottom: 0.75rem;
+}
+.legal-page ul {
+  list-style: disc;
+  padding-left: 1.35rem;
+  margin-bottom: 1rem;
+}
+.legal-page a {
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 /* ── FAQ ── */
 .faq-group { margin-bottom: 56px; }
@@ -486,6 +666,14 @@ p  { color: var(--slate); line-height: 1.7; }
   color: var(--accent);
   border-left-color: var(--accent);
 }
+.path-researchers .nav__links a.active:not(.nav__cta) {
+  color: var(--green);
+  background: var(--green-light);
+}
+.path-researchers .nav__mobile a:not(.btn).active {
+  color: var(--green);
+  border-left-color: var(--green);
+}
 .path-individuals .hero__eyebrow {
   color: var(--accent); background: var(--coral-light);
 }
@@ -507,6 +695,42 @@ p  { color: var(--slate); line-height: 1.7; }
 .path-individuals .form-group select:focus { border-color: var(--accent); }
 .path-individuals .success-message h3 { color: var(--accent); }
 
+.individuals-faq-preview .faq-item:last-of-type {
+  border-bottom: 1px solid var(--border);
+}
+.individuals-faq-more {
+  margin-top: 28px;
+  text-align: center;
+}
+.individuals-faq-more a {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.individuals-faq-more a:hover {
+  color: #e08f45;
+}
+
+.researchers-faq-preview .faq-item:last-of-type {
+  border-bottom: 1px solid var(--border);
+}
+.researchers-faq-more {
+  margin-top: 28px;
+  text-align: center;
+}
+.researchers-faq-more a {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.researchers-faq-more a:hover {
+  color: var(--charcoal);
+}
+
 .path-researchers .hero--researchers { background: linear-gradient(180deg, var(--green-light) 0%, var(--cream) 100%); }
 .path-researchers .hero h1 em { color: var(--green) !important; font-style: normal; }
 
@@ -517,6 +741,9 @@ p  { color: var(--slate); line-height: 1.7; }
   .brand-logo__word { font-size: clamp(1.55rem, 5vw, 1.95rem); }
   .brand-logo__strap { font-size: 0.6875rem; }
   .hero { padding: 72px 0 64px; }
+  .hero-features { margin-top: 40px; }
+  .hero-features .feature-row { margin-bottom: 48px; gap: 40px; }
+  .hero-endorsement__card { padding: 22px 20px 20px; }
   .feature-row { grid-template-columns: 1fr; gap: 40px; }
   .feature-row--reverse .feature-visual { order: 0; }
   .two-col { grid-template-columns: 1fr; }
@@ -526,5 +753,8 @@ p  { color: var(--slate); line-height: 1.7; }
   .section { padding: 64px 0; }
   .persona-grid { grid-template-columns: 1fr; }
   .waitlist-form { padding: 28px 20px; }
+  .waitlist-form .success-message { padding: 28px 20px; }
+  .path-individuals .waitlist-form,
+  .path-individuals .waitlist-form .success-message { padding: 24px 20px 20px; }
   .cta-band { padding: 40px 24px; }
 }
