@@ -10,25 +10,56 @@ if (hamburger) {
   });
 }
 
-// Active nav link (pathname match so hashes/query work; exclude CTA / mobile buttons)
+// Highlight the current page in top navigation (desktop + mobile)
 function currentNavFilename() {
   const parts = window.location.pathname.split('/').filter(Boolean);
-  let name = parts.length ? parts[parts.length - 1] : 'index.html';
-  if (!name.includes('.')) name = 'index.html';
+  const name = parts.length ? parts[parts.length - 1] : '';
+  if (!name || !name.includes('.')) return 'index.html';
   return name;
 }
 
-document.querySelectorAll('.nav__links a:not(.nav__cta), .nav__mobile a:not(.btn)').forEach(link => {
+const NAV_PAGE_BY_FILE = {
+  'index.html': 'home',
+  'individuals.html': 'individuals',
+  'researchers.html': 'researchers',
+  'faq.html': 'faq'
+};
+
+function getCurrentNavPage() {
+  if (document.body.classList.contains('path-individuals')) return 'individuals';
+  if (document.body.classList.contains('path-researchers')) return 'researchers';
+  return NAV_PAGE_BY_FILE[currentNavFilename().toLowerCase()] || null;
+}
+
+function getLinkNavPage(link) {
+  if (link.dataset.nav) return link.dataset.nav;
+  const href = link.getAttribute('href');
+  if (!href || href.startsWith('#') || href.startsWith('mailto:')) return null;
   try {
-    const linkName = new URL(link.getAttribute('href'), window.location.href).pathname
-      .split('/')
-      .filter(Boolean)
-      .pop() || 'index.html';
-    if (linkName === currentNavFilename()) link.classList.add('active');
-  } catch (_) {
-    /* ignore */
+    const parts = new URL(href, window.location.href).pathname.split('/').filter(Boolean);
+    const name = parts.length ? parts[parts.length - 1] : '';
+    const file = !name || !name.includes('.') ? 'index.html' : name.toLowerCase();
+    return NAV_PAGE_BY_FILE[file] || null;
+  } catch {
+    return null;
   }
-});
+}
+
+function initActiveNav() {
+  const current = getCurrentNavPage();
+  if (current) document.body.dataset.navPage = current;
+
+  document.querySelectorAll('.nav__links a:not(.nav__cta), .nav__mobile a:not(.btn)').forEach(link => {
+    link.classList.remove('active');
+    link.removeAttribute('aria-current');
+    if (current && getLinkNavPage(link) === current) {
+      link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
+    }
+  });
+}
+
+initActiveNav();
 
 // FAQ accordion
 document.querySelectorAll('.faq-question').forEach(btn => {
@@ -52,7 +83,6 @@ document.querySelectorAll('.waitlist-form-el').forEach(form => {
   form.addEventListener('submit', e => {
     e.preventDefault();
     const parent = form.closest('.waitlist-form');
-    form.style.display = 'none';
-    parent.querySelector('.success-message').style.display = 'block';
+    if (parent) parent.classList.add('is-success');
   });
 });

@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Onest:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="cookie-consent.css" />
 </head>
 <body class="path-individuals">
 
@@ -19,10 +20,10 @@
       <span class="brand-logo__strap">health exploration</span>
     </a>
     <div class="nav__links">
-      <a href="index.html">Home</a>
-      <a href="individuals.html">Individuals</a>
-      <a href="researchers.html">Researchers</a>
-      <a href="faq.html">FAQ</a>
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="individuals.html" data-nav="individuals">Individuals</a>
+      <a href="researchers.html" data-nav="researchers">Researchers</a>
+      <a href="faq.html" data-nav="faq">FAQ</a>
       <a href="#waitlist" class="nav__cta">Join Waitlist</a>
     </div>
     <button class="nav__hamburger" aria-label="Menu">
@@ -30,10 +31,10 @@
     </button>
   </div>
   <div class="nav__mobile">
-    <a href="index.html">Home</a>
-    <a href="individuals.html">Individuals</a>
-    <a href="researchers.html">Researchers</a>
-    <a href="faq.html">FAQ</a>
+    <a href="index.html" data-nav="home">Home</a>
+    <a href="individuals.html" data-nav="individuals">Individuals</a>
+    <a href="researchers.html" data-nav="researchers">Researchers</a>
+    <a href="faq.html" data-nav="faq">FAQ</a>
     <a href="#waitlist" class="btn btn--primary">Join Waitlist</a>
   </div>
 </nav>
@@ -46,7 +47,6 @@
     <p>Kind helps you cut through the noise, find changes that might actually work for you, and gives you the support to follow through — all grounded in real science.</p>
     <div class="hero__actions">
       <a href="#waitlist" class="btn btn--primary">Join the waitlist</a>
-      <a href="#how-it-works" class="btn btn--outline">See how it works</a>
     </div>
   </div>
 </section>
@@ -253,6 +253,59 @@
   </div>
 </section>
 
+<!-- FAQ preview -->
+<section class="section section--alt individuals-faq-preview" id="faq">
+  <div class="container" style="max-width: 760px;">
+    <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+      <span class="eyebrow">FAQ</span>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        What is Kind and how is it different from other health apps?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Kind is a health exploration platform — not a tracking app, a fitness app, or a supplement store. The key difference is that Kind helps you run structured, time-limited explorations of health interventions (like a caffeine window for sleep, or creatine for energy) and gives you personal results at the end. Unlike most health apps that just log data, Kind connects your exploration to real research and a community of people on similar journeys. It's also built in partnership with health researchers, so the protocols you follow are evidence-backed — not just trending on social media.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        What happens to my health data?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Your health data is stored securely in your personal data vault and belongs to you. Kind never sells your data to third parties. If you choose to contribute anonymised data to research, you do so with full, explicit consent — and you can withdraw that consent at any time. When data is shared with researchers, it is always anonymised and aggregated so you are never identifiable. Kind is built to HIPAA-compliant standards and follows cybersecurity best practices throughout. We're also transparent about exactly how your data is used and who can access it.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        Can I use Kind if I have a medical condition or take medication?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Kind is not a medical service and does not provide medical advice. Before starting any health exploration — especially if you have a diagnosed condition or take prescribed medication — you should consult your doctor or a qualified healthcare professional. Some explorations on Kind may not be suitable for people with certain conditions, and eligibility criteria will be clearly stated for each exploration. Kind is designed to complement, not replace, professional medical care.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" type="button">
+        When will Kind be available?
+        <span class="chevron">▾</span>
+      </button>
+      <div class="faq-answer">
+        <p>Kind is currently in alpha, with a small group of users testing early versions of the product. A public beta is planned for late 2026. By joining the waitlist now, you'll be among the first to be invited when spots open up — and your feedback during the early period will help shape the product. We'll keep waitlist members updated with progress and occasional behind-the-scenes updates as we build toward the beta launch.</p>
+      </div>
+    </div>
+
+    <p class="individuals-faq-more">
+      <a href="faq.html">More FAQs →</a>
+    </p>
+  </div>
+</section>
+
 <!-- Waitlist -->
 <section id="waitlist" class="waitlist-section">
   <div class="container">
@@ -261,32 +314,13 @@
       <p>We're in alpha and building toward a public beta. Join the waitlist and we'll let you know the moment a spot opens up.</p>
       <div class="waitlist-form">
         <form class="waitlist-form-el">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="ind-first">First name</label>
-              <input type="text" id="ind-first" name="first" placeholder="Emma" required />
-            </div>
-            <div class="form-group">
-              <label for="ind-last">Last name</label>
-              <input type="text" id="ind-last" name="last" placeholder="Smith" required />
-            </div>
+          <div class="form-group">
+            <label for="ind-first">First name</label>
+            <input type="text" id="ind-first" name="first" placeholder="Emma" required />
           </div>
           <div class="form-group">
             <label for="ind-email">Email address</label>
             <input type="email" id="ind-email" name="email" placeholder="emma@example.com" required />
-          </div>
-          <div class="form-group">
-            <label for="ind-interest">What brings you to Kind?</label>
-            <select id="ind-interest" name="interest">
-              <option value="">Select an area of interest…</option>
-              <option>Sleep quality</option>
-              <option>Energy and focus</option>
-              <option>Diet and gut health</option>
-              <option>Mental wellbeing</option>
-              <option>Heart and metabolic health</option>
-              <option>General health exploration</option>
-              <option>Something else</option>
-            </select>
           </div>
           <div class="form-group">
             <label for="ind-type">How would you describe yourself?</label>
@@ -321,9 +355,8 @@
           <span class="brand-logo__word">kind</span>
           <span class="brand-logo__strap">health exploration</span>
         </div>
-        <p>Health exploration — formative understanding and support to improve health and wellbeing.</p>
         <p style="margin-top: 12px; font-size: 0.85rem;">
-          <a href="mailto:bf@kind-health.app" style="color: var(--accent);">bf@kind-health.app</a>
+          <a href="mailto:hello@kind-health.app" style="color: var(--accent);">hello@kind-health.app</a>
         </p>
       </div>
       <div class="footer__col">
@@ -331,14 +364,21 @@
         <ul>
           <li><a href="individuals.html">For individuals</a></li>
           <li><a href="researchers.html">For researchers</a></li>
-          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="faq.html" data-nav="faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="#" data-kind-cookie-settings>Cookie preferences</a></li>
         </ul>
       </div>
       <div class="footer__col">
         <h4>Join us</h4>
         <ul>
-          <li><a href="#waitlist">Individual waitlist</a></li>
-          <li><a href="researchers.html#waitlist">Researcher waitlist</a></li>
+          <li><a href="individuals.html">Individual waitlist</a></li>
+          <li><a href="researchers.html">Researcher waitlist</a></li>
         </ul>
       </div>
     </div>
@@ -351,6 +391,8 @@
   </div>
 </footer>
 
+
+<script src="cookie-consent.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
