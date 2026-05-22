@@ -37,64 +37,77 @@ const FEED_ITEMS = [
     id: "f1",
     type: "milestone",
     title: "Sam Johnson reached week 6",
-    body: "First week with average sleep score above 8.0.",
+    body: "First week with average afternoon energy above 7.5 on time-restricted eating.",
     meta: "2 hours ago"
   },
   {
     id: "f2",
     type: "insight",
     title: "Your insight",
-    body: "Sleep onset is 18 minutes faster when caffeine cutoff is before 1pm.",
+    body: "Afternoon energy is 1.6 points higher on days you log 3+ morning rules.",
     meta: "This morning"
   },
   {
     id: "f3",
     type: "science",
     title: "kind science",
-    body: "247 participants are contributing to open citizen science publications.",
+    body: "78 participants in the morning rules exploration are contributing to open citizen science publications.",
     meta: "Yesterday"
   },
   {
     id: "f4",
     type: "tip",
     title: "Wellbeing tip",
-    body: "Caffeine half-life is 5-7 hours; timing often matters more than amount.",
+    body: "Early outdoor light within 30 minutes of waking helps anchor your circadian rhythm.",
     meta: "Yesterday"
   }
 ];
 
 const EXPLORATIONS = [
   {
-    id: "caffeine",
-    icon: "☕",
-    title: "Caffeine & sleep quality",
-    desc: "8-week reduction protocol",
+    id: "morning-rules",
+    icon: "🌅",
+    category: "Energy & Focus",
+    title: "Do morning rules reduce my chances of an afternoon crash?",
+    desc: "8-week morning routine protocol",
     status: "active",
     progress: "Week 3 of 8"
   },
   {
-    id: "movement",
-    icon: "🏃",
-    title: "Movement & energy",
-    desc: "6-week protocol",
+    id: "eating",
+    icon: "🕐",
+    category: "Metabolic Health",
+    title: "Does time restricted eating improve my energy levels?",
+    desc: "6-week eating window protocol",
     status: "available",
-    progress: "89 explorers active"
+    progress: "64 explorers active"
   },
   {
-    id: "stress",
-    icon: "💓",
-    title: "Stress & recovery",
-    desc: "8-week protocol",
-    status: "available",
-    progress: "34 explorers active"
-  },
-  {
-    id: "screen",
+    id: "screen-sleep",
     icon: "📱",
-    title: "Screen time & sleep onset",
-    desc: "4-week protocol",
+    category: "Rest & Sleep",
+    title: "Does moderation of screen exposure improve my sleep quality?",
+    desc: "6-week screen moderation protocol",
     status: "available",
     progress: "51 explorers active"
+  },
+  {
+    id: "relaxation",
+    icon: "🧘",
+    category: "Mental Health",
+    title: "Do relaxation practices improve my composure?",
+    desc: "6-week relaxation practices protocol",
+    status: "available",
+    progress: "58 explorers active"
+  },
+  {
+    id: "upf-mood",
+    icon: "🥗",
+    category: "Diet & Nutrition",
+    title: "Does reduction of Ultra Processed Food (UPF) improve my mood?",
+    desc: "6-week UPF reduction protocol",
+    status: "available",
+    progress: "22 explorers active"
   }
 ];
 
@@ -106,10 +119,11 @@ const PEOPLE = [
 ];
 
 const SEARCH_INDEX = [
-  "Caffeine & sleep quality",
-  "Movement & energy",
-  "Stress & recovery",
-  "Screen time & sleep onset",
+  "Do morning rules reduce my chances of an afternoon crash?",
+  "Does time restricted eating improve my energy levels?",
+  "Does moderation of screen exposure improve my sleep quality?",
+  "Do relaxation practices improve my composure?",
+  "Does reduction of Ultra Processed Food (UPF) improve my mood?",
   "Sam Johnson",
   "Maya Chen",
   "Community insight",
@@ -194,13 +208,13 @@ function NotificationsModal({ visible, onClose }) {
           </View>
           <View style={styles.notificationItem}>
             <Text style={styles.notificationTitle}>
-              New personal insight: 18 min faster sleep onset with early caffeine cutoff.
+              New personal insight: afternoon energy is higher on days with 3+ morning rules logged.
             </Text>
             <Text style={styles.notificationMeta}>This morning</Text>
           </View>
           <View style={styles.notificationItem}>
             <Text style={styles.notificationTitle}>
-              247 participants are contributing to a new citizen science publication.
+              78 participants in the morning rules exploration are contributing to a new citizen science publication.
             </Text>
             <Text style={styles.notificationMeta}>Yesterday</Text>
           </View>
@@ -221,13 +235,13 @@ function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screenPad}>
-      <Text style={styles.sectionTitle}>Good morning, Emma</Text>
-      <Text style={styles.sectionSub}>Day 12 of your caffeine reduction exploration.</Text>
+      <Text style={styles.sectionTitle}>Good morning, Anna</Text>
+      <Text style={styles.sectionSub}>Day 12 of your morning rules exploration.</Text>
 
       <View style={styles.metricGrid}>
-        <MetricCard label="Sleep quality" value="7.4" unit="/10" />
-        <MetricCard label="Caffeine today" value="80" unit="mg" />
-        <MetricCard label="Last cutoff" value="1" unit="pm" />
+        <MetricCard label="Afternoon energy" value="6.8" unit="/10" />
+        <MetricCard label="Morning rules" value="3" unit="today" />
+        <MetricCard label="Crash-free days" value="4" unit="/7" />
         <MetricCard label="Active streak" value="9" unit="days" />
       </View>
 
@@ -282,7 +296,10 @@ function ExplorationScreen() {
       return EXPLORATIONS;
     }
     return EXPLORATIONS.filter(
-      (item) => item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.desc.toLowerCase().includes(query) ||
+        (item.category || "").toLowerCase().includes(query)
     );
   }, [q]);
 
@@ -304,6 +321,7 @@ function ExplorationScreen() {
             <Text style={styles.exploreIcon}>{item.icon}</Text>
           </View>
           <View style={{ flex: 1 }}>
+            {item.category ? <Text style={styles.exploreCategory}>{item.category}</Text> : null}
             <Text style={styles.exploreTitle}>{item.title}</Text>
             <Text style={styles.exploreDesc}>{item.desc}</Text>
             <Text style={styles.exploreMeta}>{item.progress}</Text>
@@ -316,7 +334,7 @@ function ExplorationScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Protocol timeline</Text>
-        <Text style={styles.cardBody}>Weeks 1-2 baseline, weeks 3-5 reduction, weeks 6-7 low-caffeine, week 8 report.</Text>
+        <Text style={styles.cardBody}>Weeks 1-2 baseline, weeks 3-5 morning rules, weeks 6-7 optimise, week 8 N-of-1 report.</Text>
       </View>
     </ScrollView>
   );
@@ -345,19 +363,19 @@ function InsightScreen() {
       {tab === "your" ? (
         <>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Sleep quality trend</Text>
-            <Text style={styles.cardBody}>Week 1: 5.2 to Week 2: 6.0 to Week 3: 7.4</Text>
+            <Text style={styles.cardTitle}>Afternoon energy trend</Text>
+            <Text style={styles.cardBody}>Week 1: 4.8 to Week 2: 5.5 to Week 3: 6.8</Text>
           </View>
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Key observations</Text>
-            <Text style={styles.cardBody}>Cutoff time before 2pm correlates with stronger sleep quality.</Text>
+            <Text style={styles.cardBody}>Days with 3+ morning rules correlate with higher afternoon energy.</Text>
           </View>
         </>
       ) : (
         <>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>From 247 participants</Text>
-            <Text style={styles.cardBody}>Earlier caffeine cutoff is associated with +1.6 points in sleep quality by week 4.</Text>
+            <Text style={styles.cardTitle}>From 78 participants</Text>
+            <Text style={styles.cardBody}>Logging 3+ morning rules is associated with +1.6 points in afternoon energy by week 4.</Text>
           </View>
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Open publication pipeline</Text>
@@ -710,6 +728,12 @@ const styles = StyleSheet.create({
   },
   exploreIcon: {
     fontSize: 20
+  },
+  exploreCategory: {
+    color: COLORS.greenDark,
+    fontSize: 11,
+    fontWeight: "600",
+    marginBottom: 2
   },
   exploreTitle: {
     color: COLORS.text,
