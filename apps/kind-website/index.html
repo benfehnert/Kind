@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Onest:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="cookie-consent.css" />
 </head>
 <body>
 
@@ -19,10 +20,10 @@
       <span class="brand-logo__strap">health exploration</span>
     </a>
     <div class="nav__links">
-      <a href="index.html">Home</a>
-      <a href="individuals.html">Individuals</a>
-      <a href="researchers.html">Researchers</a>
-      <a href="faq.html">FAQ</a>
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="individuals.html" data-nav="individuals">Individuals</a>
+      <a href="researchers.html" data-nav="researchers">Researchers</a>
+      <a href="faq.html" data-nav="faq">FAQ</a>
       <a href="individuals.html" class="nav__cta">Join Waitlist</a>
     </div>
     <button class="nav__hamburger" aria-label="Menu">
@@ -30,10 +31,10 @@
     </button>
   </div>
   <div class="nav__mobile">
-    <a href="index.html">Home</a>
-    <a href="individuals.html">Individuals</a>
-    <a href="researchers.html">Researchers</a>
-    <a href="faq.html">FAQ</a>
+    <a href="index.html" data-nav="home">Home</a>
+    <a href="individuals.html" data-nav="individuals">Individuals</a>
+    <a href="researchers.html" data-nav="researchers">Researchers</a>
+    <a href="faq.html" data-nav="faq">FAQ</a>
     <a href="individuals.html" class="btn btn--coral">Join Waitlist</a>
   </div>
 </nav>
@@ -44,9 +45,86 @@
     <span class="hero__eyebrow">Health exploration</span>
     <h1>Understand what actually<br>works for <em style="color:var(--accent); font-style:normal;">you.</em></h1>
     <p>Kind brings together individuals exploring their health and the researchers building evidence to help them — creating a community where personal exploration becomes shared understanding.</p>
-    <div class="hero__actions">
-      <a href="individuals.html" class="btn btn--coral">I'm an individual →</a>
-      <a href="researchers.html" class="btn btn--outline">I'm a researcher →</a>
+    <aside class="hero-endorsement" aria-label="Endorsement from a Kind individual">
+      <div class="hero-endorsement__card">
+        <span class="hero-endorsement__label">What people are saying</span>
+        <blockquote class="hero-endorsement__quote">
+          <p>I've been waiting for something like Kind, that helps me learn what works for me and also be part of a wider community.</p>
+        </blockquote>
+        <footer class="hero-endorsement__footer">
+          <span class="hero-endorsement__avatar" aria-hidden="true">J</span>
+          <div>
+            <cite class="hero-endorsement__name">Jo</cite>
+            <span class="hero-endorsement__role">Kind individual · waitlist member</span>
+          </div>
+        </footer>
+      </div>
+    </aside>
+    <div class="hero-waitlist" id="waitlist">
+      <div class="waitlist-form">
+        <form class="waitlist-form-el">
+          <div class="form-group">
+            <label for="home-first">First name</label>
+            <input type="text" id="home-first" name="first" placeholder="Emma" required />
+          </div>
+          <div class="form-group">
+            <label for="home-email">Email address</label>
+            <input type="email" id="home-email" name="email" placeholder="emma@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="home-type">How would you describe yourself?</label>
+            <select id="home-type" name="type">
+              <option value="">Select one…</option>
+              <option>Health optimizer — actively experimenting</option>
+              <option>Improver — working toward specific goals</option>
+              <option>Explorer — just getting started</option>
+            </select>
+          </div>
+          <button type="submit" class="form-submit form-submit--coral">Join the individual waitlist →</button>
+          <p class="form-note">No spam. We'll only contact you about Kind. Unsubscribe any time.</p>
+        </form>
+        <div class="success-message">
+          <div class="check svg-icon svg-icon--success" aria-hidden="true">
+            <svg viewBox="0 0 56 56" width="56" height="56"><use href="assets/kind-brand-sprite.svg#ib-kind"/></svg>
+          </div>
+          <h3>You're on the list!</h3>
+          <p>Thanks for joining. We'll be in touch as soon as a spot opens up. In the meantime, check out the <a href="faq.html" style="color: var(--accent);">FAQ</a> to learn more about Kind.</p>
+        </div>
+      </div>
+    </div>
+    <div class="hero-features">
+      <div class="feature-row">
+        <div class="feature-content">
+          <span class="eyebrow">AI personalisation</span>
+          <h2>Matched to you,<br>not the population average</h2>
+          <p>Most health advice is based on what works for the average person. But you're not average. Kind's AI matches you with explorations based on your profile, goals, and what's already worked (or hasn't) for people like you.</p>
+          <ul class="feature-list">
+            <li>Personal intake to understand your goals and health context</li>
+            <li>Matching with health explorations most relevant to you</li>
+            <li>Results - showing what works for you and what does not</li>
+            <li>Follow on options of further health explorations to suit you</li>
+          </ul>
+        </div>
+        <div class="feature-visual feature-visual--mock" role="img" aria-label="App screen: personalised exploration matching">
+          <img src="assets/individual-ai-personalisation.png" alt="" width="800" height="600" decoding="async" />
+        </div>
+      </div>
+      <div class="feature-row feature-row--reverse">
+        <div class="feature-content">
+          <span class="eyebrow">Community</span>
+          <h2>You're not exploring<br>alone</h2>
+          <p>Join groups of like-minded individuals exploring similar health topics. Share your experiences, follow others on their journeys, and build on collective insight — all in a kind and supportive space.</p>
+          <ul class="feature-list">
+            <li>Join topic-based groups (e.g. Sleep, Energy, Gut Health)</li>
+            <li>Follow other explorers with similar profiles and goals</li>
+            <li>Be followed yourself and receive support and encouragement from others</li>
+            <li>See anonymised group results alongside your own</li>
+          </ul>
+        </div>
+        <div class="feature-visual feature-visual--mock" role="img" aria-label="App screen: community search and following other explorers">
+          <img src="assets/individual-community.png" alt="" width="800" height="600" decoding="async" />
+        </div>
+      </div>
     </div>
     <div class="value-grid">
       <div class="value-card">
@@ -231,7 +309,14 @@
         <ul>
           <li><a href="individuals.html">For individuals</a></li>
           <li><a href="researchers.html">For researchers</a></li>
-          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="faq.html" data-nav="faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="cookie-policy.html">Cookie Policy</a></li>
+          <li><a href="#" data-kind-cookie-settings>Cookie preferences</a></li>
         </ul>
       </div>
       <div class="footer__col">
@@ -251,6 +336,8 @@
   </div>
 </footer>
 
+
+<script src="cookie-consent.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
