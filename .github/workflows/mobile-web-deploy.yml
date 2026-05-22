@@ -96,6 +96,17 @@ jobs:
         run: |
           cp -R apps/kind-website/dist/. out/
           cp -R apps/mobile/dist/. out/app/
+          mkdir -p out/prototype
+          cp apps/mobile/prototype.html out/prototype/index.html
+
+      - name: Deploy mobile web to Cloudflare (web.kind-health.app)
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/mobile
+          command: deploy
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5

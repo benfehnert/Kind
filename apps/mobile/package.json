@@ -4,7 +4,7 @@
   "private": true,
   "main": "expo/AppEntry",
   "scripts": {
-    "build": "expo export --platform web --output-dir dist && cp prototype.html dist/prototype.html",
+    "build": "expo export --platform web --output-dir dist && cp prototype.html dist/prototype.html && mkdir -p dist/prototype && cp prototype.html dist/prototype/index.html",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
