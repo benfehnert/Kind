@@ -112,7 +112,7 @@
   .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 1rem 0 0.5rem; }
   .chart-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--green-dark); cursor: pointer; transition: opacity 0.15s; min-width: 0; }
   .chart-bar:hover { opacity: 0.75; }
-  .chart-bar.caffeine { background: var(--orange); }
+  .chart-bar.crash-day { background: var(--orange); }
   .chart-labels { display: flex; gap: 6px; }
   .chart-label  { flex: 1; font-size: 10px; color: var(--text-muted); text-align: center; min-width: 0; }
   .input-row    { margin-bottom: 14px; }
@@ -149,6 +149,7 @@
   .explore-area:hover { opacity: 0.85; }
   .explore-area.active-area { border-color: var(--green-dark); border-width: 1.5px; }
   .explore-icon   { width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .explore-category { font-size: 11px; font-weight: 600; color: var(--green-dark); letter-spacing: 0.03em; margin-bottom: 3px; }
   .explore-title  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
   .explore-desc   { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
   .explore-status { margin-left: auto; flex-shrink: 0; text-align: right; }
@@ -271,14 +272,16 @@
     </div>
     <div id="search-results">
       <div class="search-section-label">Explorations</div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);">☕</div><div><div class="search-result-title">Caffeine &amp; sleep quality</div><div class="search-result-sub">Active · Week 3 of 8</div></div></div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:#EAF3DE;">🏃</div><div><div class="search-result-title">Movement &amp; energy</div><div class="search-result-sub">Available to start</div></div></div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;">💓</div><div><div class="search-result-title">Stress &amp; recovery</div><div class="search-result-sub">Available to start</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#FDF0E4;">🌅</div><div><div class="search-result-title">Do morning rules reduce my chances of an afternoon crash?</div><div class="search-result-sub">Energy &amp; Focus · Active · Week 3 of 8</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#FDF0E4;">🕐</div><div><div class="search-result-title">Does time restricted eating improve my energy levels?</div><div class="search-result-sub">Metabolic Health · Available to start · 6-week protocol</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#E6F1FB;">📱</div><div><div class="search-result-title">Does moderation of screen exposure improve my sleep quality?</div><div class="search-result-sub">Rest &amp; Sleep · Available to start · 6-week protocol</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;">🧘</div><div><div class="search-result-title">Do relaxation practices improve my composure?</div><div class="search-result-sub">Mental Health · Available to start · 6-week protocol</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EAF3DE;">🥗</div><div><div class="search-result-title">Does reduction of Ultra Processed Food (UPF) improve my mood?</div><div class="search-result-sub">Diet &amp; Nutrition · Available to start · 6-week protocol</div></div></div>
       <div class="search-section-label">Community</div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);color:var(--green-dark);font-size:13px;font-weight:600;">SJ</div><div><div class="search-result-title">Sam Johnson</div><div class="search-result-sub">Amsterdam · Caffeine &amp; sleep · Week 6</div></div></div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;color:#534AB7;font-size:13px;font-weight:600;">MC</div><div><div class="search-result-title">Maya Chen</div><div class="search-result-sub">London · Caffeine &amp; sleep · Week 3</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);color:var(--green-dark);font-size:13px;font-weight:600;">SJ</div><div><div class="search-result-title">Sam Johnson</div><div class="search-result-sub">Amsterdam · Time-restricted eating · Week 6</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#EEEDFE;color:#534AB7;font-size:13px;font-weight:600;">MC</div><div><div class="search-result-title">Maya Chen</div><div class="search-result-sub">London · Relaxation practices · Week 3</div></div></div>
       <div class="search-section-label">Insights &amp; publications</div>
-      <div class="search-result-row"><div class="search-result-icon" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div><div><div class="search-result-title">Caffeine half-life and sleep onset</div><div class="search-result-sub">kind community insight</div></div></div>
+      <div class="search-result-row"><div class="search-result-icon" style="background:#FDF0E4;color:#8A4A1A;font-size:16px;">⬡</div><div><div class="search-result-title">Morning rule stacking and afternoon energy</div><div class="search-result-sub">kind community insight</div></div></div>
     </div>
   </div>
 </div>
@@ -298,11 +301,11 @@
     </div>
     <div class="notif-item notif-unread" style="border-radius:var(--radius-md);padding:8px 10px;">
       <div class="notif-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div>
-      <div><div class="notif-body">New personal insight: your sleep onset is <strong>18 min faster</strong> on days with a pre-1pm caffeine cutoff.</div><div class="notif-time">This morning</div></div>
+      <div><div class="notif-body">New personal insight: on days you logged <strong>3+ morning rules</strong>, your afternoon energy averaged <strong>1.6 points higher</strong>.</div><div class="notif-time">This morning</div></div>
     </div>
     <div class="notif-item">
       <div class="notif-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div>
-      <div><div class="notif-body">A new kind community publication is in preparation — <strong>247 participants</strong> contributing data, including you.</div><div class="notif-time">Yesterday</div></div>
+      <div><div class="notif-body">A new kind community publication is in preparation — <strong>78 participants</strong> in the morning rules exploration are contributing data, including you.</div><div class="notif-time">Yesterday</div></div>
     </div>
     <div class="notif-item">
       <div class="notif-avatar" style="background:#FDF0E4;">
@@ -373,8 +376,8 @@
         <div class="notif-dot"></div>
       </button>
       <div class="nav-avatar-btn" onclick="showScreen('profile')" title="Profile">
-        <img src="https://i.pravatar.cc/72?img=10" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
-        <span class="av-fallback">EG</span>
+        <img src="https://i.pravatar.cc/72?img=28" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
+        <span class="av-fallback">AR</span>
       </div>
     </div>
   </div>
@@ -391,23 +394,23 @@
   <!-- HOME -->
   <div id="home" class="screen active">
     <div style="margin-bottom:1rem;">
-      <div class="section-title">Good morning, Emma</div>
-      <div class="section-sub">Day 12 of your caffeine reduction exploration. You're doing great.</div>
+      <div class="section-title">Good morning, Anna</div>
+      <div class="section-sub">Day 12 of your morning rules exploration. You're doing great.</div>
     </div>
     <div class="metric-grid">
-      <div class="metric-card"><div class="metric-label">Sleep quality</div><div class="metric-value">7.4<span class="metric-unit">/10</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">+1.2 from week 1</div></div>
-      <div class="metric-card"><div class="metric-label">Caffeine today</div><div class="metric-value">80<span class="metric-unit">mg</span></div><div style="font-size:11px;color:#8A4A1A;margin-top:4px;font-weight:500;">target: 100mg</div></div>
-      <div class="metric-card"><div class="metric-label">Last cutoff</div><div class="metric-value">1<span class="metric-unit">pm</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">target: before 2pm</div></div>
+      <div class="metric-card"><div class="metric-label">Afternoon energy</div><div class="metric-value">6.8<span class="metric-unit">/10</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">+1.4 from baseline</div></div>
+      <div class="metric-card"><div class="metric-label">Morning rules today</div><div class="metric-value">3<span class="metric-unit">/4</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">sunlight · stretch · meditation</div></div>
+      <div class="metric-card"><div class="metric-label">Afternoon crash</div><div class="metric-value">Mild<span class="metric-unit"></span></div><div style="font-size:11px;color:#8A4A1A;margin-top:4px;font-weight:500;">down from noticeable</div></div>
       <div class="metric-card"><div class="metric-label">Active streak</div><div class="metric-value">9<span class="metric-unit">days</span></div><div style="font-size:11px;color:var(--green-dark);margin-top:4px;font-weight:500;">personal best!</div></div>
     </div>
     <div id="log-toggle"><button class="log-btn" onclick="document.getElementById('log-toggle').style.display='none';document.getElementById('log-form').style.display='block'">Log today's data</button></div>
     <div id="log-form" class="log-form" style="display:none">
       <div class="section-title" style="margin-bottom:1rem;">Today's log</div>
-      <div class="input-row"><label class="input-label">How did you sleep last night?</label><div class="range-row"><input type="range" min="1" max="10" value="7" step="1" oninput="document.getElementById('sleep-val').textContent=this.value"><div class="range-val" id="sleep-val">7</div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;"><span>Poor</span><span>Excellent</span></div></div>
-      <div class="input-row"><label class="input-label">Total caffeine consumed (mg)</label><div class="range-row"><input type="range" min="0" max="400" value="80" step="10" oninput="document.getElementById('caf-val').textContent=this.value"><div class="range-val" id="caf-val">80</div></div></div>
-      <div class="input-row"><label class="input-label">Last caffeine intake</label><select><option>Before 12pm</option><option selected>12pm – 2pm</option><option>2pm – 4pm</option><option>After 4pm</option></select></div>
-      <div class="input-row"><label class="input-label">Time to fall asleep</label><select><option>Under 10 min</option><option selected>10–20 min</option><option>20–40 min</option><option>Over 40 min</option></select></div>
-      <div class="input-row"><label class="input-label">Energy levels today</label><div class="range-row"><input type="range" min="1" max="10" value="6" step="1" oninput="document.getElementById('energy-val').textContent=this.value"><div class="range-val" id="energy-val">6</div></div></div>
+      <div class="input-row"><label class="input-label">Morning rules followed today</label><div class="checkbox-group"><div class="check-chip checked" onclick="toggleChip(this,true)"><span class="check-icon">✓ </span>Early sunlight exposure</div><div class="check-chip checked" onclick="toggleChip(this,true)"><span class="check-icon">✓ </span>Morning stretching</div><div class="check-chip" onclick="toggleChip(this,false)"><span class="check-icon">✓ </span>Caffeine offset (delayed first cup)</div><div class="check-chip checked" onclick="toggleChip(this,true)"><span class="check-icon">✓ </span>Morning meditation</div></div></div>
+      <div class="input-row"><label class="input-label">Morning energy</label><div class="range-row"><input type="range" min="1" max="10" value="7" step="1" oninput="document.getElementById('am-energy-val').textContent=this.value"><div class="range-val" id="am-energy-val">7</div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;"><span>Low</span><span>High</span></div></div>
+      <div class="input-row"><label class="input-label">Afternoon energy</label><div class="range-row"><input type="range" min="1" max="10" value="6" step="1" oninput="document.getElementById('pm-energy-val').textContent=this.value"><div class="range-val" id="pm-energy-val">6</div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;"><span>Low</span><span>High</span></div></div>
+      <div class="input-row"><label class="input-label">Afternoon crash today</label><select><option>None</option><option selected>Mild dip</option><option>Noticeable crash</option><option>Severe crash</option></select></div>
+      <div class="input-row"><label class="input-label">Focus through afternoon</label><div class="range-row"><input type="range" min="1" max="10" value="6" step="1" oninput="document.getElementById('focus-val').textContent=this.value"><div class="range-val" id="focus-val">6</div></div></div>
       <div class="submit-row"><button class="btn-secondary" onclick="document.getElementById('log-toggle').style.display='block';document.getElementById('log-form').style.display='none'">Cancel</button><button class="btn-primary" onclick="showLogConfirm()">Save log</button></div>
     </div>
     <div id="log-confirm" class="card" style="display:none;background:var(--green-light);border-color:var(--green-dark);"><div style="font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px;">Logged! Great work.</div><div style="font-size:12px;color:var(--text-muted);">Your data has been saved. Keep going — consistency is key to seeing results.</div></div>
@@ -425,42 +428,51 @@
           <div class="feed-avatar" style="background:var(--green-light);">
             <img src="https://i.pravatar.cc/68?img=11" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:var(--green-dark);">SJ</span>
           </div>
-          <div class="feed-meta"><div class="feed-name">Sam Johnson <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 hours ago · Caffeine &amp; sleep</div></div>
+          <div class="feed-meta"><div class="feed-name">Sam Johnson <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 hours ago · Time-restricted eating</div></div>
         </div>
-        <div class="feed-body">Completed week 6 — the first week where sleep score averaged above <strong>8.0</strong>. Something clicked this week.</div>
-        <div class="feed-highlight">Sleep avg: <strong>8.2</strong> &nbsp;·&nbsp; Streak: <strong>21 days</strong></div>
+        <div class="feed-body">Completed week 6 of time-restricted eating — first week afternoon energy averaged above <strong>7.5</strong>. Something clicked this week.</div>
+        <div class="feed-highlight">Energy avg: <strong>7.8</strong> &nbsp;·&nbsp; Streak: <strong>21 days</strong></div>
       </div>
       <div class="feed-item" data-type="insight" onclick="gotoInsightTab(false)">
-        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Your insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">This morning · Caffeine &amp; sleep</div></div></div>
-        <div class="feed-body">On the 4 days where your last caffeine was before 1pm, sleep onset was on average <strong>18 minutes faster</strong> than on later-cutoff days.</div>
-        <div class="feed-highlight">Try keeping your cutoff at 1pm this week to confirm the trend.</div>
+        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Your insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">This morning · Morning rules &amp; afternoon energy</div></div></div>
+        <div class="feed-body">On the 5 days you logged <strong>3+ morning rules</strong>, afternoon energy averaged <strong>1.6 points higher</strong> than on lighter-rule days.</div>
+        <div class="feed-highlight">Try stacking sunlight + stretching before 9am this week to confirm the pattern.</div>
+      </div>
+      <div class="feed-item" data-type="activity" onclick="openExplorerProfile('julia-lane')">
+        <div class="feed-header">
+          <div class="feed-avatar" style="background:#FDF0E4;">
+            <img src="https://i.pravatar.cc/68?img=22" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#8A4A1A;">JL</span>
+          </div>
+          <div class="feed-meta"><div class="feed-name">Julia Lane <span class="badge badge-purple" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">5 hours ago · Morning rules &amp; afternoon energy</div></div>
+        </div>
+        <div class="feed-body">Logged 4 morning rules today — sunlight, stretch, meditation, and delayed coffee. Afternoon energy <strong>7/10</strong>, no crash until 5pm.</div>
       </div>
       <div class="feed-item" data-type="activity" onclick="openExplorerProfile('maya-chen')">
         <div class="feed-header">
           <div class="feed-avatar" style="background:#EEEDFE;">
             <img src="https://i.pravatar.cc/68?img=9" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#534AB7;">MC</span>
           </div>
-          <div class="feed-meta"><div class="feed-name">Maya Chen <span class="badge badge-purple" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">4 hours ago · Caffeine &amp; sleep</div></div>
+          <div class="feed-meta"><div class="feed-name">Maya Chen <span class="badge badge-purple" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">4 hours ago · Relaxation practices &amp; composure</div></div>
         </div>
-        <div class="feed-body">Logged day 21 — switching from afternoon espresso to herbal tea made the cutoff feel much easier to stick to. Small swap, big difference.</div>
+        <div class="feed-body">Logged day 21 — vagal breathing plus a short nature walk. Stress <strong>4/10</strong>, anxiety <strong>3/10</strong>, composure <strong>7/10</strong>.</div>
       </div>
       <div class="feed-item" data-type="science" onclick="showScreen('community')">
         <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">⬡</div><div class="feed-meta"><div class="feed-name">kind science <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Science</span></div><div class="feed-time">Yesterday · Citizen science</div></div></div>
-        <div class="feed-body">Across <strong>247 active participants</strong>, sleep onset improves most sharply between weeks 3 and 5. Your data is contributing to this finding.</div>
-        <div class="feed-highlight">2 open-access publications in preparation. Data collection until May 2026.</div>
+        <div class="feed-body">Across <strong>78 active participants</strong> in the morning rules exploration, afternoon energy improves most when explorers log <strong>3+ rules</strong> before noon. Your data is contributing to this finding.</div>
+        <div class="feed-highlight">Open-access publication in preparation. Data collection until May 2026.</div>
       </div>
-      <div class="feed-item" data-type="tip" onclick="openExploration('caffeine')">
-        <div class="feed-header"><div class="feed-avatar" style="background:var(--green-light);color:var(--green-dark);font-size:16px;">✓</div><div class="feed-meta"><div class="feed-name">Wellbeing tip <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Tip</span></div><div class="feed-time">Yesterday · Sleep quality</div></div></div>
-        <div class="feed-body">Caffeine's half-life is 5–7 hours. A 200mg coffee at 3pm still leaves ~100mg active at 9pm — roughly equivalent to a weak espresso right before bed.</div>
+      <div class="feed-item" data-type="tip" onclick="openExploration('morning-rules')">
+        <div class="feed-header"><div class="feed-avatar" style="background:#FDF0E4;color:#8A4A1A;font-size:16px;">✓</div><div class="feed-meta"><div class="feed-name">Wellbeing tip <span class="badge badge-teal" style="margin-left:4px;font-size:10px;">Tip</span></div><div class="feed-time">Yesterday · Morning rules</div></div></div>
+        <div class="feed-body">Early outdoor light within 30 minutes of waking helps anchor your circadian rhythm — many explorers report fewer afternoon crashes when they pair sunlight with a short morning stretch.</div>
       </div>
       <div class="feed-item" data-type="milestone" onclick="openFeedMilestone('tom-richards',0)">
         <div class="feed-header">
           <div class="feed-avatar" style="background:#FDF0E4;">
             <img src="https://i.pravatar.cc/68?img=3" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#8A4A1A;">TR</span>
           </div>
-          <div class="feed-meta"><div class="feed-name">Tom Richards <span class="badge badge-amber" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 days ago · Caffeine &amp; sleep</div></div>
+          <div class="feed-meta"><div class="feed-name">Tom Richards <span class="badge badge-amber" style="margin-left:4px;font-size:10px;">Milestone</span></div><div class="feed-time">2 days ago · Time-restricted eating</div></div>
         </div>
-        <div class="feed-body">Completed the full 8-week protocol. Sleep quality went from a baseline of <strong>5.0</strong> to a week-8 average of <strong>8.4</strong>. Genuinely surprised by how clear the effect was.</div>
+        <div class="feed-body">Completed the full 6-week time-restricted eating protocol. Afternoon energy went from a baseline of <strong>5.2</strong> to a week-6 average of <strong>7.6</strong>. Genuinely surprised by how clear the effect was.</div>
         <div class="feed-highlight">N-of-1 report generated &nbsp;·&nbsp; Data contributed to citizen science dataset</div>
       </div>
       <div class="feed-item" data-type="activity" onclick="openExplorerProfile('priya-lawson')">
@@ -468,14 +480,14 @@
           <div class="feed-avatar" style="background:#EAF3DE;">
             <img src="https://i.pravatar.cc/68?img=5" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt=""><span style="font-size:11px;font-weight:600;color:#3B6D11;">PL</span>
           </div>
-          <div class="feed-meta"><div class="feed-name">Priya Lawson <span class="badge badge-green" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">2 days ago · Stress &amp; recovery</div></div>
+          <div class="feed-meta"><div class="feed-name">Priya Lawson <span class="badge badge-green" style="margin-left:4px;font-size:10px;">Activity</span></div><div class="feed-time">2 days ago · Relaxation practices &amp; composure</div></div>
         </div>
-        <div class="feed-body">Added a second exploration: stress and recovery. Combining daily HRV readings with the existing sleep log. Only day 3 but patterns are already interesting.</div>
+        <div class="feed-body">Started the relaxation practices exploration. PMR and meditation are already showing up as lower stress days in her logs.</div>
       </div>
       <div class="feed-item" data-type="insight" onclick="gotoInsightTab(true)">
-        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div><div class="feed-meta"><div class="feed-name">Community insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">3 days ago · Movement &amp; energy</div></div></div>
-        <div class="feed-body">Explorers tracking both movement and caffeine who log <strong>20+ min of outdoor activity</strong> report 0.9 points higher sleep quality that evening.</div>
-        <div class="feed-highlight">Based on 89 participants tracking both areas simultaneously.</div>
+        <div class="feed-header"><div class="feed-avatar" style="background:#E6F1FB;color:#185FA5;font-size:16px;">✦</div>        <div class="feed-meta"><div class="feed-name">Community insight <span class="badge badge-blue" style="margin-left:4px;font-size:10px;">Insight</span></div><div class="feed-time">3 days ago · Time-restricted eating</div></div></div>
+        <div class="feed-body">Explorers in the morning rules study who also run a <strong>10-hour eating window</strong> report 0.9 points higher afternoon energy on average.</div>
+        <div class="feed-highlight">Based on 28 participants tracking both morning rules and time-restricted eating.</div>
       </div>
     </div>
   </div>
@@ -500,24 +512,23 @@
     </div>
 
     <div class="card-title" style="padding:0 0 8px;">Active</div>
-    <div class="explore-area active-area" onclick="openExploration('caffeine')">
-      <div class="explore-icon" style="background:var(--green-light);">☕</div>
-      <div style="flex:1;"><div class="explore-title">Caffeine &amp; sleep quality</div><div class="explore-desc">8-week reduction protocol · Week 3 of 8</div><div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">Active</span><span class="badge badge-teal">9-day streak</span></div></div>
-      <div class="explore-status"><div style="font-size:20px;font-weight:600;color:var(--green-dark);text-align:right;">38%</div><div style="font-size:10px;color:var(--text-muted);">complete</div></div>
+    <div class="explore-area active-area" onclick="openExploration('morning-rules')">
+      <div class="explore-icon" style="background:#FDF0E4;">🌅</div>
+      <div style="flex:1;"><div class="explore-category">Energy &amp; Focus</div><div class="explore-title">Do morning rules reduce my chances of an afternoon crash?</div><div class="explore-desc">8-week protocol · Week 3 of 8</div><div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">Active</span><span class="badge badge-teal">9-day streak</span></div></div>
+      <div class="explore-status"><div style="font-size:20px;font-weight:600;color:#8A4A1A;text-align:right;">38%</div><div style="font-size:10px;color:var(--text-muted);">complete</div></div>
     </div>
     <div class="card">
-      <div class="card-title">Protocol — caffeine &amp; sleep</div>
-      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 1–2: Baseline <span class="badge badge-teal" style="margin-left:6px;">Complete</span></div><div class="timeline-desc">Normal intake tracked to establish personal baseline sleep and energy metrics.</div></div></div>
-      <div class="timeline-item"><div class="timeline-dot active"></div><div class="timeline-content"><div class="timeline-phase">Weeks 3–5: Gradual reduction <span class="badge badge-amber" style="margin-left:6px;">Active</span></div><div class="timeline-desc">Reducing total intake 25% per week, moving last consumption progressively earlier.</div></div></div>
-      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 6–7: Low-caffeine phase</div><div class="timeline-desc">Under 100mg/day, all before 1pm. Rigorous sleep tracking continues.</div></div></div>
-      <div class="timeline-item" style="margin-bottom:0;"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Week 8: N-of-1 analysis report</div><div class="timeline-desc">Personal report comparing baseline to intervention outcomes.</div></div></div>
+      <div class="card-title">Protocol — morning rules</div>
+      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 1–2: Baseline <span class="badge badge-teal" style="margin-left:6px;">Complete</span></div><div class="timeline-desc">Log usual morning routine and afternoon energy with no new rules.</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot active"></div><div class="timeline-content"><div class="timeline-phase">Weeks 3–5: Morning rules <span class="badge badge-amber" style="margin-left:6px;">Active</span></div><div class="timeline-desc">Track sunlight, stretching, caffeine offset, and meditation each day.</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Weeks 6–7: Optimise your stack</div><div class="timeline-desc">Keep the rule combinations that reduced afternoon crashes most.</div></div></div>
+      <div class="timeline-item" style="margin-bottom:0;"><div class="timeline-dot" style="background:var(--border-med);"></div><div class="timeline-content"><div class="timeline-phase">Week 8: N-of-1 analysis report</div><div class="timeline-desc">Personal report on which morning rules helped your afternoon energy.</div></div></div>
     </div>
     <div class="card-title" style="padding:0.25rem 0 8px;">Available to start</div>
-    <div class="explore-area" onclick="openExploration('movement')"><div class="explore-icon" style="background:#EAF3DE;">🏃</div><div style="flex:1;"><div class="explore-title">Movement &amp; energy</div><div class="explore-desc">6-week protocol tracking daily activity against mood and energy</div><div style="margin-top:5px;"><span class="badge badge-green explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('movement')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('movement');}">89 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('eating')"><div class="explore-icon" style="background:#FDF0E4;">🕐</div><div style="flex:1;"><div class="explore-title">Time-restricted eating</div><div class="explore-desc">6-week eating window exploration, energy and mood tracked daily</div><div style="margin-top:5px;"><span class="badge badge-amber explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('eating')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('eating');}">12 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('stress')"><div class="explore-icon" style="background:#EEEDFE;">💓</div><div style="flex:1;"><div class="explore-title">Stress &amp; recovery</div><div class="explore-desc">8-week HRV and subjective stress tracking with daily check-ins</div><div style="margin-top:5px;"><span class="badge badge-purple explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('stress')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('stress');}">34 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('supplements')"><div class="explore-icon" style="background:#FDF0E4;">💊</div><div style="flex:1;"><div class="explore-title">Supplements &amp; sleep</div><div class="explore-desc">Single-supplement trials (magnesium, vitamin D, ashwagandha) with sleep tracking</div><div style="margin-top:5px;"><span class="badge badge-amber">New</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
-    <div class="explore-area" onclick="openExploration('screen')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-title">Screen time &amp; sleep onset</div><div class="explore-desc">4-week evening screen reduction protocol, sleep onset tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('screen')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('screen');}">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('eating')"><div class="explore-icon" style="background:#FDF0E4;">🕐</div><div style="flex:1;"><div class="explore-category">Metabolic Health</div><div class="explore-title">Does time restricted eating improve my energy levels?</div><div class="explore-desc">6-week eating window exploration, energy and mood tracked daily</div><div style="margin-top:5px;"><span class="badge badge-amber explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('eating')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('eating');}">64 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#FDF0E4;color:#8A4A1A;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('screen-sleep')"><div class="explore-icon" style="background:#E6F1FB;">📱</div><div style="flex:1;"><div class="explore-category">Rest &amp; Sleep</div><div class="explore-title">Does moderation of screen exposure improve my sleep quality?</div><div class="explore-desc">6-week evening screen reduction protocol, sleep quality tracked nightly</div><div style="margin-top:5px;"><span class="badge badge-blue explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('screen-sleep')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('screen-sleep');}">51 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#E6F1FB;color:#185FA5;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('relaxation')"><div class="explore-icon" style="background:#EEEDFE;">🧘</div><div style="flex:1;"><div class="explore-category">Mental Health</div><div class="explore-title">Do relaxation practices improve my composure?</div><div class="explore-desc">6-week protocol — vagal breathing, PMR, nature walks, meditation; stress &amp; anxiety tracked daily</div><div style="margin-top:5px;"><span class="badge badge-purple explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('relaxation')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('relaxation');}">58 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EEEDFE;color:#534AB7;">Start</div></div></div>
+    <div class="explore-area" onclick="openExploration('upf-mood')"><div class="explore-icon" style="background:#EAF3DE;">🥗</div><div style="flex:1;"><div class="explore-category">Diet &amp; Nutrition</div><div class="explore-title">Does reduction of Ultra Processed Food (UPF) improve my mood?</div><div class="explore-desc">6-week UPF reduction protocol — daily UPF %, mood, and energy tracked</div><div style="margin-top:5px;"><span class="badge badge-green explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('upf-mood')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openExplorersPanel('upf-mood');}">22 explorers active</span></div></div><div class="explore-status"><div class="start-btn" style="background:#EAF3DE;color:#3B6D11;">Start</div></div></div>
     <div class="coming-soon-box" aria-label="Treatment exploration — coming soon">
       <div class="coming-soon-label">Coming soon</div>
       <div class="coming-soon-title">Treatment exploration</div>
@@ -535,23 +546,23 @@
     </div>
     <div id="your-insights" class="sub-panel active">
       <div class="card">
-        <div class="card-title">Sleep quality over time</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Avg. sleep score by week</div>
-        <div class="chart-bar-wrap"><div class="chart-bar" style="height:50%;"></div><div class="chart-bar" style="height:58%;"></div><div class="chart-bar" style="height:74%;"></div></div>
-        <div class="chart-labels"><div class="chart-label">Wk 1<br>5.2</div><div class="chart-label">Wk 2<br>6.0</div><div class="chart-label">Wk 3<br>7.4</div></div>
+        <div class="card-title">Afternoon energy over time</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Avg. afternoon energy by week</div>
+        <div class="chart-bar-wrap"><div class="chart-bar" style="height:48%;"></div><div class="chart-bar" style="height:55%;"></div><div class="chart-bar" style="height:68%;"></div></div>
+        <div class="chart-labels"><div class="chart-label">Wk 1<br>4.8</div><div class="chart-label">Wk 2<br>5.5</div><div class="chart-label">Wk 3<br>6.8</div></div>
       </div>
       <div class="card">
-        <div class="card-title">Caffeine vs sleep correlation</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Days with lower caffeine (green) vs higher (orange)</div>
-        <div class="chart-bar-wrap"><div class="chart-bar" style="height:80%;"></div><div class="chart-bar caffeine" style="height:45%;"></div><div class="chart-bar" style="height:75%;"></div><div class="chart-bar caffeine" style="height:40%;"></div><div class="chart-bar" style="height:85%;"></div><div class="chart-bar" style="height:78%;"></div><div class="chart-bar caffeine" style="height:50%;"></div></div>
-        <div style="display:flex;gap:12px;margin-top:6px;"><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--green-dark);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">Low caffeine day</span></div><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--orange);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">Higher caffeine day</span></div></div>
+        <div class="card-title">Morning rules vs afternoon energy</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Days with 3+ rules (green) vs fewer rules (orange)</div>
+        <div class="chart-bar-wrap"><div class="chart-bar" style="height:80%;"></div><div class="chart-bar crash-day" style="height:45%;"></div><div class="chart-bar" style="height:75%;"></div><div class="chart-bar crash-day" style="height:40%;"></div><div class="chart-bar" style="height:85%;"></div><div class="chart-bar" style="height:78%;"></div><div class="chart-bar crash-day" style="height:50%;"></div></div>
+        <div style="display:flex;gap:12px;margin-top:6px;"><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--green-dark);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">3+ morning rules</span></div><div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;background:var(--orange);border-radius:2px;"></div><span style="font-size:11px;color:var(--text-muted);">Fewer rules</span></div></div>
       </div>
       <div class="card">
         <div class="card-title">Key observations</div>
-        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Sleep onset improving</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">You're falling asleep 14 min faster than in your baseline week.</div></div></div>
-        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Cutoff time matters</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Your sleep score is 1.8 points higher on days with no caffeine after 2pm.</div></div></div>
-        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Energy levels stable</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Despite lower caffeine, self-reported energy scores have held at 6.2 avg.</div></div></div>
-        <div class="insight-row" style="border-bottom:none;"><div class="insight-icon" style="background:#FDF0E4;color:#8A4A1A;">!</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Weekend pattern</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Weekend caffeine tends to be 40mg higher — worth watching going into weeks 4 and 5.</div></div></div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Afternoon energy rising</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Your afternoon energy is 1.4 points higher than in your baseline week.</div></div></div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Rule stacking helps</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Days with sunlight + stretching show 1.6 points higher afternoon energy on average.</div></div></div>
+        <div class="insight-row"><div class="insight-icon" style="background:var(--green-light);color:var(--green-dark);">+</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Fewer crashes</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Noticeable afternoon crashes dropped from 4 days/week to 1 in week 3.</div></div></div>
+        <div class="insight-row" style="border-bottom:none;"><div class="insight-icon" style="background:#FDF0E4;color:#8A4A1A;">!</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">Caffeine offset untested</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">You haven't logged delayed caffeine yet — worth trying in week 4.</div></div></div>
       </div>
       <div class="card">
         <div class="card-title">Protocol adherence</div>
@@ -562,15 +573,15 @@
       </div>
     </div>
     <div id="community-insights" class="sub-panel">
-      <div style="margin-bottom:0.5rem;"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">From the kind community</div><div style="font-size:12px;color:var(--text-muted);">Derived from 247 active participants across all explorations.</div></div>
+      <div style="margin-bottom:0.5rem;"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">From the kind community</div><div style="font-size:12px;color:var(--text-muted);">Derived from 78 active participants in the morning rules exploration.</div></div>
       <div class="card" style="margin-top:0.75rem;">
         <div class="card-title">Community findings</div>
-        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:var(--green-light);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22401F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div><div class="comm-insight-title">Cutoff time is the strongest lever</div><div class="comm-insight-body">Moving last caffeine intake to before 2pm is associated with a <strong>+1.6 point</strong> average sleep quality improvement by week 4.</div><div class="stat-pill"><strong>247</strong> participants · weeks 1–8</div></div></div>
-        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:#EAF3DE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><div><div class="comm-insight-title">Movement amplifies the sleep effect</div><div class="comm-insight-body">Those logging <strong>20+ minutes of outdoor activity</strong> report sleep scores 0.9 points higher that evening.</div><div class="stat-pill"><strong>89</strong> participants tracking both areas</div></div></div>
-        <div class="comm-insight-item" style="border-bottom:none;"><div class="comm-insight-icon" style="background:#EEEDFE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="comm-insight-title">Weeks 3–5 are the critical window</div><div class="comm-insight-body">Sleep onset improvements are steepest in weeks 3–5. Those who stay adherent in this window show the most durable long-term gains.</div><div class="stat-pill"><strong>183</strong> participants at week 5+</div></div></div>
+        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:#FDF0E4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A4A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/></svg></div><div><div class="comm-insight-title">Early sunlight is the strongest single rule</div><div class="comm-insight-body">Explorers logging <strong>10+ min outdoor light before 9am</strong> report <strong>+1.2 points</strong> higher afternoon energy by week 4.</div><div class="stat-pill"><strong>78</strong> participants · weeks 1–8</div></div></div>
+        <div class="comm-insight-item"><div class="comm-insight-icon" style="background:#EAF3DE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div><div><div class="comm-insight-title">Stacking rules beats any single habit</div><div class="comm-insight-body">Those logging <strong>3+ morning rules</strong> see afternoon energy 1.6 points higher than baseline by week 3.</div><div class="stat-pill"><strong>52</strong> participants at week 3+</div></div></div>
+        <div class="comm-insight-item" style="border-bottom:none;"><div class="comm-insight-icon" style="background:#EEEDFE;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="comm-insight-title">Weeks 3–5 are the critical window</div><div class="comm-insight-body">Afternoon crash frequency drops most sharply in weeks 3–5 when explorers stay consistent with their rule stack.</div><div class="stat-pill"><strong>41</strong> participants at week 5+</div></div></div>
       </div>
-      <div class="pub-card"><div class="pub-source" style="color:var(--green-dark);">kind · In preparation</div><div class="pub-title">Real-world caffeine reduction and sleep quality: an N-of-1 cohort study across 247 participants</div><div class="pub-meta">kind research team &amp; contributors · Expected June 2026 · Open access</div><div class="pub-tags"><span class="badge badge-teal">Caffeine &amp; sleep</span><span class="badge badge-blue">N-of-1 design</span></div></div>
-      <div class="pub-card"><div class="pub-source" style="color:#185FA5;">Sleep Medicine · 2025</div><div class="pub-title">Chronotype moderates the association between caffeine timing and sleep onset latency</div><div class="pub-meta">van der Berg et al. · Sleep Medicine, Vol. 118 · Peer reviewed</div><div class="pub-tags"><span class="badge badge-blue">Caffeine timing</span><span class="badge badge-amber">Relevant to your data</span></div></div>
+      <div class="pub-card"><div class="pub-source" style="color:#8A4A1A;">kind · In preparation</div><div class="pub-title">Morning rules and afternoon energy: an N-of-1 cohort study across 78 participants</div><div class="pub-meta">kind research team &amp; contributors · Expected June 2026 · Open access</div><div class="pub-tags"><span class="badge badge-amber">Morning rules</span><span class="badge badge-blue">N-of-1 design</span></div></div>
+      <div class="pub-card"><div class="pub-source" style="color:#185FA5;">Chronobiology · 2025</div><div class="pub-title">Morning light exposure and subjective afternoon alertness in working adults</div><div class="pub-meta">Chen et al. · Journal of Biological Rhythms · Peer reviewed</div><div class="pub-tags"><span class="badge badge-blue">Circadian</span><span class="badge badge-amber">Relevant to your data</span></div></div>
       <div class="science-banner" style="margin-top:0.5rem;"><div class="science-title">Contribute to the research</div><div class="science-text">Your anonymised data is part of the kind dataset. When research papers are published using your data, you'll be acknowledged as a citizen science contributor.</div></div>
     </div>
   </div>
@@ -580,8 +591,8 @@
     <div style="margin-bottom:1rem;"><div class="section-title">Community</div><div class="section-sub">Others on similar explorations. Shared journeys, shared science.</div></div>
     <div class="science-banner">
       <div class="science-title">Citizen science contribution</div>
-      <div class="science-text">With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications on the real-world effects of caffeine regulation — science that belongs to everyone.</div>
-      <div style="margin-top:10px;display:flex;gap:6px;"><span class="badge badge-teal">247 participants</span><span class="badge badge-teal">2 papers pending</span></div>
+      <div class="science-text">With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications on how morning routines affect afternoon energy — science that belongs to everyone.</div>
+      <div style="margin-top:10px;display:flex;gap:6px;"><span class="badge badge-teal">78 participants</span><span class="badge badge-teal">1 paper pending</span></div>
     </div>
 
     <!-- Community search -->
@@ -612,27 +623,27 @@
       <div id="near-you-list"></div>
     </div>
 
-    <div class="card"><div class="card-title">Community insight</div><div style="font-size:13px;color:var(--text-muted);line-height:1.6;">Across active participants this month, those who moved their caffeine cutoff to before 2pm reported an average sleep quality improvement of <strong style="color:var(--text);font-weight:600;">+1.6 points</strong> by week 4. You're on the same track.</div></div>
+    <div class="card"><div class="card-title">Community insight</div><div style="font-size:13px;color:var(--text-muted);line-height:1.6;">Across active participants this month, those logging <strong style="color:var(--text);font-weight:600;">3+ morning rules</strong> reported an average afternoon energy improvement of <strong style="color:var(--text);font-weight:600;">+1.6 points</strong> by week 4. You're on the same track.</div></div>
   </div>
 
   <!-- PROFILE -->
   <div id="profile" class="screen">
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:1.25rem;">
       <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--orange);flex-shrink:0;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--green-dark);position:relative;">
-        <img src="https://i.pravatar.cc/128?img=10" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
-        <span>EG</span>
+        <img src="https://i.pravatar.cc/128?img=28" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()" alt="">
+        <span>AR</span>
       </div>
       <div>
-        <div style="font-size:18px;font-weight:600;color:var(--text);">Emma Green</div>
-        <div style="font-size:13px;color:var(--text-muted);">Amsterdam · Joined March 2026</div>
-        <div style="margin-top:6px;display:flex;gap:4px;"><span class="badge badge-teal">Week 3 active</span><span class="badge badge-green">9-day streak</span></div>
+        <div style="font-size:18px;font-weight:600;color:var(--text);">Anna Ross</div>
+        <div style="font-size:13px;color:var(--text-muted);">New York · Joined March 2026</div>
+        <div style="margin-top:6px;display:flex;gap:4px;"><span class="badge badge-amber">Morning rules · Wk 3</span><span class="badge badge-green">9-day streak</span></div>
       </div>
     </div>
 
     <!-- Following / Followers bar -->
     <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1rem;overflow:hidden;">
       <div style="flex:1;padding:0.85rem 1rem;text-align:center;cursor:pointer;transition:background 0.15s;" onclick="openFollowPanel('following')" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-        <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-following-count">25</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-following-count">24</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Following</div>
       </div>
       <div style="width:1px;background:var(--border);"></div>
@@ -644,9 +655,9 @@
 
     <div class="card">
       <div class="card-title">My exploration summary</div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Active explorations</span><span style="font-size:13px;font-weight:600;color:var(--text);">1 of 5 available</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Baseline sleep score</span><span style="font-size:13px;font-weight:600;color:var(--text);">5.2 / 10</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Current sleep score</span><span style="font-size:13px;font-weight:600;color:var(--green-dark);">7.4 / 10</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Active explorations</span><span style="font-size:13px;font-weight:600;color:var(--text);">1 of 6 available</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Baseline afternoon energy</span><span style="font-size:13px;font-weight:600;color:var(--text);">4.8 / 10</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;color:var(--text-muted);">Current afternoon energy</span><span style="font-size:13px;font-weight:600;color:var(--green-dark);">6.8 / 10</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="font-size:13px;color:var(--text-muted);">Total logs submitted</span><span style="font-size:13px;font-weight:600;color:var(--text);">12</span></div>
     </div>
     <div class="card">
@@ -739,21 +750,20 @@ function openFeedMilestone(uid, actIndex) {
 
 /* ── Exploration detail ── */
 const EXPLORATIONS = {
-  caffeine: {
-    title:'Caffeine & sleep quality', icon:'☕', bg:'var(--green-light)', text:'var(--green-dark)',
-    active:true, duration:'8-week protocol', statusBadge:'Week 3 of 8', progress:38, streak:9, participants:247,
-    desc:'Understand how your caffeine habits affect sleep quality and energy. Adjust timing and quantity across 8 weeks and measure your personal response.',
-    kpis:[{label:'Avg sleep score',val:'7.4',unit:'/10',change:'+2.2 from baseline',up:true},{label:'Avg caffeine',val:'112',unit:'mg/day',change:'−88mg vs baseline',up:true}],
-    phases:[{name:'Weeks 1–2: Baseline',desc:'Normal intake tracked to establish personal baseline sleep and energy metrics.',status:'complete'},{name:'Weeks 3–5: Gradual reduction',desc:'Reducing total intake 25% per week, moving last consumption progressively earlier.',status:'active'},{name:'Weeks 6–7: Low-caffeine phase',desc:'Under 100mg/day, all before 1pm. Rigorous sleep tracking continues.',status:'upcoming'},{name:'Week 8: N-of-1 report',desc:'Personal report comparing baseline to intervention outcomes.',status:'upcoming'}],
-    chartLabel:'Sleep quality — last 7 days',
-    chart:[{day:'Mon',h:52,v:'5.2'},{day:'Tue',h:60,v:'6.0'},{day:'Wed',h:68,v:'6.8'},{day:'Thu',h:70,v:'7.0'},{day:'Fri',h:72,v:'7.2'},{day:'Sat',h:74,v:'7.4',hi:true},{day:'Sun',h:0,v:'—',empty:true}],
-    fields:[{type:'range',id:'cf_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'range',id:'cf_mg',label:'Total caffeine today',min:0,max:400,val:80,step:10,unit:'mg'},{type:'select',id:'cf_cutoff',label:'Last caffeine intake',opts:['Before 12pm','12pm – 2pm','2pm – 4pm','After 4pm'],sel:1},{type:'select',id:'cf_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:1},{type:'range',id:'cf_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']}]
+  'morning-rules': {
+    title:'Do morning rules reduce my chances of an afternoon crash?', category:'Energy & Focus', feedLabel:'Morning rules & afternoon energy', icon:'🌅', bg:'#FDF0E4', text:'#8A4A1A',
+    active:true, duration:'8-week protocol', statusBadge:'Week 3 of 8', progress:38, streak:9, participants:78,
+    desc:'8-week exploration to see if early sunlight exposure, morning stretching, caffeine offsetting, or morning meditation help your afternoon energy.',
+    kpis:[{label:'Avg afternoon energy',val:'6.8',unit:'/10',change:'+1.4 from baseline',up:true},{label:'Crash-free days',val:'4',unit:'/7',change:'+2 vs baseline week',up:true}],
+    phases:[{name:'Weeks 1–2: Baseline',desc:'Log your usual morning routine and afternoon energy with no new rules — establish your personal baseline.',status:'complete'},{name:'Weeks 3–5: Morning rules',desc:'Track which rules you follow each day: sunlight, stretching, delayed caffeine, meditation.',status:'active'},{name:'Weeks 6–7: Optimise your stack',desc:'Keep the rule combinations that helped most. Watch for fewer afternoon crashes.',status:'upcoming'},{name:'Week 8: N-of-1 report',desc:'Personal report on which morning rules linked to better afternoon energy for you.',status:'upcoming'}],
+    chartLabel:'Afternoon energy — last 7 days',
+    chart:[{day:'Mon',h:48,v:'4.8'},{day:'Tue',h:55,v:'5.5'},{day:'Wed',h:62,v:'6.2'},{day:'Thu',h:68,v:'6.8'},{day:'Fri',h:72,v:'7.2'},{day:'Sat',h:68,v:'6.8',hi:true},{day:'Sun',h:0,v:'—',empty:true}],
+    fields:[{type:'checks',id:'mr_rules',label:'Morning rules followed today',opts:['Early sunlight exposure','Morning stretching','Caffeine offset (delayed first cup)','Morning meditation'],multi:true},{type:'range',id:'mr_am_energy',label:'Morning energy',min:1,max:10,val:7,hints:['Low','High']},{type:'range',id:'mr_pm_energy',label:'Afternoon energy',min:1,max:10,val:6,hints:['Low','High']},{type:'select',id:'mr_crash',label:'Afternoon crash today',opts:['None','Mild dip','Noticeable crash','Severe crash'],sel:1},{type:'range',id:'mr_focus',label:'Focus through afternoon',min:1,max:10,val:6,hints:['Poor','Strong']}]
   },
-  movement:{title:'Movement & energy',icon:'🏃',bg:'#EAF3DE',text:'#3B6D11',active:false,duration:'6-week protocol',participants:89,desc:'Track how daily movement — especially outdoor activity — correlates with your energy levels, mood, and sleep quality over 6 weeks.',outcomes:[{icon:'⚡',label:'+0.9 pts avg sleep quality across 89 participants'},{icon:'😊',label:'Mood scores improve measurably from week 3'},{icon:'🌿',label:'Outdoor activity compounds the sleep benefit'}],phases:[{name:'Weeks 1–2: Baseline',desc:'Log daily activity at your normal pace to establish your baseline.',status:'upcoming'},{name:'Weeks 3–4: Structured movement',desc:'Add 20+ min of intentional daily activity, outdoor preferred.',status:'upcoming'},{name:'Weeks 5–6: Intensity variation',desc:'Alternate high and low intensity days. Track energy and mood response.',status:'upcoming'}],fields:[{type:'range',id:'mv_dur',label:'Activity duration',min:0,max:120,val:30,step:5,unit:'min'},{type:'select',id:'mv_type',label:'Activity type',opts:['Walking','Running','Cycling','Gym / weights','Yoga / stretching','Swimming','Other'],sel:0},{type:'checks',id:'mv_setting',label:'Activity setting',opts:['Outdoor','Indoor'],multi:false},{type:'range',id:'mv_ebefore',label:'Energy before activity',min:1,max:10,val:5,hints:['Low','High']},{type:'range',id:'mv_eafter',label:'Energy after activity',min:1,max:10,val:7,hints:['Low','High']},{type:'range',id:'mv_mood',label:'Mood today',min:1,max:10,val:6,hints:['Low','High']}]},
-  eating:{title:'Time-restricted eating',icon:'🕐',bg:'#FDF0E4',text:'#8A4A1A',active:false,duration:'6-week protocol',participants:12,desc:'Explore how compressing your eating window affects energy, hunger patterns, and mood. No calorie restriction — just timing.',outcomes:[{icon:'⚡',label:'Improved mid-afternoon energy in 68% of participants'},{icon:'😴',label:'Earlier last meal linked to faster sleep onset'},{icon:'🍽️',label:'Hunger adapts within 7–10 days for most people'}],phases:[{name:'Weeks 1–2: Baseline eating window',desc:'Log your natural eating times with no changes.',status:'upcoming'},{name:'Weeks 3–4: 10-hour window',desc:'Compress eating to a consistent 10-hour window daily.',status:'upcoming'},{name:'Weeks 5–6: 8-hour window',desc:'Try an 8-hour window. Log energy and hunger response throughout.',status:'upcoming'}],fields:[{type:'select',id:'te_first',label:'First meal today',opts:['Before 7am','7–8am','8–9am','9–10am','After 10am'],sel:2},{type:'select',id:'te_last',label:'Last meal today',opts:['Before 4pm','4–6pm','6–7pm','7–8pm','After 8pm'],sel:2},{type:'range',id:'te_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']},{type:'range',id:'te_hunger',label:'Hunger comfort today',min:1,max:10,val:6,hints:['Very hungry','Comfortable']},{type:'range',id:'te_mood',label:'Mood today',min:1,max:10,val:7,hints:['Low','High']}]},
-  stress:{title:'Stress & recovery',icon:'💓',bg:'#EEEDFE',text:'#534AB7',active:false,duration:'8-week protocol',participants:34,desc:'Use daily HRV readings alongside subjective stress check-ins to understand your recovery patterns and what moves the needle most.',outcomes:[{icon:'💓',label:'HRV improves by an avg of 8ms over 8 weeks'},{icon:'🧘',label:'Breathwork shows the fastest HRV response'},{icon:'🌿',label:'Nature exposure reduces subjective stress in 80% of participants'}],phases:[{name:'Weeks 1–2: Baseline HRV & stress',desc:'Measure morning HRV and log stress levels with no protocol changes.',status:'upcoming'},{name:'Weeks 3–5: Recovery practices',desc:'Introduce one daily recovery practice — breathwork, cold, nature, or journaling.',status:'upcoming'},{name:'Weeks 6–7: Stacking practices',desc:'Combine two practices. Track HRV response and subjective stress scores.',status:'upcoming'},{name:'Week 8: N-of-1 report',desc:'Personal report on which practices most improved your HRV and stress.',status:'upcoming'}],fields:[{type:'number',id:'sr_hrv',label:'Morning HRV (rMSSD)',placeholder:'45',unit:'ms',hint:'Typical range 20–100ms. Measure lying down before getting up.'},{type:'range',id:'sr_stress',label:'Subjective stress today',min:1,max:10,val:4,hints:['Very low','Very high']},{type:'checks',id:'sr_recovery',label:'Recovery practices today',opts:['Breathwork','Cold exposure','Nature walk','Journaling','Meditation','Rest day'],multi:true},{type:'range',id:'sr_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'range',id:'sr_wellbeing',label:'Overall wellbeing today',min:1,max:10,val:6,hints:['Low','High']}]},
-  supplements:{title:'Supplements & sleep',icon:'💊',bg:'#FDF0E4',text:'#8A4A1A',active:false,duration:'6-week protocol',participants:0,isNew:true,desc:'Run a single-supplement trial — magnesium, vitamin D, or ashwagandha — with rigorous sleep tracking to measure your personal response.',outcomes:[{icon:'🧲',label:'Magnesium glycinate improves sleep onset in ~60% of users'},{icon:'☀️',label:'Vitamin D correction linked to sleep quality gains'},{icon:'🌿',label:'Ashwagandha linked to reduced cortisol and faster sleep onset'}],phases:[{name:'Weeks 1–2: Baseline (no supplement)',desc:'Track sleep quality with no supplement to establish your baseline.',status:'upcoming'},{name:'Weeks 3–6: Supplement trial',desc:'Take your chosen supplement daily at a fixed time. Track sleep response each morning.',status:'upcoming'}],fields:[{type:'checks',id:'sp_which',label:'Supplement taken today',opts:['Magnesium glycinate','Vitamin D','Ashwagandha','None today'],multi:false},{type:'select',id:'sp_time',label:'Time taken',opts:['Morning','Afternoon','With dinner','Before bed','Not taken'],sel:4},{type:'range',id:'sp_sleep',label:'Sleep quality last night',min:1,max:10,val:7,hints:['Poor','Excellent']},{type:'select',id:'sp_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:1},{type:'range',id:'sp_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']}]},
-  screen:{title:'Screen time & sleep onset',icon:'📱',bg:'#E6F1FB',text:'#185FA5',active:false,duration:'4-week protocol',participants:51,desc:'Measure how your evening screen habits affect how quickly you fall asleep. Reduce exposure and track the change in real time.',outcomes:[{icon:'😴',label:'51 participants report avg 12 min faster sleep onset'},{icon:'📚',label:'Reading replaces screens in 78% of participants by week 3'},{icon:'🌙',label:'The effect is strongest in the first 7 days'}],phases:[{name:'Week 1: Baseline',desc:'Log your normal evening screen habits and sleep onset times.',status:'upcoming'},{name:'Weeks 2–3: 30-min screen-free window',desc:'Stop all screens 30 min before bed. Track sleep onset change.',status:'upcoming'},{name:'Week 4: 60-min screen-free window',desc:'Extend to 60 min. Compare sleep onset across all phases.',status:'upcoming'}],fields:[{type:'select',id:'sc_last',label:'Last screen use before bed',opts:['60+ min before','30–60 min before','15–30 min before','Right before bed'],sel:3},{type:'range',id:'sc_windup',label:'Screen-free wind-down time',min:0,max:90,val:0,step:5,unit:'min'},{type:'checks',id:'sc_activities',label:'Wind-down activities',opts:['Reading','Meditation','Stretching','Bath / shower','Journaling','Conversation'],multi:true},{type:'select',id:'sc_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:2},{type:'range',id:'sc_sleep',label:'Sleep quality last night',min:1,max:10,val:6,hints:['Poor','Excellent']}]}
+  eating:{title:'Does time restricted eating improve my energy levels?',category:'Metabolic Health',feedLabel:'Time-restricted eating',icon:'🕐',bg:'#FDF0E4',text:'#8A4A1A',active:false,duration:'6-week protocol',participants:64,desc:'6-week exploration to see if a restriction in the time window in which you consume food helps to support higher energy levels through the day. No calorie restriction — just timing.',outcomes:[{icon:'⚡',label:'Improved mid-afternoon energy in 68% of participants'},{icon:'😴',label:'Earlier last meal linked to faster sleep onset'},{icon:'🍽️',label:'Hunger adapts within 7–10 days for most people'}],phases:[{name:'Weeks 1–2: Baseline eating window',desc:'Log your natural eating times with no changes.',status:'upcoming'},{name:'Weeks 3–4: 10-hour window',desc:'Compress eating to a consistent 10-hour window daily.',status:'upcoming'},{name:'Weeks 5–6: 8-hour window',desc:'Try an 8-hour window. Log energy and hunger response throughout.',status:'upcoming'}],fields:[{type:'select',id:'te_first',label:'First meal today',opts:['Before 7am','7–8am','8–9am','9–10am','After 10am'],sel:2},{type:'select',id:'te_last',label:'Last meal today',opts:['Before 4pm','4–6pm','6–7pm','7–8pm','After 8pm'],sel:2},{type:'range',id:'te_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']},{type:'range',id:'te_hunger',label:'Hunger comfort today',min:1,max:10,val:6,hints:['Very hungry','Comfortable']},{type:'range',id:'te_mood',label:'Mood today',min:1,max:10,val:7,hints:['Low','High']}]},
+  'screen-sleep':{title:'Does moderation of screen exposure improve my sleep quality?',category:'Rest & Sleep',feedLabel:'Screen moderation & sleep',icon:'📱',bg:'#E6F1FB',text:'#185FA5',active:false,duration:'6-week protocol',participants:51,desc:'6-week exploration to see if a reduction in screen exposure both before and at bedtime can increase sleep quality.',outcomes:[{icon:'😴',label:'51 participants report improved sleep quality by week 4'},{icon:'📚',label:'Reading replaces screens in 78% of participants by week 3'},{icon:'🌙',label:'The effect is often strongest in the first two weeks'}],phases:[{name:'Weeks 1–2: Baseline',desc:'Log your normal evening screen habits before bed, in-bed screen use, and sleep quality.',status:'upcoming'},{name:'Weeks 3–4: 30-min screen-free window',desc:'Stop all screens 30 min before bed and reduce in-bed screen use. Track sleep quality.',status:'upcoming'},{name:'Weeks 5–6: 60-min screen-free window',desc:'Extend to 60 min before bed and no screens in bed. Compare sleep quality across phases.',status:'upcoming'}],fields:[{type:'select',id:'ss_last',label:'Last screen use before bed',opts:['60+ min before','30–60 min before','15–30 min before','Right before bed'],sel:3},{type:'select',id:'ss_bed',label:'Screen use in bed',opts:['None','Under 15 min','15–30 min','30+ min'],sel:2},{type:'range',id:'ss_windup',label:'Screen-free wind-down time',min:0,max:90,val:0,step:5,unit:'min'},{type:'checks',id:'ss_activities',label:'Wind-down activities',opts:['Reading','Meditation','Stretching','Bath / shower','Journaling','Conversation'],multi:true},{type:'select',id:'ss_onset',label:'Time to fall asleep',opts:['Under 10 min','10–20 min','20–40 min','Over 40 min'],sel:2},{type:'range',id:'ss_sleep',label:'Sleep quality last night',min:1,max:10,val:6,hints:['Poor','Excellent']}]},
+  relaxation:{title:'Do relaxation practices improve my composure?',category:'Mental Health',feedLabel:'Relaxation practices & composure',icon:'🧘',bg:'#EEEDFE',text:'#534AB7',active:false,duration:'6-week protocol',participants:58,desc:'6-week exploration to see if vagal breathing, progressive muscle relaxation, short (nature) walks, or meditation / visualisation help reduce stress and anxiety.',outcomes:[{icon:'🧘',label:'58 participants track daily practices alongside stress and anxiety levels'},{icon:'🌿',label:'Nature walks and vagal breathing are the most commonly logged practices by week 3'},{icon:'📉',label:'Lower stress days often cluster when 2+ practices are logged'}],phases:[{name:'Weeks 1–2: Baseline',desc:'Log your usual stress and anxiety with no new practices — establish your personal baseline.',status:'upcoming'},{name:'Weeks 3–5: Relaxation practices',desc:'Track which practices you follow each day: vagal breathing, PMR, short nature walks, meditation / visualisation.',status:'upcoming'},{name:'Week 6: N-of-1 report',desc:'Personal report on which practices linked to lower stress, anxiety, and greater composure for you.',status:'upcoming'}],fields:[{type:'checks',id:'rp_practices',label:'Relaxation practices followed today',opts:['Vagal breathing','Progressive muscle relaxation','Short nature walk','Meditation / visualisation'],multi:true},{type:'range',id:'rp_stress',label:'Stress level today',min:1,max:10,val:5,hints:['Calm','Very high']},{type:'range',id:'rp_anxiety',label:'Anxiety level today',min:1,max:10,val:5,hints:['Calm','Very high']},{type:'range',id:'rp_composure',label:'Composure today',min:1,max:10,val:6,hints:['Low','High']}]},
+  'upf-mood':{title:'Does reduction of Ultra Processed Food (UPF) improve my mood?',category:'Diet & Nutrition',feedLabel:'UPF reduction & mood',icon:'🥗',bg:'#EAF3DE',text:'#3B6D11',active:false,duration:'6-week protocol',participants:22,desc:'6-week exploration to see if a reduction in the daily intake of Ultra Processed Foods and their replacement with unprocessed foods can improve mood. Assess the percentage of your diet that day that contained UPF and track your daily mood and energy levels.',outcomes:[{icon:'😊',label:'Lower UPF days often correlate with improved mood by week 4 for many participants'},{icon:'📊',label:'Daily UPF percentage logging surfaces personal patterns within the first two weeks'},{icon:'🥦',label:'Swapping UPF for whole foods is the core lever — not calorie counting'}],phases:[{name:'Weeks 1–2: Baseline',desc:'Log your usual share of UPF in meals plus daily mood and energy, with no intentional changes.',status:'upcoming'},{name:'Weeks 3–4: Gradual reduction',desc:'Replace key UPF items with unprocessed alternatives. Track UPF %, mood, and energy each day.',status:'upcoming'},{name:'Weeks 5–6: Sustained lower UPF',desc:'Hold a lower UPF target and compare mood and energy to your baseline weeks.',status:'upcoming'}],fields:[{type:'range',id:'upf_pct',label:'Estimated % of diet that was UPF today',min:0,max:100,val:45,step:5,unit:'%'},{type:'range',id:'upf_mood',label:'Mood today',min:1,max:10,val:6,hints:['Low','High']},{type:'range',id:'upf_energy',label:'Energy levels today',min:1,max:10,val:6,hints:['Low','High']},{type:'checks',id:'upf_swaps',label:'Unprocessed swaps today',opts:['Breakfast','Lunch','Dinner','Snacks'],multi:true}]},
 };
 
 function openExploration(id) {
@@ -776,9 +786,11 @@ function renderDetail(id) {
   const e = EXPLORATIONS[id];
   let h = '';
   const badge = e.active ? '<span class="badge badge-amber">Active</span>' : '<span class="badge badge-teal">Available</span>';
-  h += `<div class="detail-header"><button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="detail-title-text">${e.title}</div>${badge}</div>`;
+  const catBadge = e.category ? `<span class="badge badge-teal" style="margin-bottom:6px;display:inline-block;">${e.category}</span>` : '';
+  h += `<div class="detail-header"><button class="detail-back" onclick="closeDetail()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div style="flex:1;min-width:0;">${catBadge}<div class="detail-title-text">${e.title}</div></div>${badge}</div>`;
   const partLine = e.isNew ? 'New · Be among the first' : `<span>${e.participants} participants</span> · <span class="explorers-badge" role="button" tabindex="0" style="font-weight:600;color:var(--green-dark);text-decoration:underline;text-underline-offset:2px;" onclick="event.stopPropagation();openExplorersPanel('${id}')">See explorers</span>`;
-  h += `<div style="padding:1rem;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:1rem;"><div style="display:flex;align-items:flex-start;gap:14px;${e.active?'margin-bottom:1rem;':''}"><div style="width:52px;height:52px;border-radius:12px;background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${e.icon}</div><div style="flex:1;"><div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${e.duration} · ${partLine}</div><div style="font-size:13px;color:var(--text-muted);line-height:1.55;">${e.desc}</div>${e.active?`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">${e.statusBadge}</span><span class="badge badge-teal">${e.streak}-day streak</span></div>`:''}</div></div>${e.active?`<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;color:var(--text-muted);">Protocol progress</span><span style="font-size:12px;font-weight:600;color:var(--green-dark);">${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%;"></div></div>`:''}</div>`;
+  const catPrefix = e.category ? `${e.category} · ` : '';
+  h += `<div style="padding:1rem;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:1rem;"><div style="display:flex;align-items:flex-start;gap:14px;${e.active?'margin-bottom:1rem;':''}"><div style="width:52px;height:52px;border-radius:12px;background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${e.icon}</div><div style="flex:1;"><div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${catPrefix}${e.duration} · ${partLine}</div><div style="font-size:13px;color:var(--text-muted);line-height:1.55;">${e.desc}</div>${e.active?`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;"><span class="badge badge-amber">${e.statusBadge}</span><span class="badge badge-teal">${e.streak}-day streak</span></div>`:''}</div></div>${e.active?`<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12px;color:var(--text-muted);">Protocol progress</span><span style="font-size:12px;font-weight:600;color:var(--green-dark);">${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%;"></div></div>`:''}</div>`;
   h += `<div style="padding:0 1rem;">`;
   if (e.active && e.kpis) { h += `<div class="kpi-row">`; e.kpis.forEach(k => { h += `<div class="kpi-card"><div class="kpi-label">${k.label}</div><div><span class="kpi-val">${k.val}</span><span class="kpi-unit"> ${k.unit}</span></div><div class="kpi-change" style="color:${k.up?'var(--green-dark)':'#8A4A1A'};">${k.change}</div></div>`; }); h += `</div>`; }
   if (!e.active && e.outcomes) { h += `<div class="card"><div class="card-title">Expected outcomes</div>`; e.outcomes.forEach(o => { h += `<div class="outcome-row"><div style="font-size:18px;flex-shrink:0;">${o.icon}</div><div style="font-size:13px;color:var(--text-muted);padding-top:2px;">${o.label}</div></div>`; }); h += `</div>`; }
@@ -837,117 +849,122 @@ function handleExploreSearch(val) {
   if (!val.trim() || val.length < 2) { chatEl.style.display='none'; return; }
   chatEl.style.display = 'block';
   const safeVal = val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">EG</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div class="cb-txt"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
+  chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">AR</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div class="cb-txt"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
   exploreTimer = setTimeout(() => {
     const r = getExploreResponse(val);
     const cards = r.ids.map(id => {
       const e = EXPLORATIONS[id]; if (!e) return '';
       const parts = e.isNew ? 'New · Be among the first' : `${e.participants} explorers`;
+      const catLine = e.category ? `${e.category} · ` : '';
       return `<div class="chat-exp-card" onclick="openExploration('${id}')">
         <div style="width:40px;height:40px;border-radius:var(--radius-md);background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${e.icon}</div>
-        <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">${e.title}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${e.duration} · ${parts}</div></div>
+        <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">${e.title}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${catLine}${e.duration} · ${parts}</div></div>
         <button style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--orange);color:white;border:none;cursor:pointer;font-family:var(--font-sans);flex-shrink:0;" onclick="event.stopPropagation();openExploration('${id}')">Explore</button>
       </div>`;
     }).join('');
-    chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">EG</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div style="max-width:88%;"><div class="cb-txt">${r.msg}</div>${cards}</div></div>`;
+    chatEl.innerHTML = `<div class="chat-bub user-msg"><div class="cb-av" style="background:var(--orange);">AR</div><div class="cb-txt">${safeVal}</div></div><div class="chat-bub"><div class="cb-av" style="background:var(--green-dark);">k</div><div style="max-width:88%;"><div class="cb-txt">${r.msg}</div>${cards}</div></div>`;
   }, 800);
 }
 function getExploreResponse(q) {
   q = q.toLowerCase();
-  if (q.match(/sleep|tired|fatigue|insomnia|rest|wake/)) return {msg:'Sleep quality is one of the most impactful areas to explore. These explorations have the strongest evidence and most active communities:',ids:['caffeine','screen']};
-  if (q.match(/caffeine|coffee|tea|espresso|energy drink/)) return {msg:`Caffeine timing is one of the most studied sleep levers. ${EXPLORATIONS.caffeine.participants} explorers are actively tracking this right now — and the community data is compelling.`,ids:['caffeine']};
-  if (q.match(/stress|anxiety|hrv|nervous|burnout|cortisol|overwhelm/)) return {msg:'Stress and HRV tracking gives you an objective window into your nervous system. Recovery practices in this protocol show measurable effects within just a few weeks:',ids:['stress','movement']};
-  if (q.match(/move|exercise|run|walk|gym|sport|workout|fitness|activity/)) return {msg:`Movement is one of the most consistently impactful levers for energy and mood. ${EXPLORATIONS.movement.participants} explorers are already seeing patterns emerge from week 3:`,ids:['movement']};
-  if (q.match(/eat|food|diet|fast|nutrition|meal|hunger|window|intermittent/)) return {msg:"Eating timing — not restriction — has a surprisingly strong effect on energy, mood, and sleep onset. No calorie counting, just awareness of when you eat:",ids:['eating']};
-  if (q.match(/screen|phone|blue light|social media|device|scroll|tiktok/)) return {msg:`Evening screen habits are one of the most underestimated sleep disruptors. ${EXPLORATIONS.screen.participants} explorers are tracking this — results in the first two weeks are often dramatic:`,ids:['screen']};
-  if (q.match(/supplement|magnesium|vitamin|ashwagandha|melatonin/)) return {msg:"Single-supplement N-of-1 trials let you rigorously test what actually works for your physiology — not just population averages:",ids:['supplements']};
-  if (q.match(/focus|brain|cognitive|memory|concentration/)) return {msg:"Cognitive performance links closely to sleep quality and stress regulation. Here are the two explorations most likely to surface insights about your focus:",ids:['caffeine','stress']};
-  return {msg:`I found a few explorations that could be relevant to "${q.slice(0,30)}". Each is a structured N-of-1 protocol with an active community — pick the one that resonates most:`,ids:['caffeine','movement','stress'].slice(0,2)};
+  if (q.match(/crash|afternoon slump|afternoon energy|mid-?afternoon|3pm|2pm slump/)) return {msg:`Afternoon crashes are exactly what this exploration is designed for. ${EXPLORATIONS['morning-rules'].participants} explorers are testing morning rules right now — early results are promising:`,ids:['morning-rules']};
+  if (q.match(/morning routine|morning light|sunlight|stretch|meditation|wake up/)) return {msg:'Morning routines — sunlight, movement, caffeine timing, and meditation — can shift afternoon energy. This structured exploration tracks which rules work for you:',ids:['morning-rules']};
+  if (q.match(/sleep|tired|fatigue|insomnia|rest|wake/)) return {msg:'Sleep quality is one of the most impactful areas to explore. These explorations have the strongest evidence and most active communities:',ids:['screen-sleep','morning-rules','relaxation']};
+  if (q.match(/caffeine|coffee|tea|espresso|energy drink/)) return {msg:`Caffeine timing affects sleep and afternoon energy. ${EXPLORATIONS['morning-rules'].participants} explorers are testing morning rules — including delaying your first cup — in a structured protocol:`,ids:['morning-rules','screen-sleep']};
+  if (q.match(/breath|breathing|vagal|pmr|muscle relaxation|meditat|visuali|nature walk|walk in nature|composure|calm down/)) return {msg:`Relaxation practices can lower stress and anxiety when tracked consistently. ${EXPLORATIONS.relaxation.participants} explorers are running this structured protocol:`,ids:['relaxation']};
+  if (q.match(/screen|phone|blue light|social media|device|scroll|tiktok|bedtime/)) return {msg:`Reducing screen exposure before and at bedtime is one of the most underestimated sleep levers. ${EXPLORATIONS['screen-sleep'].participants} explorers are tracking this — results in the first two weeks are often dramatic:`,ids:['screen-sleep']};
+  if (q.match(/upf|ultra.?processed|processed food|junk food|whole food|unprocessed/)) return {msg:`Ultra Processed Food reduction is one of the most discussed diet levers for mood. ${EXPLORATIONS['upf-mood'].participants} explorers are tracking daily UPF % alongside mood and energy:`,ids:['upf-mood']};
+  if (q.match(/mood|happiness|wellbeing|well-being|low mood|mental health/)) return {msg:'Mood responds to many daily habits — diet, stress practices, and routine. These structured explorations may help:',ids:['upf-mood','relaxation','eating']};
+  if (q.match(/eat|food|diet|fast|nutrition|meal|hunger|window|intermittent|metabolic/)) return {msg:`Eating habits shape energy and mood. ${EXPLORATIONS.eating.participants} explorers track meal timing; ${EXPLORATIONS['upf-mood'].participants} are testing UPF reduction:`,ids:['eating','upf-mood']};
+  if (q.match(/move|exercise|run|walk|gym|sport|workout|fitness|activity/)) return {msg:'Physical activity pairs well with morning routines and meal timing for all-day energy. These explorations are the most relevant:',ids:['morning-rules','eating']};
+  if (q.match(/stress|anxiety|hrv|nervous|burnout|cortisol|overwhelm/)) return {msg:`Stress and anxiety respond to daily practices when you track them rigorously. ${EXPLORATIONS.relaxation.participants} explorers are testing vagal breathing, PMR, nature walks, and meditation:`,ids:['relaxation','morning-rules']};
+  if (q.match(/supplement|magnesium|vitamin|ashwagandha|melatonin/)) return {msg:'For structured diet and mood explorations on kind, these protocols are the closest fit — whole-food swaps rather than pills:',ids:['upf-mood','eating']};
+  if (q.match(/focus|brain|cognitive|memory|concentration/)) return {msg:"Cognitive performance links closely to sleep quality and afternoon energy. Here are the explorations most likely to surface insights about your focus:",ids:['morning-rules','screen-sleep','relaxation']};
+  return {msg:`I found a few explorations that could be relevant to "${q.slice(0,30)}". Each is a structured N-of-1 protocol with an active community — pick the one that resonates most:`,ids:['morning-rules','eating','screen-sleep'].slice(0,2)};
 }
 
 /* ── Community data ── */
 const COMM_USERS = {
-  'sam-johnson':{name:'Sam Johnson',loc:'Amsterdam',img:11,initials:'SJ',meta:'Week 6 · Caffeine & sleep',bio:'Data nerd exploring how small habits create outsized health outcomes. Runner, reader, sleep optimiser.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:6,of:8,active:true},{id:'movement',name:'Movement & energy',icon:'🏃',bg:'#EAF3DE',w:2,of:6,active:true}],acts:[{t:'Completed week 6 — first week sleep score averaged above 8.0. Something clicked this week.',time:'2 hours ago',exp:'Caffeine & sleep',detail:'Sleep avg 8.2 · Caffeine 85mg · 21-day streak',nc:4},{t:'Morning run before work — energy lasted until 7pm. New personal best for sustained focus.',time:'Yesterday',exp:'Movement & energy',detail:'35 min outdoor run · Energy after: 9/10 · Mood: 8/10',nc:7},{t:'Moved caffeine cutoff to 12:30pm. Sleep onset down to 9 minutes.',time:'3 days ago',exp:'Caffeine & sleep',detail:'Caffeine 120mg · Cutoff 12:30pm · Sleep onset 9 min',nc:2}],badges:[{t:'Sleep +2.1',s:'teal'},{t:'21-day streak',s:'green'}],follower:true},
-  'maya-chen':{name:'Maya Chen',loc:'London',img:9,initials:'MC',meta:'Week 3 · Caffeine & sleep',bio:'Looking for sustainable ways to improve sleep without supplements. Coffee lover taking on the hardest protocol for me.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:3,of:8,active:true}],acts:[{t:'Switched afternoon espresso to herbal tea. Small swap, genuinely big difference to how I wind down.',time:'4 hours ago',exp:'Caffeine & sleep',detail:'Caffeine 80mg · Cutoff 1pm · Sleep onset 18 min',nc:9},{t:'Week 3 complete. Starting to feel the shift in how I wake up. More alert, less foggy.',time:'2 days ago',exp:'Caffeine & sleep',detail:'Sleep quality 7.2 · Energy 7/10 · Adherence 100%',nc:3}],badges:[{t:'Sleep +0.8',s:'teal'},{t:'Data sharing on',s:'amber'}],follower:true},
-  'tom-richards':{name:'Tom Richards',loc:'Amsterdam',img:3,initials:'TR',meta:'Protocol complete',bio:'Just finished the full 8-week caffeine protocol. Results genuinely surprised me. Now exploring what comes next.',exps:[{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:8,of:8,active:false}],acts:[{t:'Completed the full 8-week protocol. Sleep quality went from 5.0 to 8.4. Genuinely surprised by how clear the effect was.',time:'2 days ago',exp:'Caffeine & sleep',detail:'Baseline 5.0 → Week 8 avg 8.4 · 56-day streak · N-of-1 report generated',nc:14},{t:"N-of-1 report generated and data contributed to the citizen science dataset.",time:'2 days ago',exp:'Caffeine & sleep',detail:'Data contributed · 2 papers pending',nc:6}],badges:[{t:'N-of-1 report done',s:'blue'}],follower:true},
-  'priya-lawson':{name:'Priya Lawson',loc:'New York',img:5,initials:'PL',meta:'2 active explorations',bio:'Running stress recovery alongside caffeine to understand how they interact. The combined data is already fascinating.',exps:[{id:'stress',name:'Stress & recovery',icon:'💓',bg:'#EEEDFE',w:4,of:8,active:true},{id:'caffeine',name:'Caffeine & sleep quality',icon:'☕',bg:'var(--green-light)',w:2,of:8,active:true}],acts:[{t:'HRV jumped to 62ms after three consecutive days of nature walks. Remarkable consistency.',time:'5 hours ago',exp:'Stress & recovery',detail:'HRV 62ms · Stress 3/10 · Recovery practice: nature walk',nc:11},{t:'Combining breathwork with earlier caffeine cutoff — subjective stress feels meaningfully lower.',time:'Yesterday',exp:'Stress & recovery',detail:'Breathwork 10 min · HRV 58ms · Caffeine 100mg',nc:5}],badges:[{t:'Stress & recovery',s:'purple'},{t:'Caffeine & sleep',s:'amber'}],follower:false},
-  'lars-hoffman':{name:'Lars Hoffman',loc:'London',img:14,initials:'LH',meta:'Week 2 · Movement & energy',bio:'Trying to understand why morning runs affect my afternoon focus so profoundly.',exps:[{id:'movement',name:'Movement & energy',icon:'🏃',bg:'#EAF3DE',w:2,of:6,active:true}],acts:[{t:'30-min outdoor run before 8am. Energy and focus held high until 6pm.',time:'This morning',exp:'Movement & energy',detail:'30 min outdoor · Energy before: 5/10 · Energy after: 9/10',nc:3}],badges:[{t:'Active',s:'teal'}],follower:true},
-  'emma-b':{name:'Emma B.',loc:'Amsterdam',img:44,initials:'EB',meta:'Week 5 · Screen time & sleep',bio:'Replacing evening screens with reading has been transformative. Sleep onset is now under 10 minutes.',exps:[{id:'screen',name:'Screen time & sleep onset',icon:'📱',bg:'#E6F1FB',w:5,of:4,active:true}],acts:[{t:"Day 35 screen-free before bed. Sleep onset down to 8 minutes — started at 35.",time:'Last night',exp:'Screen time & sleep',detail:'Screen-free 60 min · Sleep onset 8 min · Sleep quality 9.0',nc:8}],badges:[{t:'Sleep +3.1',s:'blue'}],follower:false},
-  'sophie-turner':{name:'Sophie Turner',loc:'New York',img:21,initials:'ST',meta:'Week 4 · Time-restricted eating',bio:'Eight-hour eating window feels completely natural now. Mid-afternoon energy crash is gone.',exps:[{id:'eating',name:'Time-restricted eating',icon:'🕐',bg:'#FDF0E4',w:4,of:6,active:true}],acts:[{t:'Week 4 check-in. Hunger fully adapted by day 10. Energy in the afternoon is consistently higher.',time:'Yesterday',exp:'Time-restricted eating',detail:'Eating window 8hr · Energy 8/10 · Hunger comfort 8/10',nc:6},{t:'Mid-afternoon energy crash disappeared entirely in week 3.',time:'3 days ago',exp:'Time-restricted eating',detail:'Energy avg 7.8 this week vs 5.2 baseline',nc:4}],badges:[{t:'Energy +1.2',s:'green'}],follower:true},
-  'james-w':{name:'James W.',loc:'London',img:13,initials:'JW',meta:'Week 6 · Stress & recovery',bio:"Cold exposure and breathwork combination is transformative. HRV data backs up what I feel subjectively.",exps:[{id:'stress',name:'Stress & recovery',icon:'💓',bg:'#EEEDFE',w:6,of:8,active:true}],acts:[{t:'Cold shower + Wim Hof breathing this morning. HRV 74ms — personal best by 8ms.',time:'This morning',exp:'Stress & recovery',detail:'HRV 74ms (prev best 66ms) · Cold shower 3 min · Breathwork 20 min',nc:12}],badges:[{t:'HRV +9ms',s:'purple'}],follower:true}
+  'sam-johnson':{name:'Sam Johnson',loc:'Amsterdam',img:11,initials:'SJ',meta:'Week 6 · Time-restricted eating',bio:'Data nerd exploring how small habits create outsized health outcomes. Runner, reader, energy optimiser.',exps:[{id:'eating',name:'Does time restricted eating improve my energy levels?',icon:'🕐',bg:'#FDF0E4',w:6,of:6,active:true},{id:'relaxation',name:'Do relaxation practices improve my composure?',icon:'🧘',bg:'#EEEDFE',w:2,of:6,active:true}],acts:[{t:'Completed week 6 — first week afternoon energy averaged above 7.5. Something clicked this week.',time:'2 hours ago',exp:'Time-restricted eating',detail:'Energy avg 7.8 · 10hr window · 21-day streak',nc:4},{t:'Week 2 — vagal breathing and a nature walk. Stress down to 4/10.',time:'Yesterday',exp:'Relaxation practices & composure',detail:'2 practices · Stress 4/10 · Anxiety 3/10 · Composure 7/10',nc:7},{t:'Compressed eating window to 9 hours. Afternoon crash-free four days running.',time:'3 days ago',exp:'Time-restricted eating',detail:'Eating window 9hr · Energy 8/10 · No crash',nc:2}],badges:[{t:'Energy +2.1',s:'teal'},{t:'21-day streak',s:'green'}],follower:true},
+  'maya-chen':{name:'Maya Chen',loc:'London',img:9,initials:'MC',meta:'Week 3 · Relaxation practices',bio:'Building a daily stack of breathing, PMR, and short walks to ease stress and anxiety.',exps:[{id:'relaxation',name:'Do relaxation practices improve my composure?',icon:'🧘',bg:'#EEEDFE',w:3,of:6,active:true}],acts:[{t:'Logged vagal breathing plus progressive muscle relaxation — stress 4/10, composure 7/10.',time:'4 hours ago',exp:'Relaxation practices & composure',detail:'2 practices · Stress 4/10 · Anxiety 3/10 · Composure 7/10',nc:9},{t:'Week 3 complete. Anxiety trending down versus baseline week.',time:'2 days ago',exp:'Relaxation practices & composure',detail:'Stress avg 4.2 · Anxiety avg 3.8 · Adherence 100%',nc:3}],badges:[{t:'Stress −1.4',s:'teal'},{t:'Data sharing on',s:'amber'}],follower:true},
+  'tom-richards':{name:'Tom Richards',loc:'Amsterdam',img:3,initials:'TR',meta:'Protocol complete',bio:'Just finished the full 6-week time-restricted eating protocol. Results genuinely surprised me. Now exploring what comes next.',exps:[{id:'eating',name:'Does time restricted eating improve my energy levels?',icon:'🕐',bg:'#FDF0E4',w:6,of:6,active:false}],acts:[{t:'Completed the full 6-week protocol. Afternoon energy went from 5.2 to 7.6. Genuinely surprised by how clear the effect was.',time:'2 days ago',exp:'Time-restricted eating',detail:'Baseline 5.2 → Week 6 avg 7.6 · 42-day streak · N-of-1 report generated',nc:14},{t:"N-of-1 report generated and data contributed to the citizen science dataset.",time:'2 days ago',exp:'Time-restricted eating',detail:'Data contributed · 2 papers pending',nc:6}],badges:[{t:'N-of-1 report done',s:'blue'}],follower:true},
+  'priya-lawson':{name:'Priya Lawson',loc:'New York',img:5,initials:'PL',meta:'Week 3 · Relaxation practices',bio:'Testing whether meditation and PMR lower her day-to-day stress — the logs are already interesting.',exps:[{id:'relaxation',name:'Do relaxation practices improve my composure?',icon:'🧘',bg:'#EEEDFE',w:3,of:6,active:true}],acts:[{t:'Meditation and PMR before bed — stress 3/10, composure 8/10.',time:'5 hours ago',exp:'Relaxation practices & composure',detail:'2 practices · Stress 3/10 · Anxiety 2/10 · Composure 8/10',nc:11},{t:'Short nature walk at lunch — anxiety down versus yesterday.',time:'Yesterday',exp:'Relaxation practices & composure',detail:'Nature walk · Stress 4/10 · Anxiety 3/10',nc:5}],badges:[{t:'Stress −1.6',s:'blue'},{t:'7-day streak',s:'amber'}],follower:false},
+  'lars-hoffman':{name:'Lars Hoffman',loc:'London',img:14,initials:'LH',meta:'Week 2 · Morning rules & energy',bio:'Testing whether a tighter morning routine can prevent the 3pm crash that used to wipe me out.',exps:[{id:'morning-rules',name:'Do morning rules reduce my chances of an afternoon crash?',icon:'🌅',bg:'#FDF0E4',w:2,of:8,active:true}],acts:[{t:'Logged 3 morning rules plus 10-hour eating window. No afternoon crash today.',time:'This morning',exp:'Morning rules & afternoon energy',detail:'Sunlight · Stretch · 10hr window · Afternoon energy 8/10',nc:3}],badges:[{t:'Active',s:'teal'}],follower:true},
+  'emma-b':{name:'Emma B.',loc:'Amsterdam',img:44,initials:'EB',meta:'Week 5 · Relaxation practices',bio:'Four practices logged most days — stress and anxiety averages are the lowest they have been.',exps:[{id:'relaxation',name:'Do relaxation practices improve my composure?',icon:'🧘',bg:'#EEEDFE',w:5,of:6,active:true}],acts:[{t:"Day 35 — all four practices once this week. Stress avg 3.2 vs 6.1 baseline.",time:'Last night',exp:'Relaxation practices & composure',detail:'4 practices · Stress 3/10 · Anxiety 2/10 · Composure 9/10',nc:8}],badges:[{t:'Stress −2.9',s:'blue'}],follower:false},
+  'sophie-turner':{name:'Sophie Turner',loc:'New York',img:21,initials:'ST',meta:'Week 4 · Time-restricted eating',bio:'Eight-hour eating window feels completely natural now. Mid-afternoon energy crash is gone.',exps:[{id:'eating',name:'Does time restricted eating improve my energy levels?',icon:'🕐',bg:'#FDF0E4',w:4,of:6,active:true}],acts:[{t:'Week 4 check-in. Hunger fully adapted by day 10. Energy in the afternoon is consistently higher.',time:'Yesterday',exp:'Time-restricted eating',detail:'Eating window 8hr · Energy 8/10 · Hunger comfort 8/10',nc:6},{t:'Mid-afternoon energy crash disappeared entirely in week 3.',time:'3 days ago',exp:'Time-restricted eating',detail:'Energy avg 7.8 this week vs 5.2 baseline',nc:4}],badges:[{t:'Energy +1.2',s:'green'}],follower:true},
+  'james-w':{name:'James W.',loc:'London',img:13,initials:'JW',meta:'Week 4 · Relaxation practices',bio:'Vagal breathing before meetings and evening PMR — composure is finally matching how he wants to feel.',exps:[{id:'relaxation',name:'Do relaxation practices improve my composure?',icon:'🧘',bg:'#EEEDFE',w:4,of:6,active:true}],acts:[{t:'Week 4 — stress averaged 4.1 with 3+ practices on five days.',time:'This morning',exp:'Relaxation practices & composure',detail:'Vagal breathing · PMR · Stress 4/10 · Composure 7/10',nc:12}],badges:[{t:'Composure +1.8',s:'blue'}],follower:true}
 };
 
 const NEAR_YOU_IDS = ['tom-richards','priya-lawson','lars-hoffman','emma-b'];
 
 const BASIC_USERS = [
-  {id:'lucas-park',name:'Lucas Park',loc:'London',img:4,initials:'LP',meta:'Week 3 · Caffeine & sleep'},
-  {id:'inge-voss',name:'Inge Voss',loc:'Amsterdam',img:8,initials:'IV',meta:'Week 1 · Movement & energy'},
-  {id:'mark-douglas',name:'Mark Douglas',loc:'New York',img:12,initials:'MD',meta:'Week 5 · Stress & recovery'},
+  {id:'lucas-park',name:'Lucas Park',loc:'London',img:4,initials:'LP',meta:'Week 3 · Morning rules & energy'},
+  {id:'inge-voss',name:'Inge Voss',loc:'Amsterdam',img:8,initials:'IV',meta:'Week 1 · Time-restricted eating'},
+  {id:'mark-douglas',name:'Mark Douglas',loc:'New York',img:12,initials:'MD',meta:'Week 5 · Relaxation practices'},
   {id:'nina-fischer',name:'Nina Fischer',loc:'London',img:26,initials:'NF',meta:'Week 2 · Time-restricted eating'},
   {id:'raj-kumar',name:'Raj Kumar',loc:'Amsterdam',img:57,initials:'RK',meta:'Protocol complete'},
-  {id:'lisa-cook',name:'Lisa Cook',loc:'New York',img:33,initials:'LC',meta:'Week 4 · Caffeine & sleep'},
-  {id:'peter-brown',name:'Peter Brown',loc:'London',img:53,initials:'PB',meta:'Week 6 · Movement & energy'},
-  {id:'sara-grant',name:'Sara Grant',loc:'Amsterdam',img:39,initials:'SG',meta:'Week 2 · Supplements & sleep'},
-  {id:'chris-norton',name:'Chris Norton',loc:'New York',img:18,initials:'CN',meta:'Week 3 · Screen time & sleep'},
-  {id:'eva-palmer',name:'Eva Palmer',loc:'Amsterdam',img:35,initials:'EP',meta:'Week 1 · Caffeine & sleep'},
-  {id:'zara-thomas',name:'Zara Thomas',loc:'London',img:47,initials:'ZT',meta:'Week 5 · Stress & recovery'},
-  {id:'kai-reed',name:'Kai Reed',loc:'New York',img:25,initials:'KR',meta:'Week 4 · Movement & energy'},
+  {id:'lisa-cook',name:'Lisa Cook',loc:'New York',img:33,initials:'LC',meta:'Week 4 · Time-restricted eating'},
+  {id:'peter-brown',name:'Peter Brown',loc:'London',img:53,initials:'PB',meta:'Week 6 · Time-restricted eating'},
+  {id:'sara-grant',name:'Sara Grant',loc:'Amsterdam',img:39,initials:'SG',meta:'Week 2 · UPF reduction & mood'},
+  {id:'chris-norton',name:'Chris Norton',loc:'New York',img:18,initials:'CN',meta:'Week 3 · Relaxation practices'},
+  {id:'eva-palmer',name:'Eva Palmer',loc:'Amsterdam',img:35,initials:'EP',meta:'Week 1 · Relaxation practices'},
+  {id:'zara-thomas',name:'Zara Thomas',loc:'London',img:47,initials:'ZT',meta:'Week 5 · Relaxation practices'},
+  {id:'kai-reed',name:'Kai Reed',loc:'New York',img:25,initials:'KR',meta:'Week 4 · Time-restricted eating'},
   {id:'obi-evans',name:'Obi Evans',loc:'Amsterdam',img:52,initials:'OE',meta:'Week 2 · Time-restricted eating'},
   {id:'fen-lim',name:'Fen Lim',loc:'London',img:30,initials:'FL',meta:'Protocol complete'},
-  {id:'dex-woods',name:'Dex Woods',loc:'New York',img:27,initials:'DW',meta:'Week 3 · Caffeine & sleep'},
-  {id:'mia-taylor',name:'Mia Taylor',loc:'Amsterdam',img:17,initials:'MT',meta:'Week 5 · Screen time & sleep'},
-  {id:'ben-nelson',name:'Ben Nelson',loc:'London',img:19,initials:'BN',meta:'Week 1 · Movement & energy'},
-  {id:'julia-lane',name:'Julia Lane',loc:'New York',img:22,initials:'JL',meta:'Week 4 · Stress & recovery'},
-  {id:'kim-oliver',name:'Kim Oliver',loc:'Amsterdam',img:23,initials:'KO',meta:'Week 2 · Caffeine & sleep'},
-  {id:'felix-white',name:'Felix White',loc:'London',img:24,initials:'FW',meta:'Week 6 · Supplements & sleep'},
-  {id:'anna-ross',name:'Anna Ross',loc:'New York',img:28,initials:'AR',meta:'Week 3 · Movement & energy'}
+  {id:'dex-woods',name:'Dex Woods',loc:'New York',img:27,initials:'DW',meta:'Week 3 · Time-restricted eating'},
+  {id:'mia-taylor',name:'Mia Taylor',loc:'Amsterdam',img:17,initials:'MT',meta:'Week 5 · Relaxation practices'},
+  {id:'ben-nelson',name:'Ben Nelson',loc:'London',img:19,initials:'BN',meta:'Week 1 · Time-restricted eating'},
+  {id:'julia-lane',name:'Julia Lane',loc:'New York',img:22,initials:'JL',meta:'Week 4 · Morning rules & energy'},
+  {id:'kim-oliver',name:'Kim Oliver',loc:'Amsterdam',img:23,initials:'KO',meta:'Week 2 · Morning rules & energy'},
+  {id:'felix-white',name:'Felix White',loc:'London',img:24,initials:'FW',meta:'Week 6 · UPF reduction & mood'},
+  {id:'hugo-miles',name:'Hugo Miles',loc:'New York',img:28,initials:'HM',meta:'Week 3 · Time-restricted eating'}
 ];
 
 const FOLLOWER_ONLY = [
-  {id:'rob-lane',name:'Rob Lane',loc:'London',img:29,initials:'RL',meta:'Week 2 · Caffeine & sleep'},
-  {id:'tara-scott',name:'Tara Scott',loc:'New York',img:34,initials:'TS',meta:'Week 4 · Stress & recovery'},
-  {id:'will-evans',name:'Will Evans',loc:'Amsterdam',img:36,initials:'WE',meta:'Week 3 · Movement & energy'},
+  {id:'rob-lane',name:'Rob Lane',loc:'London',img:29,initials:'RL',meta:'Week 2 · Time-restricted eating'},
+  {id:'tara-scott',name:'Tara Scott',loc:'New York',img:34,initials:'TS',meta:'Week 4 · Relaxation practices'},
+  {id:'will-evans',name:'Will Evans',loc:'Amsterdam',img:36,initials:'WE',meta:'Week 3 · Time-restricted eating'},
   {id:'helen-baker',name:'Helen Baker',loc:'London',img:37,initials:'HB',meta:'Week 1 · Time-restricted eating'},
   {id:'george-mill',name:'George Mill',loc:'New York',img:38,initials:'GM',meta:'Protocol complete'},
-  {id:'yara-patel',name:'Yara Patel',loc:'Amsterdam',img:40,initials:'YP',meta:'Week 5 · Caffeine & sleep'},
-  {id:'xander-king',name:'Xander King',loc:'London',img:41,initials:'XK',meta:'Week 2 · Screen time & sleep'},
-  {id:'dana-woods',name:'Dana Woods',loc:'New York',img:42,initials:'DW2',meta:'Week 4 · Movement & energy'},
-  {id:'cole-frost',name:'Cole Frost',loc:'Amsterdam',img:43,initials:'CF',meta:'Week 1 · Stress & recovery'},
-  {id:'lena-shaw',name:'Lena Shaw',loc:'London',img:45,initials:'LS',meta:'Week 3 · Caffeine & sleep'},
-  {id:'max-ford',name:'Max Ford',loc:'New York',img:46,initials:'MF',meta:'Week 6 · Movement & energy'},
-  {id:'sophie-nguyen',name:'Sophie Nguyen',loc:'Amsterdam',img:48,initials:'SN',meta:'Week 2 · Supplements & sleep'},
-  {id:'leo-martin',name:'Leo Martin',loc:'London',img:49,initials:'LM',meta:'Week 4 · Screen time & sleep'},
-  {id:'cara-hayes',name:'Cara Hayes',loc:'New York',img:50,initials:'CH',meta:'Week 5 · Stress & recovery'},
-  {id:'finn-bell',name:'Finn Bell',loc:'Amsterdam',img:51,initials:'FB',meta:'Week 3 · Movement & energy'}
+  {id:'yara-patel',name:'Yara Patel',loc:'Amsterdam',img:40,initials:'YP',meta:'Week 5 · Relaxation practices'},
+  {id:'xander-king',name:'Xander King',loc:'London',img:41,initials:'XK',meta:'Week 2 · Relaxation practices'},
+  {id:'dana-woods',name:'Dana Woods',loc:'New York',img:42,initials:'DW2',meta:'Week 4 · Time-restricted eating'},
+  {id:'cole-frost',name:'Cole Frost',loc:'Amsterdam',img:43,initials:'CF',meta:'Week 1 · Relaxation practices'},
+  {id:'lena-shaw',name:'Lena Shaw',loc:'London',img:45,initials:'LS',meta:'Week 3 · Morning rules & energy'},
+  {id:'max-ford',name:'Max Ford',loc:'New York',img:46,initials:'MF',meta:'Week 6 · Time-restricted eating'},
+  {id:'sophie-nguyen',name:'Sophie Nguyen',loc:'Amsterdam',img:48,initials:'SN',meta:'Week 2 · UPF reduction & mood'},
+  {id:'leo-martin',name:'Leo Martin',loc:'London',img:49,initials:'LM',meta:'Week 4 · Relaxation practices'},
+  {id:'cara-hayes',name:'Cara Hayes',loc:'New York',img:50,initials:'CH',meta:'Week 5 · Relaxation practices'},
+  {id:'finn-bell',name:'Finn Bell',loc:'Amsterdam',img:51,initials:'FB',meta:'Week 3 · Time-restricted eating'}
 ];
 
 const RESEARCHERS = [
   { id: 'andrew-huberman', name: 'Andrew Huberman', title: 'Associate Professor of Neurobiology & Ophthalmology', org: 'Huberman Lab · Stanford School of Medicine', img: 52, initials: 'AH', areas: ['Sleep & circadian biology', 'Stress & recovery', 'Neuroplasticity'], verified: true,
-    explorations: [{ expId: 'caffeine', note: 'Sleep & stimulus — educational protocol narrative.' }, { expId: 'stress', note: 'Recovery practices and nervous-system science content.' }] },
-  { id: 'dr-sarah-williams', name: 'Dr Sarah Williams', title: 'Research Fellow in Sleep Medicine', org: 'Oxford Sleep & Circadian Neuroscience Institute', img: 46, initials: 'SW', areas: ['Sleep quality', 'Caffeine & adenosine', 'Chronobiology'], verified: true,
-    explorations: [{ expId: 'caffeine', note: 'Primary protocol design: caffeine windows and sleep metrics.' }, { expId: 'screen', note: 'Evening light and sleep onset collaboration.' }] },
-  { id: 'dr-james-fyfe', name: 'Dr James Fyfe', title: 'Senior Lecturer in Exercise Physiology', org: 'University College London', img: 28, initials: 'JF', areas: ['Movement & energy', 'Exercise timing', 'Metabolic health'], verified: true,
-    explorations: [{ expId: 'movement', note: 'Outdoor activity dose–response module.' }, { expId: 'eating', note: 'Metabolic timing pilot module.' }] }
+    explorations: [{ expId: 'morning-rules', note: 'Circadian morning light and afternoon alertness — educational protocol narrative.' }, { expId: 'screen-sleep', note: 'Evening screen exposure and sleep quality content.' }, { expId: 'relaxation', note: 'Relaxation practices, stress, and composure content.' }] },
+  { id: 'dr-sarah-williams', name: 'Dr Sarah Williams', title: 'Research Fellow in Sleep Medicine', org: 'Oxford Sleep & Circadian Neuroscience Institute', img: 46, initials: 'SW', areas: ['Sleep quality', 'Stress & anxiety', 'Chronobiology'], verified: true,
+    explorations: [{ expId: 'screen-sleep', note: 'Screen moderation before and at bedtime — sleep quality collaboration.' }, { expId: 'relaxation', note: 'Relaxation practices and stress / anxiety metrics collaboration.' }, { expId: 'morning-rules', note: 'Morning routines and circadian alignment for sleep and energy.' }] },
+  { id: 'dr-james-fyfe', name: 'Dr James Fyfe', title: 'Senior Lecturer in Exercise Physiology', org: 'University College London', img: 28, initials: 'JF', areas: ['Time-restricted eating', 'Exercise timing', 'Energy metabolism'], verified: true,
+    explorations: [{ expId: 'eating', note: 'Time-restricted eating and daily energy — primary protocol module.' }] }
 ];
 
 const EXPLORATION_FOLLOWERS = {
-  caffeine: ['sam-johnson', 'maya-chen', 'tom-richards', 'priya-lawson', 'lars-hoffman', 'emma-b', 'sophie-turner', 'james-w', 'lucas-park', 'inge-voss', 'mark-douglas', 'nina-fischer', 'raj-kumar', 'lisa-cook', 'peter-brown', 'sara-grant', 'chris-norton', 'eva-palmer', 'zara-thomas', 'kai-reed', 'obi-evans'],
-  movement: ['sam-johnson', 'maya-chen', 'lars-hoffman', 'emma-b', 'sophie-turner', 'james-w', 'lucas-park', 'inge-voss', 'mark-douglas', 'nina-fischer', 'raj-kumar', 'lisa-cook', 'peter-brown', 'sara-grant', 'chris-norton', 'eva-palmer'],
-  eating: ['sophie-turner', 'nina-fischer', 'obi-evans', 'fen-lim', 'helen-baker', 'yara-patel', 'george-mill'],
-  stress: ['priya-lawson', 'james-w', 'mark-douglas', 'julia-lane', 'zara-thomas', 'rob-lane', 'tara-scott', 'cara-hayes'],
-  screen: ['emma-b', 'chris-norton', 'mia-taylor', 'leo-martin', 'xander-king', 'nina-fischer'],
-  supplements: []
+  'morning-rules': ['lars-hoffman', 'julia-lane', 'ben-nelson', 'kim-oliver', 'mia-taylor', 'fen-lim', 'will-evans', 'cole-frost', 'lena-shaw', 'finn-bell', 'sara-grant', 'chris-norton', 'zara-thomas', 'kai-reed', 'lucas-park'],
+  'eating': ['sam-johnson', 'tom-richards', 'sophie-turner', 'inge-voss', 'nina-fischer', 'obi-evans', 'raj-kumar', 'peter-brown', 'kai-reed', 'ben-nelson', 'will-evans', 'helen-baker', 'dana-woods', 'max-ford', 'finn-bell', 'fen-lim', 'george-mill', 'lisa-cook', 'sara-grant', 'dex-woods', 'rob-lane', 'lars-hoffman'],
+  'screen-sleep': ['james-w', 'emma-b', 'chris-norton', 'mia-taylor', 'zara-thomas', 'tara-scott', 'xander-king', 'cole-frost', 'leo-martin', 'cara-hayes', 'eva-palmer', 'yara-patel', 'mark-douglas', 'nina-fischer', 'rob-lane'],
+  relaxation: ['maya-chen', 'priya-lawson', 'james-w', 'mark-douglas', 'emma-b', 'chris-norton', 'mia-taylor', 'zara-thomas', 'rob-lane', 'tara-scott', 'xander-king', 'cole-frost', 'leo-martin', 'cara-hayes', 'nina-fischer', 'eva-palmer', 'yara-patel', 'sam-johnson'],
+  'upf-mood': ['sara-grant', 'felix-white', 'sophie-nguyen']
 };
 
 const nicedResearcherExp = new Set();
 const RESEARCHER_NICE_BASE = {
-  'andrew-huberman|caffeine': 31, 'andrew-huberman|stress': 15,
-  'dr-sarah-williams|caffeine': 56, 'dr-sarah-williams|screen': 22,
-  'dr-james-fyfe|movement': 40, 'dr-james-fyfe|eating': 12
+  'andrew-huberman|morning-rules': 24, 'andrew-huberman|screen-sleep': 15, 'andrew-huberman|relaxation': 12,
+  'dr-sarah-williams|screen-sleep': 48, 'dr-sarah-williams|relaxation': 22, 'dr-sarah-williams|morning-rules': 18,
+  'dr-james-fyfe|eating': 40
 };
 let followingResearchersSet = new Set(['dr-sarah-williams']);
 
-let followingSet = new Set(['sam-johnson','maya-chen','sophie-turner','james-w','lucas-park','inge-voss','mark-douglas','nina-fischer','raj-kumar','lisa-cook','peter-brown','sara-grant','chris-norton','eva-palmer','zara-thomas','kai-reed','obi-evans','fen-lim','dex-woods','mia-taylor','ben-nelson','julia-lane','kim-oliver','felix-white','anna-ross']);
+let followingSet = new Set(['sam-johnson','maya-chen','sophie-turner','james-w','lucas-park','inge-voss','mark-douglas','nina-fischer','raj-kumar','lisa-cook','peter-brown','sara-grant','chris-norton','eva-palmer','zara-thomas','kai-reed','obi-evans','fen-lim','dex-woods','mia-taylor','ben-nelson','julia-lane','kim-oliver','felix-white']);
 
 const followerIds = new Set([...followingSet,'tom-richards','priya-lawson','lars-hoffman','emma-b','rob-lane','tara-scott','will-evans','helen-baker','george-mill','yara-patel','xander-king','dana-woods','cole-frost','lena-shaw','max-ford']);
 
@@ -1005,7 +1022,7 @@ function getUserForProfile(uid) {
   return {
     name: b.name, loc: b.loc, img: b.img, initials: b.initials, meta: b.meta,
     bio: 'Explorer on kind — building their personal health story.',
-    exps: [{ id: 'caffeine', name: 'Caffeine & sleep quality', icon: '☕', bg: 'var(--green-light)', w: 3, of: 8, active: true }],
+    exps: [{ id: 'eating', name: 'Does time restricted eating improve my energy levels?', icon: '🕐', bg: '#FDF0E4', w: 3, of: 6, active: true }],
     acts: [{ t: 'Sharing progress with the kind community.', time: 'Recently', exp: 'Health exploration', detail: 'Logs and milestones when they choose to share.', nc: 0 }],
     badges: [], follower: followerIds.has(uid)
   };
@@ -1114,6 +1131,7 @@ function buildResearcherProfile(rid, r) {
       <div style="display:flex;gap:12px;align-items:flex-start;">
         <div style="width:44px;height:44px;border-radius:var(--radius-md);background:${e.bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;" role="button" tabindex="0" onclick="closeResearcherProfile();openExploration('${ex.expId}')">${e.icon}</div>
         <div style="flex:1;min-width:0;">
+          ${e.category?`<div class="explore-category">${e.category}</div>`:''}
           <div style="font-size:14px;font-weight:600;color:var(--text);cursor:pointer;" onclick="closeResearcherProfile();openExploration('${ex.expId}')">${e.title}</div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.5;">${ex.note}</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;" onclick="event.stopPropagation()">
@@ -1250,10 +1268,10 @@ function openFollowPanel(type) {
   users.sort((a,b)=>a.name.localeCompare(b.name));
   listEl.innerHTML = users.map(u=>{
     const isF=followingSet.has(u.id);
-    const isFollowerOfEmma=followerIds.has(u.id);
+    const isFollowerOfAnna=followerIds.has(u.id);
     let statusHint='';
-    if(isF&&isFollowerOfEmma) statusHint='<span style="font-size:10px;color:var(--green-dark);background:var(--green-light);padding:2px 6px;border-radius:999px;font-weight:600;">Mutual</span>';
-    else if(isFollowerOfEmma&&!isF) statusHint='<span style="font-size:10px;color:var(--text-muted);">Follows you</span>';
+    if(isF&&isFollowerOfAnna) statusHint='<span style="font-size:10px;color:var(--green-dark);background:var(--green-light);padding:2px 6px;border-radius:999px;font-weight:600;">Mutual</span>';
+    else if(isFollowerOfAnna&&!isF) statusHint='<span style="font-size:10px;color:var(--text-muted);">Follows you</span>';
     const clickFn = `openExplorerProfile('${u.id}')`;
     return `<div class="explorer-row" style="padding:10px 0.25rem;" onclick="${clickFn}">
       ${avEl(u.img,u.initials,42)}
@@ -1295,13 +1313,13 @@ function renderCommSearch(val) {
     : '<div style="padding:1.25rem;text-align:center;font-size:13px;color:var(--text-muted);">No explorers found</div>';
   const expEl=document.getElementById('csp-explorations');
   if(expEl){
-    const matchE=Object.entries(EXPLORATIONS).filter(([,e])=>e.title.toLowerCase().includes(q)||e.desc.toLowerCase().includes(q));
+    const matchE=Object.entries(EXPLORATIONS).filter(([,e])=>e.title.toLowerCase().includes(q)||e.desc.toLowerCase().includes(q)||(e.category||'').toLowerCase().includes(q));
     expEl.innerHTML=matchE.length
       ? matchE.map(([id,e])=>{
           const parts = e.isNew ? 'New · Be first' : `<span class="explorers-badge" role="button" tabindex="0" onclick="event.stopPropagation();openExplorersPanel('${id}');document.getElementById('comm-search-results').style.display='none'">${e.participants} explorers</span>`;
           return `<div class="explore-area" style="margin:0;border-radius:0;border-left:none;border-right:none;border-top:none;border-bottom:1px solid var(--border);" onclick="openExploration('${id}');document.getElementById('comm-search-results').style.display='none'">
             <div class="explore-icon" style="background:${e.bg||'var(--green-light)'};">${e.icon}</div>
-            <div style="flex:1;"><div class="explore-title">${e.title}</div><div class="explore-desc">${e.duration} · ${parts}</div></div>
+            <div style="flex:1;">${e.category?`<div class="explore-category">${e.category}</div>`:''}<div class="explore-title">${e.title}</div><div class="explore-desc">${e.duration} · ${parts}</div></div>
             <div><div class="start-btn" style="background:var(--green-light);color:var(--green-dark);">View</div></div>
           </div>`;
         }).join('')
