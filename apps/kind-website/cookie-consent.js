@@ -6,6 +6,8 @@
 (function () {
   const CONSENT_KEY = 'kind_cookie_consent';
   const CONSENT_VERSION = 1;
+  /** Google Ads / gtag conversion tag — injected only after marketing consent */
+  const GOOGLE_ADS_GTAG_ID = 'AW-18188306688';
 
   const defaults = {
     version: CONSENT_VERSION,
@@ -101,9 +103,22 @@
 
   function loadMarketingTags() {
     window.dispatchEvent(new CustomEvent('kind:cookies:marketing', { detail: readConsent() }));
-    /* Example: Meta Pixel, LinkedIn Insight, Google Ads — inject only after marketing consent
-    if (!window.fbq) { ... }
-    */
+    if (!hasConsent('marketing')) return;
+
+    const scriptId = 'kind-google-ads-gtag-js';
+    if (document.getElementById(scriptId)) return;
+
+    const gtag = ensureGtag();
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.async = true;
+    script.src =
+      'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GOOGLE_ADS_GTAG_ID);
+    script.onload = function () {
+      gtag('js', new Date());
+      gtag('config', GOOGLE_ADS_GTAG_ID);
+    };
+    document.head.appendChild(script);
   }
 
   function applyConsent(consent) {
