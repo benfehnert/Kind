@@ -69,7 +69,7 @@ const EXPLORATIONS = [
     icon: "🌅",
     category: "Energy & Focus",
     title: "Do morning rules reduce my chances of an afternoon crash?",
-    desc: "8-week morning routine protocol",
+    desc: "8-week morning routine exploration",
     status: "active",
     progress: "Week 3 of 8"
   },
@@ -78,7 +78,7 @@ const EXPLORATIONS = [
     icon: "🕐",
     category: "Metabolic Health",
     title: "Does time restricted eating improve my energy levels?",
-    desc: "6-week eating window protocol",
+    desc: "6-week eating window exploration",
     status: "available",
     progress: "64 explorers active"
   },
@@ -87,7 +87,7 @@ const EXPLORATIONS = [
     icon: "📱",
     category: "Rest & Sleep",
     title: "Does moderation of screen exposure improve my sleep quality?",
-    desc: "6-week screen moderation protocol",
+    desc: "6-week screen moderation exploration",
     status: "available",
     progress: "51 explorers active"
   },
@@ -96,7 +96,7 @@ const EXPLORATIONS = [
     icon: "🧘",
     category: "Mental Health",
     title: "Do relaxation practices improve my composure?",
-    desc: "6-week relaxation practices protocol",
+    desc: "6-week relaxation practices exploration",
     status: "available",
     progress: "58 explorers active"
   },
@@ -105,7 +105,7 @@ const EXPLORATIONS = [
     icon: "🥗",
     category: "Diet & Nutrition",
     title: "Does reduction of Ultra Processed Food (UPF) improve my mood?",
-    desc: "6-week UPF reduction protocol",
+    desc: "6-week UPF reduction exploration",
     status: "available",
     progress: "22 explorers active"
   }
@@ -333,8 +333,8 @@ function ExplorationScreen() {
       ))}
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Protocol timeline</Text>
-        <Text style={styles.cardBody}>Weeks 1-2 baseline, weeks 3-5 morning rules, weeks 6-7 optimise, week 8 N-of-1 report.</Text>
+        <Text style={styles.cardTitle}>Exploration timeline</Text>
+        <Text style={styles.cardBody}>Weeks 1-2 baseline, weeks 3-5 morning rules, weeks 6-7 optimise, week 8 personalised trial analysis report.</Text>
       </View>
     </ScrollView>
   );
