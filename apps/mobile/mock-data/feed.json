@@ -1,0 +1,352 @@
+{
+  "chips": [
+    {
+      "key": "all",
+      "label": "All"
+    },
+    {
+      "key": "milestone",
+      "label": "Milestones"
+    },
+    {
+      "key": "insight",
+      "label": "Insights"
+    },
+    {
+      "key": "activity",
+      "label": "Activity"
+    },
+    {
+      "key": "science",
+      "label": "Science"
+    },
+    {
+      "key": "tip",
+      "label": "Tips"
+    }
+  ],
+  "feedExpIds": [
+    "morning-rules",
+    "eating",
+    "screen-sleep",
+    "relaxation",
+    "upf-mood"
+  ],
+  "feedTipTimes": [
+    "Yesterday",
+    "2 days ago",
+    "3 days ago",
+    "4 days ago",
+    "5 days ago"
+  ],
+  "feedScienceTimes": [
+    "Yesterday",
+    "2 days ago",
+    "3 days ago",
+    "4 days ago",
+    "5 days ago"
+  ],
+  "feedTips": {
+    "morning-rules": [
+      {
+        "body": "Early outdoor light within <strong>30 minutes of waking</strong> helps anchor your circadian rhythm — many explorers report fewer afternoon crashes when they pair sunlight with a short morning stretch."
+      },
+      {
+        "body": "Delay your first caffeine by about <strong>90 minutes</strong> after waking so natural cortisol can peak; this often softens the mid-afternoon rebound crash."
+      },
+      {
+        "body": "<strong>Five minutes of morning movement</strong> — even light stretching — increases blood flow and tends to sustain focus through the post-lunch dip."
+      },
+      {
+        "body": "A brief <strong>meditation before email</strong> can lower perceived afternoon fatigue; explorers who log it consistently see steadier energy scores by week 3."
+      },
+      {
+        "body": "Add rules <strong>one at a time</strong>: master sunlight plus stretching for a week before introducing caffeine offset or meditation."
+      }
+    ],
+    "eating": [
+      {
+        "body": "Log your <strong>natural eating window</strong> for two full weeks before narrowing — baseline timing makes your personalised trial report much clearer."
+      },
+      {
+        "body": "Keep <strong>water and black tea or coffee</strong> outside the window if it helps hunger; consistency matters more than perfection on day one."
+      },
+      {
+        "body": "A stable <strong>first meal time</strong> anchors circadian metabolism — explorers with fixed breakfast see smoother afternoon energy curves."
+      },
+      {
+        "body": "Rate afternoon energy at the <strong>same clock time</strong> each day so week-to-week comparisons in your trial report stay reliable."
+      },
+      {
+        "body": "When moving to an <strong>8-hour window</strong>, aim to finish your last meal at least three hours before bed for better sleep and next-day energy."
+      }
+    ],
+    "screen-sleep": [
+      {
+        "body": "Switch phones to a <strong>warm night shift</strong> after sunset even before your screen-free window — it reduces melatonin suppression in the last hour awake."
+      },
+      {
+        "body": "Replace in-bed scrolling with a <strong>paper book or calm audio</strong>; explorers cut sleep-onset time most when screens leave the bedroom entirely."
+      },
+      {
+        "body": "Build your wind-down in stages: <strong>30 minutes screen-free</strong> in weeks 3–4, then extend to 60 minutes — sudden jumps are harder to sustain."
+      },
+      {
+        "body": "Charge devices <strong>outside the bedroom</strong> so late-night checks are less tempting and sleep quality scores improve faster."
+      },
+      {
+        "body": "<strong>Morning outdoor light</strong> the day after a screen-light evening helps pull your clock earlier and reinforces earlier melatonin onset."
+      }
+    ],
+    "relaxation": [
+      {
+        "body": "<strong>Vagal breathing</strong> (roughly 4 seconds in, 6 out) for two minutes can lower same-day stress scores — useful before meetings or school runs."
+      },
+      {
+        "body": "Progressive muscle relaxation works best at a <strong>fixed daily time</strong>; explorers who pair it with bedtime see the largest anxiety drop by week 4."
+      },
+      {
+        "body": "Even a <strong>10-minute nature walk</strong> counts — green exposure plus light movement reduces rumination in a single session for many people."
+      },
+      {
+        "body": "Log <strong>which practice you used</strong> each day so your week-6 personalised trial report can show what worked best for you."
+      },
+      {
+        "body": "<strong>Stack one practice</strong> onto an existing habit (e.g. breathing after lunch) to raise adherence without adding a new time block."
+      }
+    ],
+    "upf-mood": [
+      {
+        "body": "Swap <strong>one UPF-heavy snack</strong> per week rather than overhauling every meal — gradual change sticks and mood logs stay interpretable."
+      },
+      {
+        "body": "Watch for <strong>emulsifiers and maltodextrin</strong> on labels as quick UPF markers when you are estimating daily UPF percentage."
+      },
+      {
+        "body": "<strong>Batch-cook one unprocessed lunch</strong> for weekdays — explorers cut lunch UPF fastest without changing breakfast or dinner at first."
+      },
+      {
+        "body": "Note mood <strong>before and after meals</strong> occasionally to spot which swaps correlate with calmer afternoons."
+      },
+      {
+        "body": "Add <strong>beans, oats, or leafy greens</strong> once a day — fibre supports gut–brain signalling linked to steadier baseline mood."
+      }
+    ]
+  },
+  "feedScience": {
+    "morning-rules": [
+      {
+        "body": "Across <strong>78 active participants</strong>, afternoon energy improves most when explorers log <strong>3+ morning rules</strong> before noon. Your data is contributing to this finding.",
+        "highlight": "Open-access cohort study in preparation · Data collection until May 2026"
+      },
+      {
+        "body": "Explorers who log <strong>sunlight alone</strong> on 5+ days per week average <strong>0.8 points higher</strong> afternoon energy than low-sunlight weeks.",
+        "highlight": "Aggregated kind dataset · updated weekly"
+      },
+      {
+        "body": "Early analysis suggests <strong>caffeine offset</strong> adopters report fewer “severe” afternoon crashes, especially when combined with morning movement.",
+        "highlight": "Pre-print targeted for June 2026"
+      },
+      {
+        "body": "<strong>Morning meditation</strong> shows the strongest link to lower afternoon fatigue when paired with sunlight — not necessarily when done alone.",
+        "highlight": "Interaction analysis across 62 matched participants"
+      },
+      {
+        "body": "Your anonymised logs feed the <strong>morning rules personalised trial cohort</strong> — publication will acknowledge citizen science contributors.",
+        "highlight": "See Community → Publications for status"
+      }
+    ],
+    "eating": [
+      {
+        "body": "Among <strong>64 explorers</strong>, a consistent <strong>10-hour eating window</strong> is associated with steadier afternoon glucose and fewer energy dips vs baseline weeks.",
+        "highlight": "Citizen science dataset · metabolic timing arm"
+      },
+      {
+        "body": "By <strong>week 4</strong>, most participants who maintain their window report higher mean afternoon energy than baseline (<strong>+1.1 points</strong> average).",
+        "highlight": "Longitudinal n=41 with complete logs"
+      },
+      {
+        "body": "Earlier <strong>first meal times</strong> (before 9am) correlate with better sleep quality scores in explorers also tracking rest — a possible crossover effect.",
+        "highlight": "Secondary analysis · multi-exploration participants"
+      },
+      {
+        "body": "Combined time-restricted eating data will support an <strong>open-access pre-print</strong> on circadian meal timing and daily energy.",
+        "highlight": "Expected Q3 2026"
+      },
+      {
+        "body": "<strong>Hunger comfort</strong> ratings typically normalise by day 10–14 once the window stabilises — useful context for your trial report.",
+        "highlight": "Cohort summary · eating exploration"
+      }
+    ],
+    "screen-sleep": [
+      {
+        "body": "<strong>51 explorers</strong> tracking evening screens: a <strong>30-minute screen-free window</strong> before bed links to faster sleep onset in week 3–4 logs.",
+        "highlight": "Rest & sleep citizen science arm"
+      },
+      {
+        "body": "Moving to <strong>60 minutes screen-free</strong> plus no in-bed use is associated with <strong>+1.4 points</strong> mean sleep quality vs baseline.",
+        "highlight": "Paired comparison · n=28"
+      },
+      {
+        "body": "Evening <strong>blue-light exposure</strong> remains the strongest predictor of later sleep midpoint in this cohort.",
+        "highlight": "Chronobiology sub-analysis"
+      },
+      {
+        "body": "Explorers who add <strong>morning outdoor light</strong> see larger sleep gains from the same evening screen changes.",
+        "highlight": "Cross-exploration interaction · morning rules × screen-sleep"
+      },
+      {
+        "body": "Your logs support an upcoming <strong>open publication</strong> on screen habits and restorative sleep architecture.",
+        "highlight": "Data collection ongoing"
+      }
+    ],
+    "relaxation": [
+      {
+        "body": "<strong>58 participants</strong>: days with <strong>2+ relaxation practices</strong> show lower mean stress and anxiety than baseline weeks.",
+        "highlight": "Stress & composure exploration dataset"
+      },
+      {
+        "body": "<strong>Vagal breathing</strong> has the fastest same-week stress reduction; PMR shows the largest trait change by weeks 4–6.",
+        "highlight": "Practice-specific effects · preliminary"
+      },
+      {
+        "body": "<strong>Short nature walks</strong> reduce same-day rumination scores even when stress was high that morning.",
+        "highlight": "Single-session analysis · n=34"
+      },
+      {
+        "body": "Meditation plus PMR on the same day is linked to the <strong>highest composure scores</strong> in the cohort so far.",
+        "highlight": "Combination logging · exploratory"
+      },
+      {
+        "body": "Aggregated relaxation data will feed a <strong>citizen science paper</strong> on low-cost stress interventions in daily life.",
+        "highlight": "Contributor acknowledgements planned"
+      }
+    ],
+    "upf-mood": [
+      {
+        "body": "In the <strong>UPF reduction cohort (n=22)</strong>, explorers cutting UPF by <strong>15+ percentage points</strong> report higher mean mood by week 5.",
+        "highlight": "Diet & nutrition arm · early signal"
+      },
+      {
+        "body": "Swaps at <strong>breakfast</strong> show the strongest short-term mood lift — possibly via steadier morning glucose.",
+        "highlight": "Meal-level analysis · pilot"
+      },
+      {
+        "body": "Lower UPF weeks correlate with <strong>less mood volatility</strong> (smaller day-to-day swings) for active loggers.",
+        "highlight": "Variance analysis · n=18"
+      },
+      {
+        "body": "Gut–brain mechanisms are being summarised for a <strong>plain-language science brief</strong> linked to this exploration.",
+        "highlight": "Evidence review · Dr Priya Nair team"
+      },
+      {
+        "body": "Your UPF and mood logs contribute to an <strong>open dataset</strong> on ultra-processed food and daily wellbeing.",
+        "highlight": "Open access · contributor credit"
+      }
+    ]
+  },
+  "staticItems": [
+    {
+      "id": "s1",
+      "type": "milestone",
+      "userId": "sam-johnson",
+      "avatarKey": "pravatar-11",
+      "initials": "SJ",
+      "avatarBgStyle": "#E6ECD0",
+      "displayName": "Sam J.",
+      "badge": "teal",
+      "badgeLabel": "Milestone",
+      "time": "2 hours ago · Time-restricted eating",
+      "body": "Completed week 6 of time-restricted eating — first week afternoon energy averaged above <strong>7.5</strong>. Something clicked this week.",
+      "highlight": "Energy avg: <strong>7.8</strong> · Streak: <strong>21 days</strong>"
+    },
+    {
+      "id": "s2",
+      "type": "insight",
+      "insightTab": "your",
+      "avatarKind": "icon",
+      "icon": "✦",
+      "avatarBg": "#E6F1FB",
+      "iconColor": "#185FA5",
+      "displayName": "Your insight",
+      "badge": "blue",
+      "badgeLabel": "Insight",
+      "time": "This morning · Morning rules & afternoon energy",
+      "body": "On the 5 days you logged <strong>3+ morning rules</strong>, afternoon energy averaged <strong>1.6 points higher</strong> than on lighter-rule days.",
+      "highlight": "Try stacking sunlight + stretching before 9am this week to confirm the pattern."
+    },
+    {
+      "id": "s3",
+      "type": "activity",
+      "userId": "julia-lane",
+      "avatarKey": "pravatar-22",
+      "initials": "JL",
+      "avatarBgStyle": "#FDF0E4",
+      "displayName": "Julia L.",
+      "badge": "purple",
+      "badgeLabel": "Activity",
+      "time": "5 hours ago · Morning rules & afternoon energy",
+      "body": "Logged 4 morning rules today — sunlight, stretch, meditation, and delayed coffee. Afternoon energy <strong>7/10</strong>, no crash until 5pm.",
+      "highlight": ""
+    },
+    {
+      "id": "s4",
+      "type": "activity",
+      "userId": "maya-chen",
+      "avatarKey": "pravatar-48",
+      "initials": "MC",
+      "avatarBgStyle": "#EEEDFE",
+      "displayName": "Maya Chen",
+      "badge": "purple",
+      "badgeLabel": "Activity",
+      "time": "4 hours ago · Relaxation practices & composure",
+      "body": "Logged day 21 — vagal breathing plus a short nature walk. Stress <strong>4/10</strong>, anxiety <strong>3/10</strong>, composure <strong>7/10</strong>.",
+      "highlight": ""
+    },
+    {
+      "id": "s5",
+      "type": "milestone",
+      "userId": "tom-richards",
+      "avatarKind": "scene",
+      "sceneKey": "pet",
+      "initials": "TR",
+      "avatarBgStyle": "#FDF0E4",
+      "displayName": "Tom R.",
+      "badge": "amber",
+      "badgeLabel": "Milestone",
+      "time": "2 days ago · Time-restricted eating",
+      "body": "Completed the full 6-week time-restricted eating exploration. Afternoon energy went from a baseline of <strong>5.2</strong> to a week-6 average of <strong>7.6</strong>. Genuinely surprised by how clear the effect was.",
+      "highlight": "Personalised trial analysis report generated · Data contributed to citizen science dataset"
+    },
+    {
+      "id": "s6",
+      "type": "activity",
+      "userId": "priya-lawson",
+      "avatarKind": "scene",
+      "sceneKey": "plants",
+      "initials": "ST",
+      "avatarBgStyle": "#EAF3DE",
+      "displayName": "stillwater",
+      "badge": "green",
+      "badgeLabel": "Activity",
+      "time": "2 days ago · Relaxation practices & composure",
+      "body": "Started the relaxation practices exploration. PMR and meditation are already showing up as lower stress days in her logs.",
+      "highlight": ""
+    },
+    {
+      "id": "s7",
+      "type": "insight",
+      "insightTab": "community",
+      "avatarKind": "icon",
+      "icon": "✦",
+      "avatarBg": "#E6F1FB",
+      "iconColor": "#185FA5",
+      "displayName": "Community insight",
+      "badge": "blue",
+      "badgeLabel": "Insight",
+      "time": "3 days ago · Time-restricted eating",
+      "body": "Explorers in the morning rules study who also run a <strong>10-hour eating window</strong> report 0.9 points higher afternoon energy on average.",
+      "highlight": "Based on 28 participants tracking both morning rules and time-restricted eating."
+    }
+  ]
+}

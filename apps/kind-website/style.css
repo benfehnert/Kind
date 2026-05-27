@@ -197,6 +197,10 @@ p  { color: var(--slate); line-height: 1.7; }
   margin: 0 auto 56px;
   text-align: left;
 }
+.hero-waitlist .hero-endorsement {
+  max-width: none;
+  margin: 0 0 16px;
+}
 .hero-waitlist .waitlist-form {
   padding: 28px 32px 22px;
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kind Data Model</title>
+  <style>
+    @page { margin: 18mm 16mm; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 { font-size: 22pt; margin-bottom: 0.25em; color: #2d6a4f; }
+    h2 { font-size: 14pt; margin-top: 1.4em; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    h3 { font-size: 12pt; margin-top: 1em; }
+    p, li { margin: 0.5em 0; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    .mermaid { margin: 16px 0; text-align: center; }
+    code { font-size: 9.5pt; background: #f5f5f5; padding: 1px 4px; border-radius: 3px; }
+    .meta { color: #555; font-size: 10pt; margin-bottom: 20px; }
+    .page-break { page-break-before: always; }
+    pre.sql {
+      font-size: 8pt;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      padding: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kind data model</h1>
+  <p class="meta">Conceptual schema from the Kind mobile prototype and marketing site · Generated for documentation</p>
+
+  <h2>Overview</h2>
+  <p>Kind connects <strong>individuals (explorers)</strong> who run structured N-of-1 health explorations with <strong>researchers</strong> who publish and collaborate on exploration protocols. Daily logs, social follow/nice/message interactions, and privacy-controlled citizen-science contribution form the core loop.</p>
+
+  <table>
+    <tr><th>Role</th><th>Responsibility</th></tr>
+    <tr><td>Individual</td><td>Enroll in explorations, log daily, follow peers/researchers, manage consent</td></tr>
+    <tr><td>Researcher</td><td>Link to explorations, verified profile, followed by community</td></tr>
+    <tr><td>Exploration</td><td>Catalog protocol: phases, log fields, outcomes, participant counts</td></tr>
+  </table>
+
+  <h2>Entity-relationship diagram</h2>
+  <pre class="mermaid">
+erDiagram
+    INDIVIDUAL ||--o| PRIVACY_SETTINGS : has
+    INDIVIDUAL ||--o{ USER_EXPLORATION : participates_in
+    INDIVIDUAL ||--o{ ACTIVITY_POST : shares
+    INDIVIDUAL ||--o{ DAILY_LOG : submits
+    INDIVIDUAL }o--o{ INDIVIDUAL : follows
+    INDIVIDUAL ||--o{ RESEARCHER_FOLLOW : follows
+    INDIVIDUAL ||--o{ ACTIVITY_NICE : gives
+    INDIVIDUAL ||--o{ ACTIVITY_MESSAGE : sends
+
+    EXPLORATION ||--o{ USER_EXPLORATION : enrolled_by
+    EXPLORATION ||--o{ EXPLORATION_PHASE : defines
+    EXPLORATION ||--o{ LOG_FIELD_DEF : defines
+    EXPLORATION ||--o{ EXPECTED_OUTCOME : advertises
+    EXPLORATION ||--o{ RESEARCHER_EXPLORATION : published_on
+
+    USER_EXPLORATION ||--o{ DAILY_LOG : generates
+    RESEARCHER ||--o{ RESEARCHER_EXPLORATION : authors
+    ACTIVITY_POST ||--o{ ACTIVITY_NICE : receives
+    ACTIVITY_POST ||--o{ ACTIVITY_MESSAGE : receives
+  </pre>
+
+  <h2>High-level flow</h2>
+  <pre class="mermaid">
+flowchart TB
+    I[Individual] --> UE[User exploration]
+    E[Exploration catalog] --> UE
+    UE --> DL[Daily logs]
+    UE --> AP[Activity posts]
+    I --> PS[Privacy settings]
+    PS --> CS[Citizen science]
+    AP --> FI[Feed]
+    R[Researcher] --> E
+  </pre>
+
+  <div class="page-break"></div>
+
+  <h2>Core tables (SQL)</h2>
+  <table>
+    <tr><th>Table</th><th>Purpose</th></tr>
+    <tr><td><code>individuals</code></td><td>Explorer accounts and profiles</td></tr>
+    <tr><td><code>privacy_settings</code></td><td>Citizen science, community visibility, reminders</td></tr>
+    <tr><td><code>researchers</code></td><td>Researcher profiles and areas</td></tr>
+    <tr><td><code>explorations</code></td><td>Protocol catalog (caffeine, movement, …)</td></tr>
+    <tr><td><code>exploration_phases</code></td><td>Baseline → intervention → report timeline</td></tr>
+    <tr><td><code>log_field_defs</code></td><td>Dynamic daily log form schema</td></tr>
+    <tr><td><code>user_explorations</code></td><td>Enrollment, week progress, streak</td></tr>
+    <tr><td><code>daily_logs</code></td><td>Per-day JSONB field values</td></tr>
+    <tr><td><code>activity_posts</code></td><td>Shared milestones on profile/feed</td></tr>
+    <tr><td><code>individual_follows</code></td><td>Explorer follow graph</td></tr>
+    <tr><td><code>researcher_follows</code></td><td>Follow researcher</td></tr>
+    <tr><td><code>activity_nices</code> / <code>activity_messages</code></td><td>Social on activity</td></tr>
+    <tr><td><code>feed_items</code></td><td>Home feed cards</td></tr>
+    <tr><td><code>waitlist_entries</code></td><td>Website individual/researcher waitlist</td></tr>
+  </table>
+
+  <h2>Prototype mapping</h2>
+  <ul>
+    <li><code>EXPLORATIONS</code> → <code>explorations</code> + phases, fields, outcomes</li>
+    <li><code>COMM_USERS</code> / <code>BASIC_USERS</code> → <code>individuals</code></li>
+    <li><code>RESEARCHERS</code> → <code>researchers</code>, <code>researcher_explorations</code></li>
+    <li><code>followingSet</code> → <code>individual_follows</code></li>
+    <li><code>EXPLORATION_FOLLOWERS</code> → view <code>exploration_participants</code></li>
+  </ul>
+
+  <p class="meta">Full SQL: docs/kind-schema.sql · Full markdown: docs/kind-data-model.md</p>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
+    await mermaid.run({ querySelector: '.mermaid' });
+    document.body.setAttribute('data-mermaid-ready', '1');
+  </script>
+</body>
+</html>
