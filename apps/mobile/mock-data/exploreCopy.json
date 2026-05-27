@@ -1,0 +1,31 @@
+{
+  "title": "Explore",
+  "subtitle": "Discover areas of health and wellbeing to explore, guided by science.",
+  "searchPlaceholder": "Find an area of health and wellbeing to explore…",
+  "communitySearchPlaceholder": "Search explorers, explorations, evidence, researchers…",
+  "activeSectionLabel": "Active",
+  "availableSectionLabel": "Available to start",
+  "timelineCardTitle": "Exploration — morning rules",
+  "comingSoonLabel": "Coming soon",
+  "comingSoonTitle": "Treatment exploration",
+  "comingSoonBody": "Focus on an existing or new treatment or prescription and explore how well it works for you.",
+  "community": {
+    "title": "Community",
+    "subtitle": "Others on similar explorations. Shared journeys, shared science.",
+    "bannerTitle": "Citizen science contribution",
+    "bannerBody": "With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications on how morning routines affect afternoon energy — science that belongs to everyone.",
+    "bannerBadges": [
+      { "variant": "teal", "label": "78 participants" },
+      { "variant": "teal", "label": "1 paper pending" }
+    ],
+    "subTabs": ["Individuals", "Explorations", "Researchers", "Evidence"],
+    "nearYouTitle": "Explorers near you",
+    "insightCardTitle": "Community insight",
+    "insightCardBody": "Across active participants this month, those logging <strong>3+ morning rules</strong> reported an average afternoon energy improvement of <strong>+1.6 points</strong> by week 4. You're on the same track."
+  },
+  "multiExplorationBanner": {
+    "title": "Multi-area exploration",
+    "body": "Running more than one exploration simultaneously lets you — and the wider community — understand how these health levers interact. Your combined data may reveal correlations that single-variable studies miss."
+  },
+  "globalSearchPlaceholder": "Search explorations, evidence, people…"
+}
