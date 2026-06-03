@@ -259,7 +259,8 @@ export default function HomeScreen() {
             key={item.id}
             style={styles.feed}
             onPress={() => {
-              if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
+              if (item.route) navigation.navigate(item.route);
+              else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
               else if (item.type === "insight")
                 navigation.navigate("MainTabs", {
                   screen: "Insight",

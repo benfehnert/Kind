@@ -109,6 +109,12 @@ export default function ProfileScreen() {
               <Text style={styles.poT}>{a.label}</Text>
             </Pressable>
           ))}
+          <Pressable style={styles.po} onPress={() => navigation.navigate("OnboardingConsent")}>
+            <Text style={styles.poT}>Onboarding and consent process</Text>
+          </Pressable>
+          <Pressable style={styles.po} onPress={() => navigation.navigate("ConsentSummary")}>
+            <Text style={styles.poT}>View my consent and data sharing</Text>
+          </Pressable>
         </Card>
 
         <ScienceBanner title={profile.contributionBanner.title} body={profile.contributionBanner.body} />

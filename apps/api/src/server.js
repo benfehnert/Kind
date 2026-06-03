@@ -11,6 +11,12 @@ import {
 } from "./auth.js";
 import { query } from "./db.js";
 import { requireAuth } from "./middleware.js";
+import { generateFeedContent } from "./feedContent.js";
+import { morningRulesFeedLibrary } from "./data/morningRulesFeedLibrary.js";
+
+const FEED_LIBRARIES = {
+  "morning-rules": morningRulesFeedLibrary
+};
 
 dotenv.config();
 
@@ -457,6 +463,39 @@ Please provide a short, encouraging coaching nudge (2-3 sentences).`;
     return res.json({ nudge });
   } catch (_err) {
     return res.json({ nudge: FALLBACK });
+  }
+});
+
+app.post("/feed/generate", requireAuth, async (req, res) => {
+  const {
+    explorationId = "morning-rules",
+    exploration = {},
+    context = {},
+    limit = 8,
+    timeLabel = "Today",
+    model
+  } = req.body || {};
+
+  const library = FEED_LIBRARIES[explorationId];
+  if (!library) {
+    return res.status(404).json({
+      error: `No feed content library for exploration "${explorationId}"`,
+      available: Object.keys(FEED_LIBRARIES)
+    });
+  }
+
+  try {
+    const result = await generateFeedContent({
+      exploration: { id: explorationId, ...exploration },
+      context,
+      library,
+      limit,
+      timeLabel,
+      model
+    });
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to generate feed content", detail: String(err?.message || err) });
   }
 });
 

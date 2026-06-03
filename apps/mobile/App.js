@@ -12,6 +12,7 @@ import { Onest_700Bold } from "@expo-google-fonts/onest";
 import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { FollowProvider } from "./src/context/FollowContext";
+import { ConsentProvider } from "./src/context/ConsentContext";
 import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
@@ -46,15 +47,17 @@ export default function App() {
 
   return (
     <FollowProvider>
-      <UiProvider>
-        <SafeAreaProvider>
-          <ProtoAppFrame>
-            <NavigationContainer>
-              <Shell />
-            </NavigationContainer>
-          </ProtoAppFrame>
-        </SafeAreaProvider>
-      </UiProvider>
+      <ConsentProvider>
+        <UiProvider>
+          <SafeAreaProvider>
+            <ProtoAppFrame>
+              <NavigationContainer>
+                <Shell />
+              </NavigationContainer>
+            </ProtoAppFrame>
+          </SafeAreaProvider>
+        </UiProvider>
+      </ConsentProvider>
     </FollowProvider>
   );
 }

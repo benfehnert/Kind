@@ -9,6 +9,9 @@ import ResearcherProfileScreen from "../screens/ResearcherProfileScreen";
 import FeedBankScreen from "../screens/FeedBankScreen";
 import ExplorersListScreen from "../screens/ExplorersListScreen";
 import FollowListScreen from "../screens/FollowListScreen";
+import OnboardingConsentScreen from "../screens/OnboardingConsentScreen";
+import ConsentSummaryScreen from "../screens/ConsentSummaryScreen";
+import EnergyReportScreen from "../screens/EnergyReportScreen";
 import MainTabShell from "./MainTabShell";
 
 const RootStack = createNativeStackNavigator();
@@ -34,6 +37,9 @@ export default function AppNavigator() {
       <RootStack.Screen name="FeedBank" component={FeedBankScreen} />
       <RootStack.Screen name="ExplorersList" component={ExplorersListScreen} />
       <RootStack.Screen name="FollowList" component={FollowListScreen} />
+      <RootStack.Screen name="OnboardingConsent" component={OnboardingConsentScreen} />
+      <RootStack.Screen name="ConsentSummary" component={ConsentSummaryScreen} />
+      <RootStack.Screen name="EnergyReport" component={EnergyReportScreen} />
     </RootStack.Navigator>
   );
 }

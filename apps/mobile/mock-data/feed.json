@@ -247,6 +247,22 @@
   },
   "staticItems": [
     {
+      "id": "s0",
+      "type": "insight",
+      "insightTab": "your",
+      "route": "EnergyReport",
+      "avatarKind": "icon",
+      "icon": "✦",
+      "avatarBg": "#E6F1FB",
+      "iconColor": "#185FA5",
+      "displayName": "Your insight",
+      "badge": "blue",
+      "badgeLabel": "Insight",
+      "time": "Just now · Morning rules & afternoon energy",
+      "body": "You've completed your <strong>Morning rules &amp; afternoon energy</strong> exploration. Your personalised 8-week energy report is ready to view.",
+      "highlight": "Tap to open your report → afternoon energy up from <strong>5.2 to 6.8</strong>, real crashes down from <strong>64% to 29%</strong>."
+    },
+    {
       "id": "s1",
       "type": "milestone",
       "userId": "sam-johnson",

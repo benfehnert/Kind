@@ -9,6 +9,7 @@ import search from "../../mock-data/search.json";
 import notifications from "../../mock-data/notifications.json";
 import exploreCopy from "../../mock-data/exploreCopy.json";
 import exploreChat from "../../mock-data/exploreChat.json";
+import consent from "../../mock-data/consent.json";
 
 export {
   community,
@@ -21,7 +22,8 @@ export {
   search,
   notifications,
   exploreCopy,
-  exploreChat
+  exploreChat,
+  consent
 };
 
 /** Map legacy Unsplash URL → scene key (matches community.sceneAvatars base path). */
