@@ -87,15 +87,18 @@ async function pushMigrations(target) {
   const password = process.env[`SUPABASE_DB_PASSWORD_${env}`];
 
   console.log(`\nPushing DB migrations to ${env.toLowerCase()}...`);
+  if (!ref || !password) {
+    console.warn(`  ⚠  Skipping migrations — SUPABASE_PROJECT_REF_${env} or SUPABASE_DB_PASSWORD_${env} not set in apps/api/.env`);
+    return;
+  }
+
+  const dbUrl = `postgresql://postgres:${password}@db.${ref}.supabase.co:5432/postgres`;
   try {
-    if (ref && password) {
-      run(`npx supabase link --project-ref ${ref} --password ${password}`);
-    }
-    run("npx supabase db push");
+    run(`npx supabase db push --db-url "${dbUrl}"`);
     console.log(`  ✓  Migrations pushed`);
   } catch {
     console.warn(`  ⚠  Could not push migrations automatically.`);
-    console.warn(`     Run manually: npx supabase link --project-ref <ref> && npx supabase db push`);
+    console.warn(`     Run manually: npx supabase db push --db-url "postgresql://postgres:<password>@db.${ref}.supabase.co:5432/postgres"`);
   }
 }
 
