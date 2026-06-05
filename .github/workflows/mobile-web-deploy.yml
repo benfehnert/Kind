@@ -41,25 +41,8 @@ jobs:
       - name: Prepare output structure
         run: mkdir -p out/app
 
-      - name: Compute base URL
-        id: base-url
-        run: |
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          if [[ "${REPO_NAME}" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
-            echo "value=/app" >> $GITHUB_OUTPUT
-          else
-            echo "value=/${REPO_NAME}/app" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Restore cached Expo web build
-        id: mobile-cache
-        uses: actions/cache@v4
-        with:
-          path: apps/mobile/.web-dist-cache
-          key: mobile-web-v3-${{ github.ref_name }}-${{ hashFiles('apps/mobile/**') }}
-
       - name: Setup Node.js
-        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -67,41 +50,20 @@ jobs:
           cache-dependency-path: apps/mobile/package-lock.json
 
       - name: Install dependencies
-        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
         working-directory: apps/mobile
         run: npm ci --legacy-peer-deps
 
-      - name: Export Expo web build
-        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
+      # Build without BASE_URL so asset paths are root-relative for Cloudflare
+      - name: Export Expo web build (Cloudflare)
+        if: steps.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch'
         working-directory: apps/mobile
         env:
-          BASE_URL: ${{ steps.base-url.outputs.value }}
           EXPO_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && secrets.EXPO_PUBLIC_API_URL_PRODUCTION || secrets.EXPO_PUBLIC_API_URL_STAGING }}
         run: npm run build
 
-      - name: Save exported mobile build for reuse
-        if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          rm -rf apps/mobile/.web-dist-cache
-          cp -R apps/mobile/dist apps/mobile/.web-dist-cache
-
-      - name: Recover mobile build from cache
-        if: steps.changes.outputs.mobile != 'true' && steps.mobile-cache.outputs.cache-hit == 'true' && github.event_name != 'workflow_dispatch'
-        run: |
-          rm -rf apps/mobile/dist
-          cp -R apps/mobile/.web-dist-cache apps/mobile/dist
-
-      - name: Build website
-        run: npm run build --prefix apps/kind-website
-
-      - name: Assemble Pages content
-        run: |
-          cp -R apps/kind-website/dist/. out/
-          cp -R apps/mobile/dist/. out/app/
-          mkdir -p out/prototype
-          cp apps/mobile/prototype.html out/prototype/index.html
-
       - name: Deploy mobile web to Cloudflare
+        if: steps.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch'
         working-directory: apps/mobile
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -116,6 +78,27 @@ jobs:
           else
             npx wrangler deploy --env staging
           fi
+
+      # Rebuild with BASE_URL for GitHub Pages path prefix (main only)
+      - name: Re-export Expo web build (GitHub Pages)
+        if: (steps.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        working-directory: apps/mobile
+        env:
+          BASE_URL: /Kind/app
+          EXPO_PUBLIC_API_URL: ${{ secrets.EXPO_PUBLIC_API_URL_PRODUCTION }}
+        run: npm run build
+
+      - name: Build website
+        if: steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
+        run: npm run build --prefix apps/kind-website
+
+      - name: Assemble Pages content
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cp -R apps/kind-website/dist/. out/
+          cp -R apps/mobile/dist/. out/app/
+          mkdir -p out/prototype
+          cp apps/mobile/prototype.html out/prototype/index.html
 
       - name: Setup GitHub Pages
         if: github.ref == 'refs/heads/main'
