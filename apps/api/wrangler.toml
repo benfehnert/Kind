@@ -5,7 +5,7 @@ main = "src/worker.js"
 
 [vars]
 USE_MOCK_DATA = "false"
-MOCK_AUTH = "false"
+MOCK_AUTH = "true"
 
 # Replace <production-hyperdrive-id> after running the Cloudflare Supabase
 # integration for the production environment (Workers dashboard → Settings →
@@ -17,6 +17,10 @@ id = "8494513559e743db8586848e26d6a0a6"   # paste ID from kind-hyperdrive-produc
 
 [env.staging]
 name = "kind-api-staging"
+
+[env.staging.vars]
+USE_MOCK_DATA = "false"
+MOCK_AUTH = "true"
 
 # Replace <staging-hyperdrive-id> after running the integration for staging.
 [[env.staging.hyperdrive]]
