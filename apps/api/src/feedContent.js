@@ -5,8 +5,7 @@
 //   1. evaluates which library items "fire" for the current context,
 //   2. resolves {tokens} from the user's logs / rolling aggregates,
 //   3. applies privacy (cohort suppression) and the medical safeguard,
-//   4. produces feed items in the exact shape the mobile feed renders
-//      (see apps/mobile/mock-data/feed.json + HomeScreen.js).
+//   4. produces feed items in the exact shape the mobile feed renders.
 //
 // Copy is rewritten by an LLM when OPENAI_API_KEY is available, obeying the
 // library's tone & safety guidance. With no key it falls back to deterministic
