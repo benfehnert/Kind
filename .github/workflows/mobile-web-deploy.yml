@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - apps/mobile/**
       - apps/kind-website/**
@@ -75,6 +76,7 @@ jobs:
         working-directory: apps/mobile
         env:
           BASE_URL: ${{ steps.base-url.outputs.value }}
+          EXPO_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && secrets.EXPO_PUBLIC_API_URL_PRODUCTION || secrets.EXPO_PUBLIC_API_URL_STAGING }}
         run: npm run build
 
       - name: Save exported mobile build for reuse
@@ -99,7 +101,7 @@ jobs:
           mkdir -p out/prototype
           cp apps/mobile/prototype.html out/prototype/index.html
 
-      - name: Deploy mobile web to Cloudflare (web.kind-health.app)
+      - name: Deploy mobile web to Cloudflare
         working-directory: apps/mobile
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -109,7 +111,7 @@ jobs:
             echo "Skipping Cloudflare deploy: add CLOUDFLARE_API_TOKEN to repository secrets."
             exit 0
           fi
-          npx wrangler deploy
+          npx wrangler deploy ${{ github.ref == 'refs/heads/main' && '' || '--env staging' }}
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5

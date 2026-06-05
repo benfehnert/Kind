@@ -87,22 +87,21 @@ function checkoutAndSync(remote, branch) {
 
 async function pushMigrations(target) {
   const env = target === "main" ? "PRODUCTION" : "STAGING";
-  const ref = process.env[`SUPABASE_PROJECT_REF_${env}`];
-  const password = process.env[`SUPABASE_DB_PASSWORD_${env}`];
+  const dbUrl = process.env[`SUPABASE_DB_URL_${env}`];
 
   console.log(`\nPushing DB migrations to ${env.toLowerCase()}...`);
-  if (!ref || !password) {
-    console.warn(`  ⚠  Skipping migrations — SUPABASE_PROJECT_REF_${env} or SUPABASE_DB_PASSWORD_${env} not set in apps/api/.env`);
+  if (!dbUrl) {
+    console.warn(`  ⚠  Skipping migrations — SUPABASE_DB_URL_${env} not set in apps/api/.env`);
+    console.warn(`     Set it to the Session pooler URI from Supabase dashboard → Project Settings → Database`);
     return;
   }
 
-  const dbUrl = `postgresql://postgres:${password}@db.${ref}.supabase.co:5432/postgres`;
   try {
     run(`npx supabase db push --db-url "${dbUrl}"`);
     console.log(`  ✓  Migrations pushed`);
   } catch {
     console.warn(`  ⚠  Could not push migrations automatically.`);
-    console.warn(`     Run manually: npx supabase db push --db-url "postgresql://postgres:<password>@db.${ref}.supabase.co:5432/postgres"`);
+    console.warn(`     Run manually: npx supabase db push --db-url "<session-pooler-url>"`);
   }
 }
 
