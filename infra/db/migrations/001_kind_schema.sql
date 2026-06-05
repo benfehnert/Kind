@@ -20,8 +20,10 @@ CREATE TYPE waitlist_audience AS ENUM ('individual', 'researcher');
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE individuals (
-  id TEXT PRIMARY KEY,
-  email TEXT UNIQUE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id UUID UNIQUE NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
   location TEXT,
   bio TEXT,
@@ -34,7 +36,7 @@ CREATE TABLE individuals (
 );
 
 CREATE TABLE privacy_settings (
-  individual_id TEXT PRIMARY KEY REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID PRIMARY KEY REFERENCES individuals(id) ON DELETE CASCADE,
   contribute_to_citizen_science BOOLEAN NOT NULL DEFAULT TRUE,
   visible_in_community BOOLEAN NOT NULL DEFAULT TRUE,
   daily_reminders BOOLEAN NOT NULL DEFAULT TRUE,
@@ -160,7 +162,7 @@ CREATE TABLE researcher_explorations (
 
 CREATE TABLE user_explorations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   exploration_id TEXT NOT NULL REFERENCES explorations(id) ON DELETE CASCADE,
   week_current INT NOT NULL DEFAULT 1,
   weeks_total INT NOT NULL,
@@ -175,7 +177,7 @@ CREATE TABLE user_explorations (
 
 CREATE TABLE daily_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   exploration_id TEXT NOT NULL REFERENCES explorations(id) ON DELETE CASCADE,
   user_exploration_id UUID REFERENCES user_explorations(id) ON DELETE SET NULL,
   log_date DATE NOT NULL,
@@ -190,7 +192,7 @@ CREATE TABLE daily_logs (
 
 CREATE TABLE individual_badges (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   label TEXT NOT NULL,
   style badge_style NOT NULL DEFAULT 'teal',
   sort_order INT NOT NULL DEFAULT 0
@@ -198,7 +200,7 @@ CREATE TABLE individual_badges (
 
 CREATE TABLE activity_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   exploration_id TEXT REFERENCES explorations(id) ON DELETE SET NULL,
   user_exploration_id UUID REFERENCES user_explorations(id) ON DELETE SET NULL,
   summary TEXT NOT NULL,
@@ -210,22 +212,22 @@ CREATE TABLE activity_posts (
 );
 
 CREATE TABLE individual_follows (
-  follower_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
-  followee_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  follower_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  followee_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (follower_id, followee_id),
   CHECK (follower_id <> followee_id)
 );
 
 CREATE TABLE researcher_follows (
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   researcher_id TEXT NOT NULL REFERENCES researchers(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (individual_id, researcher_id)
 );
 
 CREATE TABLE activity_nices (
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   activity_post_id UUID NOT NULL REFERENCES activity_posts(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (individual_id, activity_post_id)
@@ -233,14 +235,14 @@ CREATE TABLE activity_nices (
 
 CREATE TABLE activity_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   activity_post_id UUID NOT NULL REFERENCES activity_posts(id) ON DELETE CASCADE,
   body TEXT NOT NULL,
   sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE researcher_exploration_nices (
-  individual_id TEXT NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
+  individual_id UUID NOT NULL REFERENCES individuals(id) ON DELETE CASCADE,
   researcher_id TEXT NOT NULL REFERENCES researchers(id) ON DELETE CASCADE,
   exploration_id TEXT NOT NULL REFERENCES explorations(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -256,7 +258,7 @@ CREATE TABLE researcher_exploration_nices (
 CREATE TABLE feed_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   feed_type feed_item_type NOT NULL,
-  actor_individual_id TEXT REFERENCES individuals(id) ON DELETE SET NULL,
+  actor_individual_id UUID REFERENCES individuals(id) ON DELETE SET NULL,
   exploration_id TEXT REFERENCES explorations(id) ON DELETE SET NULL,
   headline TEXT NOT NULL,
   body TEXT,
@@ -276,7 +278,7 @@ CREATE TABLE waitlist_entries (
   email TEXT NOT NULL,
   self_description TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  converted_individual_id TEXT REFERENCES individuals(id) ON DELETE SET NULL
+  converted_individual_id UUID REFERENCES individuals(id) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_waitlist_email_audience ON waitlist_entries (email, audience);
