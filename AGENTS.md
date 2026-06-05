@@ -12,18 +12,34 @@ This repository uses a custom agent focused on local monorepo setup and safe rel
 
 Run all commands from repository root:
 
-- npm run setup:local
-- npm run test:local
-- npm run run:local
-- npm run run:local -- --with-website
-- npm run run:api
-- npm run run:mobile
-- npm run run:website
-- npm run db:up
-- npm run db:down
-- npm run migrate:local
-- npm run release:staging
-- npm run release:main
+### Setup & database
+
+- `npm run setup` — fresh-clone setup: install deps, start Supabase, populate .env, reset DB, seed demo data
+- `npm run reset:db` — wipe and reseed the database (Supabase must already be running)
+
+### Running services
+
+- `npm run dev` — start all 4 services (API, mobile, website, Supabase); shows a URL summary box; Ctrl+C stops everything
+- `npm run dev:api` — start API only (port 4000)
+- `npm run dev:mobile` — start Expo web only
+- `npm run dev:website` — start website only (port 3333)
+- `npm run dev:db` — start Supabase only (ports 54321–54323)
+
+If a port is already in use, the script will ask whether to stop the existing process or use the next available port.
+
+### Supabase utilities
+
+- `npm run supabase:start` — start local Supabase stack
+- `npm run supabase:stop` — stop local Supabase stack
+- `npm run supabase:reset` — re-apply migrations (wipes data)
+- `npm run supabase:push` — push migrations to remote project
+- `npm run supabase:status` — show local URLs and API keys
+- `npm run seed:kind` — seed demo data into a running local DB
+
+### Releases
+
+- `npm run release:staging` — merge current branch → staging and push
+- `npm run release:main` — merge staging → main and push
 
 ## Release Guardrails
 
