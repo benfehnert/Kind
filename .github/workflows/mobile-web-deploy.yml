@@ -39,7 +39,7 @@ jobs:
               - 'apps/kind-website/**'
 
       - name: Setup Node.js
-        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,7 +47,7 @@ jobs:
           cache-dependency-path: apps/mobile/package-lock.json
 
       - name: Install dependencies
-        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         working-directory: apps/mobile
         run: npm ci --legacy-peer-deps
 
@@ -77,7 +77,7 @@ jobs:
           fi
 
       - name: Build website
-        if: steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         run: npm run build --prefix apps/kind-website
 
       - name: Assemble Pages content
