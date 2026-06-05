@@ -38,9 +38,6 @@ jobs:
             website:
               - 'apps/kind-website/**'
 
-      - name: Prepare output structure
-        run: mkdir -p out/app
-
       - name: Setup Node.js
         if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v4
@@ -79,15 +76,6 @@ jobs:
             npx wrangler deploy --env staging
           fi
 
-      # Rebuild with BASE_URL for GitHub Pages path prefix (main only)
-      - name: Re-export Expo web build (GitHub Pages)
-        if: (steps.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-        working-directory: apps/mobile
-        env:
-          BASE_URL: /Kind/app
-          EXPO_PUBLIC_API_URL: ${{ secrets.EXPO_PUBLIC_API_URL_PRODUCTION }}
-        run: npm run build
-
       - name: Build website
         if: steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch'
         run: npm run build --prefix apps/kind-website
@@ -95,10 +83,8 @@ jobs:
       - name: Assemble Pages content
         if: github.ref == 'refs/heads/main'
         run: |
+          mkdir -p out
           cp -R apps/kind-website/dist/. out/
-          cp -R apps/mobile/dist/. out/app/
-          mkdir -p out/prototype
-          cp apps/mobile/prototype.html out/prototype/index.html
 
       - name: Setup GitHub Pages
         if: github.ref == 'refs/heads/main'
