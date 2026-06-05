@@ -1,85 +1,77 @@
-# Health Protocol App (MVP Skeleton)
+# Kind
 
-Monorepo scaffold for a health and wellbeing protocol adherence app.
+Monorepo for the Kind health exploration app.
 
-## What is included
+## Structure
 
-- `apps/api`: Node.js + Express + PostgreSQL API with MVP endpoint stubs
-- `apps/mobile`: Expo React Native app with core navigation screens
-- `infra/db/migrations`: SQL migrations for core MVP schema
-- `docker-compose.yml`: Local PostgreSQL service
+- `apps/api`: Node.js + Express API backed by Supabase (PostgreSQL)
+- `apps/mobile`: Expo React Native app
+- `supabase/`: Local Supabase config and migrations
 
 ## Prerequisites
 
 - Node.js 20+
 - npm 10+
-- Docker Desktop (for PostgreSQL)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (`npm install -g supabase` or `npx supabase`)
 
-## Root commands (non-coder friendly)
+## Local dev
 
-Run all commands from the repository root.
+```sh
+# 1. Start local Supabase (Postgres + Auth + Studio)
+npm run supabase:start
 
-- `npm run setup:local`
-   - Installs dependencies for API, mobile, and website apps
-   - Creates `apps/api/.env` from `apps/api/.env.example` if missing
-   - Starts PostgreSQL with Docker Compose
-   - Runs API migrations
-- `npm run test:local`
-   - Checks local prerequisites and setup state
-- `npm run run:local`
-   - Starts API and mobile web together
-   - Optional: `npm run run:local -- --with-website`
-- `npm run release:staging`
-   - Merges `dev` into `staging` and pushes to `origin`
-   - Requires clean git working tree
-   - Stops on merge conflicts and prints manual fallback steps
-   - Requires interactive push confirmation
-- `npm run release:main`
-   - Merges `staging` into `main` and pushes to `origin`
-   - Requires clean git working tree
-   - Stops on merge conflicts and prints manual fallback steps
-   - Requires interactive push confirmation
+# 2. Apply schema and seed demo data
+npm run supabase:reset
+npm run seed:kind
 
-## Quick start (legacy manual)
+# 3. Start the API  (in apps/api/)
+cd apps/api && npm run dev
 
-1. Start PostgreSQL:
-   - `docker compose up -d`
-2. Install dependencies:
-   - `cd apps/api && npm install`
-   - `cd ../mobile && npm install`
-3. Configure API environment:
-   - Copy `apps/api/.env.example` to `apps/api/.env`
-4. Run migrations:
-   - `cd apps/api && npm run migrate`
-5. Start API:
-   - `npm run dev`
-6. Start mobile app:
-   - `cd ../mobile && npm run start`
+# 4. Start the mobile app (in apps/mobile/)
+cd apps/mobile && npm start
+```
 
-## API base URL
+Supabase Studio runs at `http://localhost:54323`.
 
-- Local API: `http://localhost:4000`
+## Supabase commands (from repo root)
+
+| Command | Description |
+|---|---|
+| `npm run supabase:start` | Start local Supabase stack |
+| `npm run supabase:stop` | Stop local Supabase stack |
+| `npm run supabase:reset` | Wipe DB and re-apply migrations |
+| `npm run supabase:push` | Push migrations to remote project |
+| `npm run supabase:status` | Show local URLs and keys |
+| `npm run seed:kind` | Seed demo data (runs after reset) |
+
+## API
+
+- Local: `http://localhost:4000`
 - Health check: `GET /health`
-- Demo login: `demo@example.com` / `demo1234`
+- Demo login: `anna@kind.example` / `demo1234`
 
-## Core protected routes
+### Auth routes (no token needed)
 
-Use `Authorization: Bearer <token>` after login.
+- `POST /auth/signup` — `{ email, name, password }`
+- `POST /auth/login` — `{ email, password }` → `{ token, refreshToken, individualId }`
+- `POST /auth/refresh` — `{ refreshToken }` → `{ token, refreshToken }`
+- `POST /auth/logout`
 
-- `POST /plans/generate`
-- `GET /plans/today`
-- `PATCH /plan-items/:id`
-- `GET /adherence/weekly?week_start=YYYY-MM-DD`
-- `GET /me`
-- `POST /onboarding/complete`
+### Protected routes (`Authorization: Bearer <token>`)
 
-## Auth token lifecycle
+- `GET /explorations`
+- `GET /explorations/:id`
+- `GET /community`
+- `GET /feed`
+- `GET /home`
+- `GET /profile`
+- `GET /insights`
+- `GET /search?q=`
+- `GET /notifications`
 
-- `POST /auth/login` returns `token` and `refreshToken`.
-- `POST /auth/refresh` rotates refresh tokens and returns a fresh pair.
-- `POST /auth/logout` revokes the provided refresh token.
+## Dev flags (`apps/api/.env`)
 
-## Notes
-
-- This is an MVP skeleton with lightweight business logic and DB-backed refresh sessions.
-- Replace demo credentials and add stronger rate limits, secrets management, and security hardening before release.
+| Flag | Values | Effect |
+|---|---|---|
+| `USE_MOCK_DATA` | `true` / `false` | Serve static JSON mocks instead of DB |
+| `MOCK_AUTH` | `true` / `false` | Skip JWT, resolve all requests as Anna Ross |

@@ -102,7 +102,7 @@ async function main() {
 
   console.log(`\nMerging ${from} into ${to}...`);
   try {
-    run(`git merge ${from}`);
+    run(`git merge --quiet ${from}`);
   } catch {
     if (hasConflicts()) {
       console.error('\nMerge conflict detected.');
