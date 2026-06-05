@@ -1,12 +1,14 @@
 import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { explorations, getResearcher } from "../data/mock";
+import { getResearcher } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
+  const { explorations, community } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
@@ -23,7 +25,7 @@ export default function ExplorationDetailScreen() {
     );
   }
 
-  const r = getResearcher(e.researcherId);
+  const r = getResearcher(e.researcherId, community.researchers);
   const showKindResearchBox = id === "eating" || id === "relaxation";
 
   return (

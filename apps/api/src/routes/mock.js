@@ -32,6 +32,10 @@ router.get("/explorations", (_req, res) => {
   res.json({ items });
 });
 
+router.get("/explorations/evidence", (_req, res) => {
+  res.json(explorationEvidence);
+});
+
 router.get("/explorations/:id", (req, res) => {
   const data = explorations[req.params.id];
   if (!data) return res.status(404).json({ error: "Exploration not found" });
@@ -56,7 +60,10 @@ router.get("/community/individuals", (_req, res) => {
   }));
   const basicUsers = (community.basicUsers || []).map((u) => ({ ...u, tier: "basic" }));
   const followerOnly = (community.followerOnly || []).map((u) => ({ ...u, tier: "follower" }));
-  res.json({ items: [...commUsers, ...basicUsers, ...followerOnly] });
+  res.json({
+    items: [...commUsers, ...basicUsers, ...followerOnly],
+    explorationFollowers: community.explorationFollowers || {}
+  });
 });
 
 router.get("/community/researchers", (_req, res) => {

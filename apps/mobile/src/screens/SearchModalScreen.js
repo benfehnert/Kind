@@ -11,21 +11,21 @@ import {
   Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import searchData from "../../mock-data/search.json";
+import { useData } from "../context/DataContext";
 import { colors, fontSize, iconSize, radius, spacing } from "../theme/colors";
 import { text } from "../theme/textStyles";
 import { type } from "../theme/typography";
-import exploreCopy from "../../mock-data/exploreCopy.json";
 import { CloseIcon } from "../components/icons/ProtoIcons";
 
 export default function SearchModalScreen() {
+  const { search: searchData, exploreCopy } = useData();
   const navigation = useNavigation();
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     const out = [];
-    searchData.sections.forEach((sec) => {
+    (searchData.sections || []).forEach((sec) => {
       const rows = sec.rows.filter((r) => {
         if (!query) return true;
         return (

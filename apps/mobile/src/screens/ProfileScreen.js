@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { profile } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { useUiShell } from "../context/UiContext";
 import { colors, radius, spacing } from "../theme/colors";
@@ -19,6 +19,7 @@ function pravatarNum(key) {
 }
 
 export default function ProfileScreen() {
+  const { profile } = useData();
   const navigation = useNavigation();
   const { followingCount } = useFollow();
   const { showToast } = useUiShell();

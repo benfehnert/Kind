@@ -9,7 +9,9 @@ import {
   ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { exploreCopy, explorations, explorationOrderUi, exploreResponseFor } from "../data/mock";
+import { explorationOrderUi } from "../data/mock";
+import { useData } from "../context/DataContext";
+import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
@@ -19,6 +21,7 @@ import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 
 export default function ExploreScreen() {
+  const { exploreCopy, explorations } = useData();
   const navigation = useNavigation();
   const [q, setQ] = useState("");
   const [chat, setChat] = useState(null);
@@ -32,15 +35,16 @@ export default function ExploreScreen() {
     setChat({ loading: true });
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const r = exploreResponseFor(q, explorations);
-      setChat({ loading: false, ...r });
+      post("/explore/chat", { query: q, explorers: explorations })
+        .then((r) => setChat({ loading: false, ...r }))
+        .catch(() => setChat({ loading: false, msg: "", explorationIds: [] }));
     }, 700);
     return () => clearTimeout(timer.current);
-  }, [q]);
+  }, [q, explorations]);
 
-  const ordered = useMemo(() => explorationOrderUi(), []);
+  const ordered = useMemo(() => explorationOrderUi(explorations), [explorations]);
 
-  const activeId = useMemo(() => ordered.find((id) => explorations[id]?.active), [ordered]);
+  const activeId = useMemo(() => ordered.find((id) => explorations[id]?.active), [ordered, explorations]);
   const active = activeId ? explorations[activeId] : null;
 
   return (

@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { KindNavBar } from "../components/primitives/KindNavBar";
 import { KindTabBar } from "../components/primitives/KindTabBar";
-import profile from "../../mock-data/profile.json";
+import { useData } from "../context/DataContext";
 import HomeScreen from "../screens/HomeScreen";
 import ExploreScreen from "../screens/ExploreScreen";
 import InsightScreen from "../screens/InsightScreen";
@@ -28,6 +28,7 @@ function TabChromeBridge({ onChrome, state, navigation, descriptors }) {
 }
 
 export default function MainTabShell() {
+  const { profile } = useData();
   const stackNav = useNavigation();
   const [tabChrome, setTabChrome] = useState(null);
 

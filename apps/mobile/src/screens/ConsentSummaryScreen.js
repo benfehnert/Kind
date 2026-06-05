@@ -2,11 +2,12 @@ import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { consent } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { colors, fontFamily } from "../theme/colors";
 
 export default function ConsentSummaryScreen() {
+  const { consent } = useData();
   const navigation = useNavigation();
   const { choices, completed } = useConsent();
   const s = consent.summary;

@@ -4,7 +4,7 @@ import { resolveImageSource } from "../../assets/imageManifest";
 import { colors } from "../../theme/colors";
 import { fontSize } from "../../theme/tokens";
 import { type } from "../../theme/typography";
-import { getSceneKeyFromAvatarUrl } from "../../data/mock";
+import { getSceneKeyFromAvatarUrl } from "../../assets/sceneAvatars";
 
 const AV_BG = [colors.greenLight, colors.purpleBg, colors.amberBg, colors.blueBg, colors.mintBg];
 const AV_TC = [colors.greenDark, colors.purpleText, colors.amberText, colors.blueText, colors.mintText];

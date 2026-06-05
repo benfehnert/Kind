@@ -2,7 +2,8 @@ import React, { useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { explorations, getUserProfile } from "../data/mock";
+import { getUserProfile } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -13,11 +14,12 @@ import { BackIcon } from "../components/icons/ProtoIcons";
 import { RichTextParts } from "../utils/RichText";
 
 export default function ExplorerProfileScreen() {
+  const { explorations, community } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const userId = params?.userId;
   const { followerIdSet, isFollowing, toggleFollow } = useFollow();
-  const u = userId ? getUserProfile(userId, followerIdSet) : null;
+  const u = userId ? getUserProfile(userId, community, followerIdSet) : null;
   const [expanded, setExpanded] = useState({});
   const [niced, setNiced] = useState({});
   const [messageOpen, setMessageOpen] = useState({});
