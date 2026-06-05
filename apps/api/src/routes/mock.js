@@ -1,20 +1,16 @@
-import { createRequire } from "module";
 import { Hono } from "hono";
-
-const require = createRequire(import.meta.url);
-
-const community = require("../mocks/community.json");
-const explorations = require("../mocks/explorations.json");
-const explorationEvidence = require("../mocks/explorationEvidence.json");
-const feed = require("../mocks/feed.json");
-const home = require("../mocks/home.json");
-const insight = require("../mocks/insight.json");
-const profile = require("../mocks/profile.json");
-const search = require("../mocks/search.json");
-const notifications = require("../mocks/notifications.json");
-const exploreCopy = require("../mocks/exploreCopy.json");
-const exploreChat = require("../mocks/exploreChat.json");
-const consent = require("../mocks/consent.json");
+import community from "../mocks/community.json";
+import explorations from "../mocks/explorations.json";
+import explorationEvidence from "../mocks/explorationEvidence.json";
+import feed from "../mocks/feed.json";
+import home from "../mocks/home.json";
+import insight from "../mocks/insight.json";
+import profile from "../mocks/profile.json";
+import search from "../mocks/search.json";
+import notifications from "../mocks/notifications.json";
+import exploreCopy from "../mocks/exploreCopy.json";
+import exploreChat from "../mocks/exploreChat.json";
+import consent from "../mocks/consent.json";
 
 const router = new Hono();
 
