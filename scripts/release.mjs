@@ -3,17 +3,21 @@
 import { execSync } from 'node:child_process';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
 // Load apps/api/.env so SUPABASE_PROJECT_REF_* vars are available without
 // requiring devs to export them in their shell profile.
 try {
-  const { default: dotenv } = await import('dotenv');
-  dotenv.config({ path: path.join(ROOT, 'apps/api/.env') });
-} catch { /* dotenv optional */ }
+  const envContent = fs.readFileSync(path.join(ROOT, 'apps/api/.env'), 'utf8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+    if (match && !process.env[match[1]]) process.env[match[1]] = match[2];
+  }
+} catch { /* .env optional */ }
 
 const target = process.argv[2];
 const dryRun = process.argv.includes('--dry-run');
