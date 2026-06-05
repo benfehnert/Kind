@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { Router } from "express";
+import { Hono } from "hono";
 
 const require = createRequire(import.meta.url);
 
@@ -16,7 +16,7 @@ const exploreCopy = require("../mocks/exploreCopy.json");
 const exploreChat = require("../mocks/exploreChat.json");
 const consent = require("../mocks/consent.json");
 
-const router = Router();
+const router = new Hono();
 
 // ---------------------------------------------------------------------------
 // Explorations
@@ -24,35 +24,37 @@ const router = Router();
 
 const EXPLORATION_ORDER = ["morning-rules", "eating", "screen-sleep", "relaxation", "upf-mood"];
 
-router.get("/explorations", (_req, res) => {
+router.get("/explorations", (c) => {
   const items = EXPLORATION_ORDER.filter((id) => explorations[id]).map((id) => ({
     id,
     ...explorations[id]
   }));
-  res.json({ items });
+  return c.json({ items });
 });
 
-router.get("/explorations/evidence", (_req, res) => {
-  res.json(explorationEvidence);
+router.get("/explorations/evidence", (c) => {
+  return c.json(explorationEvidence);
 });
 
-router.get("/explorations/:id", (req, res) => {
-  const data = explorations[req.params.id];
-  if (!data) return res.status(404).json({ error: "Exploration not found" });
-  res.json({ id: req.params.id, ...data });
+router.get("/explorations/:id", (c) => {
+  const id = c.req.param("id");
+  const data = explorations[id];
+  if (!data) return c.json({ error: "Exploration not found" }, 404);
+  return c.json({ id, ...data });
 });
 
-router.get("/explorations/:id/evidence", (req, res) => {
-  const data = explorationEvidence[req.params.id];
-  if (!data) return res.status(404).json({ error: "Evidence not found" });
-  res.json(data);
+router.get("/explorations/:id/evidence", (c) => {
+  const id = c.req.param("id");
+  const data = explorationEvidence[id];
+  if (!data) return c.json({ error: "Evidence not found" }, 404);
+  return c.json(data);
 });
 
 // ---------------------------------------------------------------------------
 // Community
 // ---------------------------------------------------------------------------
 
-router.get("/community/individuals", (_req, res) => {
+router.get("/community/individuals", (c) => {
   const commUsers = Object.entries(community.commUsers || {}).map(([id, u]) => ({
     id,
     tier: "comm",
@@ -60,27 +62,27 @@ router.get("/community/individuals", (_req, res) => {
   }));
   const basicUsers = (community.basicUsers || []).map((u) => ({ ...u, tier: "basic" }));
   const followerOnly = (community.followerOnly || []).map((u) => ({ ...u, tier: "follower" }));
-  res.json({
+  return c.json({
     items: [...commUsers, ...basicUsers, ...followerOnly],
     explorationFollowers: community.explorationFollowers || {}
   });
 });
 
-router.get("/community/researchers", (_req, res) => {
-  res.json({ items: community.researchers || [] });
+router.get("/community/researchers", (c) => {
+  return c.json({ items: community.researchers || [] });
 });
 
-router.get("/community/individuals/:id", (req, res) => {
-  const id = req.params.id;
+router.get("/community/individuals/:id", (c) => {
+  const id = c.req.param("id");
   const cu = community.commUsers?.[id];
-  if (cu) return res.json({ id, tier: "comm", ...cu });
+  if (cu) return c.json({ id, tier: "comm", ...cu });
 
   const bu = [...(community.basicUsers || []), ...(community.followerOnly || [])].find(
     (u) => u.id === id
   );
-  if (bu) return res.json({ tier: "basic", ...bu });
+  if (bu) return c.json({ tier: "basic", ...bu });
 
-  res.status(404).json({ error: "Individual not found" });
+  return c.json({ error: "Individual not found" }, 404);
 });
 
 // ---------------------------------------------------------------------------
@@ -111,28 +113,28 @@ function buildFeedItems() {
 
 const feedItems = buildFeedItems();
 
-router.get("/feed", (req, res) => {
-  const type = req.query.type;
+router.get("/feed", (c) => {
+  const type = c.req.query("type");
   const items =
     type && type !== "all" ? feedItems.filter((item) => item.type === type) : feedItems;
-  res.json({ chips: feed.chips, items });
+  return c.json({ chips: feed.chips, items });
 });
 
 // ---------------------------------------------------------------------------
 // Notifications
 // ---------------------------------------------------------------------------
 
-router.get("/notifications", (_req, res) => {
-  res.json({ items: notifications.items || notifications });
+router.get("/notifications", (c) => {
+  return c.json({ items: notifications.items || notifications });
 });
 
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
-router.get("/search", (req, res) => {
-  const q = (req.query.q || "").toLowerCase();
-  if (!q) return res.json(search);
+router.get("/search", (c) => {
+  const q = (c.req.query("q") || "").toLowerCase();
+  if (!q) return c.json(search);
 
   const explorationResults = (search.explorations || []).filter(
     (e) =>
@@ -145,78 +147,81 @@ router.get("/search", (req, res) => {
       u.name?.toLowerCase().includes(q) ||
       u.meta?.toLowerCase().includes(q)
   );
-  res.json({ explorations: explorationResults, community: communityResults });
+  return c.json({ explorations: explorationResults, community: communityResults });
 });
 
 // ---------------------------------------------------------------------------
 // Insights
 // ---------------------------------------------------------------------------
 
-router.get("/insights", (_req, res) => {
-  res.json(insight);
+router.get("/insights", (c) => {
+  return c.json(insight);
 });
 
 // ---------------------------------------------------------------------------
 // Home
 // ---------------------------------------------------------------------------
 
-router.get("/home", (_req, res) => {
-  res.json(home);
+router.get("/home", (c) => {
+  return c.json(home);
 });
 
 // ---------------------------------------------------------------------------
 // Profile
 // ---------------------------------------------------------------------------
 
-router.get("/profile", (_req, res) => {
-  res.json(profile);
+router.get("/profile", (c) => {
+  return c.json(profile);
 });
 
-router.patch("/profile/privacy", (req, res) => {
-  res.json({ ok: true, privacy: req.body });
+router.patch("/profile/privacy", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  return c.json({ ok: true, privacy: body });
 });
 
 // ---------------------------------------------------------------------------
 // Consent
 // ---------------------------------------------------------------------------
 
-router.get("/consent", (_req, res) => {
-  res.json(consent);
+router.get("/consent", (c) => {
+  return c.json(consent);
 });
 
-router.post("/consent", (_req, res) => {
-  res.json({ ok: true });
+router.post("/consent", (c) => {
+  return c.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------
 // Social follows
 // ---------------------------------------------------------------------------
 
-router.get("/social/follows", (_req, res) => {
-  res.json(community.socialMeta || {});
+router.get("/social/follows", (c) => {
+  return c.json(community.socialMeta || {});
 });
 
-router.patch("/social/follows", (req, res) => {
-  res.json({ ok: true, ...req.body });
+router.patch("/social/follows", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  return c.json({ ok: true, ...body });
 });
 
 // ---------------------------------------------------------------------------
 // Explore copy & chat
 // ---------------------------------------------------------------------------
 
-router.get("/explore/copy", (_req, res) => {
-  res.json(exploreCopy);
+router.get("/explore/copy", (c) => {
+  return c.json(exploreCopy);
 });
 
-router.post("/explore/chat", (req, res) => {
-  const { query: q = "", explorers = {} } = req.body || {};
+router.post("/explore/chat", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const { query: q = "", explorers = {} } = body;
   const norm = q.trim().toLowerCase();
 
   const participantCount = (id) => explorers[id]?.participants ?? "";
 
   if (!norm) {
     const d = exploreChat.defaultRule;
-    return res.json({
+    return c.json({
       msg: "",
       explorationIds: (d.explorationIds || []).slice(0, d.maxIds || d.explorationIds.length)
     });
@@ -229,7 +234,7 @@ router.post("/explore/chat", (req, res) => {
           /\{\{participants\.([^}]+)\}\}/g,
           (_, id) => participantCount(id.trim())
         );
-        return res.json({ msg, explorationIds: rule.explorationIds || [] });
+        return c.json({ msg, explorationIds: rule.explorationIds || [] });
       }
     } catch {
       // skip bad regex patterns
@@ -242,7 +247,7 @@ router.post("/explore/chat", (req, res) => {
     .replace(/\{\{querySnippet\}\}/g, def.sliceQuery ? norm.slice(0, sliceLen) : norm)
     .replace(/\{\{participants\.([^}]+)\}\}/g, (_, id) => participantCount(id.trim()));
 
-  res.json({
+  return c.json({
     msg,
     explorationIds: (def.explorationIds || []).slice(0, def.maxIds || def.explorationIds?.length || 99)
   });

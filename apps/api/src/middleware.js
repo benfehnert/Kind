@@ -1,18 +1,22 @@
-import { supabaseAdmin } from "./supabase.js";
+import { makeAdminClient } from "./supabase.js";
 
-export async function requireAuth(req, res, next) {
-  if (process.env.MOCK_AUTH === "true") {
-    req.user = { sub: "__mock__" };
+export async function requireAuth(c, next) {
+  if ((c.env?.MOCK_AUTH ?? process.env.MOCK_AUTH) === "true") {
+    c.set("user", { sub: "__mock__" });
     return next();
   }
 
-  const authHeader = req.headers.authorization || "";
+  const authHeader = c.req.header("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  if (!token) return c.json({ error: "Unauthorized" }, 401);
 
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-  if (error || !user) return res.status(401).json({ error: "Invalid token" });
+  const admin = makeAdminClient(c.env);
+  const {
+    data: { user },
+    error
+  } = await admin.auth.getUser(token);
+  if (error || !user) return c.json({ error: "Invalid token" }, 401);
 
-  req.user = { sub: user.id, email: user.email };
+  c.set("user", { sub: user.id, email: user.email });
   return next();
 }

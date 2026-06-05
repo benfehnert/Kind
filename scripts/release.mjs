@@ -3,6 +3,17 @@
 import { execSync } from 'node:child_process';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Load apps/api/.env so SUPABASE_PROJECT_REF_* vars are available without
+// requiring devs to export them in their shell profile.
+try {
+  const { default: dotenv } = await import('dotenv');
+  dotenv.config({ path: path.join(ROOT, 'apps/api/.env') });
+} catch { /* dotenv optional */ }
 
 const target = process.argv[2];
 const dryRun = process.argv.includes('--dry-run');
@@ -70,6 +81,24 @@ function checkoutAndSync(remote, branch) {
   run(`git pull --ff-only ${remote} ${branch}`);
 }
 
+async function pushMigrations(target) {
+  const env = target === "main" ? "PRODUCTION" : "STAGING";
+  const ref = process.env[`SUPABASE_PROJECT_REF_${env}`];
+  const password = process.env[`SUPABASE_DB_PASSWORD_${env}`];
+
+  console.log(`\nPushing DB migrations to ${env.toLowerCase()}...`);
+  try {
+    if (ref && password) {
+      run(`npx supabase link --project-ref ${ref} --password ${password}`);
+    }
+    run("npx supabase db push");
+    console.log(`  ✓  Migrations pushed`);
+  } catch {
+    console.warn(`  ⚠  Could not push migrations automatically.`);
+    console.warn(`     Run manually: npx supabase link --project-ref <ref> && npx supabase db push`);
+  }
+}
+
 async function confirm(promptText) {
   const rl = readline.createInterface({ input, output });
   try {
@@ -127,6 +156,7 @@ async function main() {
   }
 
   run(`git push ${remote} ${to}`);
+  await pushMigrations(target);
   console.log(`\nRelease complete: ${from} -> ${to} pushed to ${remote}.`);
 }
 

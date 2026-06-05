@@ -1,0 +1,33 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - apps/api/**
+      - supabase/migrations/**
+      - .github/workflows/api-deploy.yml
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    name: Push DB migrations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Push migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ github.ref == 'refs/heads/main' && secrets.SUPABASE_PROJECT_REF_PRODUCTION || secrets.SUPABASE_PROJECT_REF_STAGING }}
+          DB_PASSWORD: ${{ github.ref == 'refs/heads/main' && secrets.SUPABASE_DB_PASSWORD_PRODUCTION || secrets.SUPABASE_DB_PASSWORD_STAGING }}
+        run: |
+          supabase link --project-ref "$PROJECT_REF" --password "$DB_PASSWORD"
+          supabase db push
+
+  # Worker deployment is handled by Cloudflare's GitHub integration.
+  # Add a deploy job here only if you disable Cloudflare auto-deploy.

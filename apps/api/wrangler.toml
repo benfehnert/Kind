@@ -1,0 +1,24 @@
+name = "kind-api"
+compatibility_date = "2026-06-05"
+compatibility_flags = ["nodejs_compat"]
+main = "src/worker.js"
+
+[vars]
+USE_MOCK_DATA = "false"
+MOCK_AUTH = "false"
+
+# Replace <production-hyperdrive-id> after running the Cloudflare Supabase
+# integration for the production environment (Workers dashboard → Settings →
+# Integrations → Supabase). The integration auto-creates Hyperdrive and injects
+# SUPABASE_URL + SUPABASE_ANON_KEY as secrets.
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "8494513559e743db8586848e26d6a0a6"   # paste ID from kind-hyperdrive-production
+
+[env.staging]
+name = "kind-api-staging"
+
+# Replace <staging-hyperdrive-id> after running the integration for staging.
+[[env.staging.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "b0514ed1e1354bd7899108dd9cf1a5dc"     # paste ID from kind-hyperdrive-staging

@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { Router } from "express";
+import { Hono } from "hono";
 import { query } from "../db.js";
 import { requireAuth } from "../middleware.js";
 
@@ -9,10 +9,10 @@ const exploreChat = require("../mocks/exploreChat.json");
 const insightMock = require("../mocks/insight.json");
 const profileMock = require("../mocks/profile.json");
 
-const router = Router();
+const router = new Hono();
 
 // All Kind routes require auth
-router.use(requireAuth);
+router.use("*", requireAuth);
 
 // ---------------------------------------------------------------------------
 // Helper — get individual UUID from auth JWT sub
@@ -35,8 +35,6 @@ async function getIndividualId(authUserId) {
 // ---------------------------------------------------------------------------
 // Explorations
 // ---------------------------------------------------------------------------
-
-const EXPLORATION_ORDER = ["morning-rules", "eating", "screen-sleep", "relaxation", "upf-mood"];
 
 const EXPLORATION_CATEGORY = {
   "morning-rules": "Energy & Focus",
@@ -100,7 +98,7 @@ async function fetchExploration(id) {
   return { ...rows[0], category: EXPLORATION_CATEGORY[rows[0].id] ?? null };
 }
 
-router.get("/explorations", async (_req, res) => {
+router.get("/explorations", async (c) => {
   const { rows } = await query(
     `SELECT id FROM explorations ORDER BY
        CASE id
@@ -111,30 +109,28 @@ router.get("/explorations", async (_req, res) => {
   );
 
   const items = await Promise.all(rows.map((r) => fetchExploration(r.id)));
-  res.json({ items: items.filter(Boolean) });
+  return c.json({ items: items.filter(Boolean) });
 });
 
-router.get("/explorations/evidence", async (_req, res) => {
-  // Evidence is static content — served from mock until an evidence table is added
-  res.json({});
+router.get("/explorations/evidence", (c) => {
+  return c.json({});
 });
 
-router.get("/explorations/:id", async (req, res) => {
-  const data = await fetchExploration(req.params.id);
-  if (!data) return res.status(404).json({ error: "Exploration not found" });
-  res.json(data);
+router.get("/explorations/:id", async (c) => {
+  const data = await fetchExploration(c.req.param("id"));
+  if (!data) return c.json({ error: "Exploration not found" }, 404);
+  return c.json(data);
 });
 
-router.get("/explorations/:id/evidence", async (req, res) => {
-  // Static until evidence table exists
-  res.json({});
+router.get("/explorations/:id/evidence", (c) => {
+  return c.json({});
 });
 
 // ---------------------------------------------------------------------------
 // Community
 // ---------------------------------------------------------------------------
 
-router.get("/community/individuals", async (_req, res) => {
+router.get("/community/individuals", async (c) => {
   const { rows: individuals } = await query(
     `SELECT
        i.id,
@@ -174,15 +170,12 @@ router.get("/community/individuals", async (_req, res) => {
      ORDER BY i.display_name`
   );
 
-  // Add tier so DataContext can sort into commUsers / basicUsers / followerOnly
-  // comm = has bio, basic = no bio
   const individualsWithTier = individuals.map((ind) => ({
     ...ind,
-    id: ind.slug,   // DataContext keys commUsers by id, which was slug in mock
+    id: ind.slug,
     tier: ind.bio ? "comm" : "basic"
   }));
 
-  // Build explorationFollowers map from user_explorations
   const { rows: expFollowers } = await query(
     `SELECT ue.exploration_id, i.slug
      FROM user_explorations ue
@@ -196,10 +189,10 @@ router.get("/community/individuals", async (_req, res) => {
     explorationFollowers[row.exploration_id].push(row.slug);
   }
 
-  res.json({ items: individualsWithTier, explorationFollowers });
+  return c.json({ items: individualsWithTier, explorationFollowers });
 });
 
-router.get("/community/researchers", async (_req, res) => {
+router.get("/community/researchers", async (c) => {
   const { rows } = await query(
     `SELECT
        r.id,
@@ -218,10 +211,10 @@ router.get("/community/researchers", async (_req, res) => {
      FROM researchers r
      ORDER BY r.display_name`
   );
-  res.json({ items: rows });
+  return c.json({ items: rows });
 });
 
-router.get("/community/individuals/:slug", async (req, res) => {
+router.get("/community/individuals/:slug", async (c) => {
   const { rows } = await query(
     `SELECT
        i.id,
@@ -259,10 +252,10 @@ router.get("/community/individuals/:slug", async (req, res) => {
         FROM activity_posts ap WHERE ap.individual_id = i.id) AS acts
      FROM individuals i
      WHERE i.slug = $1`,
-    [req.params.slug]
+    [c.req.param("slug")]
   );
-  if (!rows.length) return res.status(404).json({ error: "Individual not found" });
-  res.json(rows[0]);
+  if (!rows.length) return c.json({ error: "Individual not found" }, 404);
+  return c.json(rows[0]);
 });
 
 // ---------------------------------------------------------------------------
@@ -280,7 +273,7 @@ const FEED_CHIPS = [
 
 const TIME_LABELS = ["Yesterday", "2 days ago", "3 days ago", "4 days ago", "5 days ago"];
 
-router.get("/feed", async (req, res) => {
+router.get("/feed", async (c) => {
   const { rows } = await query(
     `SELECT fi.id, fi.feed_type::text AS type, fi.exploration_id, fi.headline,
             fi.body, fi.highlight, fi.published_at, fi.sort_order,
@@ -335,7 +328,7 @@ router.get("/feed", async (req, res) => {
     }
   }
 
-  res.json({
+  return c.json({
     chips: FEED_CHIPS,
     feedExpIds,
     feedTips,
@@ -350,9 +343,9 @@ router.get("/feed", async (req, res) => {
 // Home (viewer-specific)
 // ---------------------------------------------------------------------------
 
-router.get("/home", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-  if (!individualId) return res.status(404).json({ error: "Individual not found" });
+router.get("/home", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const { rows: indRows } = await query(
     "SELECT display_name FROM individuals WHERE id = $1",
@@ -383,7 +376,6 @@ router.get("/home", async (req, res) => {
     [explorationId]
   );
 
-  // Transform DB fields into the shape HomeScreen expects
   const checksField = dbFields.find((f) => f.type === "checks");
   const rangeFields = dbFields.filter((f) => f.type === "range");
   const selectField = dbFields.find((f) => f.type === "select");
@@ -447,7 +439,7 @@ router.get("/home", async (req, res) => {
     }
   ];
 
-  return res.json({
+  return c.json({
     greeting: `Good morning, ${firstName}`,
     sub: activeRun
       ? `Day ${(week - 1) * 7 + 1} of your morning rules exploration. You're doing great.`
@@ -468,9 +460,9 @@ router.get("/home", async (req, res) => {
 // Profile
 // ---------------------------------------------------------------------------
 
-router.get("/profile", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-  if (!individualId) return res.status(404).json({ error: "Individual not found" });
+router.get("/profile", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const { rows } = await query(
     `SELECT
@@ -491,12 +483,12 @@ router.get("/profile", async (req, res) => {
      WHERE i.id = $1`,
     [individualId]
   );
-  if (!rows.length) return res.status(404).json({ error: "Profile not found" });
+  if (!rows.length) return c.json({ error: "Profile not found" }, 404);
 
   const { following, followers, badges, science, visible, reminders, ...rest } = rows[0];
   const initials = rest.avatarInitials || rest.display_name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
   const joinedDate = new Date(rest.joined_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  res.json({
+  return c.json({
     ...profileMock,
     navProfile: { initials, avatarKey: profileMock.navProfile.avatarKey },
     hero: {
@@ -517,11 +509,12 @@ router.get("/profile", async (req, res) => {
   });
 });
 
-router.patch("/profile/privacy", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-  if (!individualId) return res.status(404).json({ error: "Individual not found" });
+router.patch("/profile/privacy", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const { science, visible, reminders } = req.body;
+  const body = await c.req.json();
+  const { science, visible, reminders } = body;
   await query(
     `INSERT INTO privacy_settings (individual_id, contribute_to_citizen_science, visible_in_community, daily_reminders)
      VALUES ($1, $2, $3, $4)
@@ -532,15 +525,15 @@ router.patch("/profile/privacy", async (req, res) => {
            updated_at                    = NOW()`,
     [individualId, science ?? true, visible ?? true, reminders ?? true]
   );
-  res.json({ ok: true, privacy: req.body });
+  return c.json({ ok: true, privacy: body });
 });
 
 // ---------------------------------------------------------------------------
 // Consent (mostly static)
 // ---------------------------------------------------------------------------
 
-router.get("/consent", (_req, res) => {
-  res.json({
+router.get("/consent", (c) => {
+  return c.json({
     title: "Your data & consent",
     sections: [
       { heading: "What we collect", body: "Your daily logs and exploration progress — always anonymised before use." },
@@ -550,17 +543,17 @@ router.get("/consent", (_req, res) => {
   });
 });
 
-router.post("/consent", (_req, res) => {
-  res.json({ ok: true });
+router.post("/consent", (c) => {
+  return c.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------
 // Social follows
 // ---------------------------------------------------------------------------
 
-router.get("/social/follows", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-  if (!individualId) return res.json({ followingExplorerIds: [], followingResearcherIds: [] });
+router.get("/social/follows", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ followingExplorerIds: [], followingResearcherIds: [] });
 
   const { rows: individuals } = await query(
     `SELECT i.slug FROM individual_follows f
@@ -573,17 +566,17 @@ router.get("/social/follows", async (req, res) => {
     [individualId]
   );
 
-  res.json({
+  return c.json({
     followingExplorerIds: individuals.map((r) => r.slug),
     followingResearcherIds: researchers.map((r) => r.researcher_id)
   });
 });
 
-router.patch("/social/follows", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-  if (!individualId) return res.status(404).json({ error: "Individual not found" });
+router.patch("/social/follows", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = req.body;
+  const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = await c.req.json();
 
   if (followSlug) {
     const { rows } = await query("SELECT id FROM individuals WHERE slug = $1", [followSlug]);
@@ -616,17 +609,14 @@ router.patch("/social/follows", async (req, res) => {
     );
   }
 
-  res.json({ ok: true });
+  return c.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------
-// Insights (simple aggregate)
+// Insights
 // ---------------------------------------------------------------------------
 
-router.get("/insights", async (req, res) => {
-  const individualId = await getIndividualId(req.user.sub);
-
-  // Science feed items as community insights — override mock rows if available
+router.get("/insights", async (c) => {
   const { rows: feedInsights } = await query(
     `SELECT id, headline AS title, body, published_at AS time
      FROM feed_items
@@ -639,24 +629,24 @@ router.get("/insights", async (req, res) => {
     ? feedInsights.map((r) => ({ iconTone: "blue", title: r.title, body: r.body, pillText: "" }))
     : insightMock.communityInsights;
 
-  res.json({ ...insightMock, communityInsights });
+  return c.json({ ...insightMock, communityInsights });
 });
 
 // ---------------------------------------------------------------------------
 // Notifications (static for now)
 // ---------------------------------------------------------------------------
 
-router.get("/notifications", (_req, res) => {
-  res.json({ items: [] });
+router.get("/notifications", (c) => {
+  return c.json({ items: [] });
 });
 
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
 
-router.get("/search", async (req, res) => {
-  const q = (req.query.q || "").toLowerCase().trim();
-  if (!q) return res.json({ explorations: [], community: [] });
+router.get("/search", async (c) => {
+  const q = (c.req.query("q") || "").toLowerCase().trim();
+  if (!q) return c.json({ explorations: [], community: [] });
 
   const pattern = `%${q}%`;
   const { rows: explorations } = await query(
@@ -672,26 +662,27 @@ router.get("/search", async (req, res) => {
     [pattern]
   );
 
-  res.json({ explorations, community });
+  return c.json({ explorations, community });
 });
 
 // ---------------------------------------------------------------------------
 // Explore copy & chat (static / mock-backed)
 // ---------------------------------------------------------------------------
 
-router.get("/explore/copy", (_req, res) => {
-  res.json(exploreCopyMock);
+router.get("/explore/copy", (c) => {
+  return c.json(exploreCopyMock);
 });
 
-router.post("/explore/chat", (req, res) => {
-  const { query: q = "", explorers = {} } = req.body || {};
+router.post("/explore/chat", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const { query: q = "", explorers = {} } = body;
   const norm = q.trim().toLowerCase();
 
   const participantCount = (id) => explorers[id]?.participants ?? "";
 
   if (!norm) {
     const d = exploreChat.defaultRule;
-    return res.json({
+    return c.json({
       msg: "",
       explorationIds: (d.explorationIds || []).slice(0, d.maxIds || d.explorationIds.length)
     });
@@ -704,7 +695,7 @@ router.post("/explore/chat", (req, res) => {
           /\{\{participants\.([^}]+)\}\}/g,
           (_, id) => participantCount(id.trim())
         );
-        return res.json({ msg, explorationIds: rule.explorationIds || [] });
+        return c.json({ msg, explorationIds: rule.explorationIds || [] });
       }
     } catch {
       // skip bad regex
@@ -717,7 +708,7 @@ router.post("/explore/chat", (req, res) => {
     .replace(/\{\{querySnippet\}\}/g, def.sliceQuery ? norm.slice(0, sliceLen) : norm)
     .replace(/\{\{participants\.([^}]+)\}\}/g, (_, id) => participantCount(id.trim()));
 
-  res.json({
+  return c.json({
     msg,
     explorationIds: (def.explorationIds || []).slice(0, def.maxIds || def.explorationIds?.length || 99)
   });

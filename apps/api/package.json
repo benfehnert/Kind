@@ -9,15 +9,16 @@
     "generate:feed": "node scripts/generate-feed.mjs"
   },
   "dependencies": {
+    "@hono/node-server": "^1",
     "@supabase/supabase-js": "^2.107.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "express": "^4.21.2",
+    "hono": "^4",
     "jsonwebtoken": "^9.0.2",
     "openai": "^4.77.0",
-    "pg": "^8.13.3"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "wrangler": "^4"
   }
 }
