@@ -1,13 +1,10 @@
-import { createRequire } from "module";
 import { Hono } from "hono";
 import { query } from "../db.js";
 import { requireAuth } from "../middleware.js";
-
-const require = createRequire(import.meta.url);
-const exploreCopyMock = require("../mocks/exploreCopy.json");
-const exploreChat = require("../mocks/exploreChat.json");
-const insightMock = require("../mocks/insight.json");
-const profileMock = require("../mocks/profile.json");
+import exploreCopyMock from "../mocks/exploreCopy.json";
+import exploreChat from "../mocks/exploreChat.json";
+import insightMock from "../mocks/insight.json";
+import profileMock from "../mocks/profile.json";
 
 const router = new Hono();
 
