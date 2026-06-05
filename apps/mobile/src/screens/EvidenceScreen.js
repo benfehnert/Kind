@@ -1,10 +1,11 @@
 import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Linking } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { explorationEvidence, explorations } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { colors, fontFamily } from "../theme/colors";
 
 export default function EvidenceScreen() {
+  const { explorationEvidence, explorations } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;

@@ -1,0 +1,81 @@
+{
+  "defaultRule": {
+    "message": "I found a few explorations that could be relevant to \"{{querySnippet}}\". Each is a structured personalised trial exploration with an active community — pick the one that resonates most:",
+    "explorationIds": ["morning-rules", "eating"],
+    "sliceQuery": true,
+    "maxQueryLen": 30,
+    "maxIds": 2
+  },
+  "rules": [
+    {
+      "pattern": "adenosine|cortisol awakening|car\\b|circadian|scn|zeitgeber|wright|post-?lunch|social jetlag|hrv|heart rate variability",
+      "message": "That topic is covered in the morning rules evidence summary — sunlight, movement, caffeine timing, and meditation each have research behind them:",
+      "explorationIds": ["morning-rules"]
+    },
+    {
+      "pattern": "crash|afternoon slump|afternoon energy|mid-?afternoon|3pm|2pm slump",
+      "message": "Afternoon crashes are exactly what this exploration is designed for. {{participants.morning-rules}} explorers are testing morning rules right now — early results are promising:",
+      "explorationIds": ["morning-rules"]
+    },
+    {
+      "pattern": "morning routine|morning light|sunlight|stretch|meditation|wake up",
+      "message": "Morning routines — sunlight, movement, caffeine timing, and meditation — can shift afternoon energy. This structured exploration tracks which rules work for you:",
+      "explorationIds": ["morning-rules"]
+    },
+    {
+      "pattern": "sleep|tired|fatigue|insomnia|rest|wake",
+      "message": "Sleep quality is one of the most impactful areas to explore. These explorations have the strongest evidence and most active communities:",
+      "explorationIds": ["screen-sleep", "morning-rules", "relaxation"]
+    },
+    {
+      "pattern": "caffeine|coffee|tea|espresso|energy drink",
+      "message": "Caffeine timing affects sleep and afternoon energy. {{participants.morning-rules}} explorers are testing morning rules — including delaying your first cup — in a structured exploration:",
+      "explorationIds": ["morning-rules", "screen-sleep"]
+    },
+    {
+      "pattern": "breath|breathing|vagal|pmr|muscle relaxation|meditat|visuali|nature walk|walk in nature|composure|calm down",
+      "message": "Relaxation practices can lower stress and anxiety when tracked consistently. {{participants.relaxation}} explorers are running this structured exploration:",
+      "explorationIds": ["relaxation"]
+    },
+    {
+      "pattern": "screen|phone|blue light|social media|device|scroll|tiktok|bedtime",
+      "message": "Reducing screen exposure before and at bedtime is one of the most underestimated sleep levers. {{participants.screen-sleep}} explorers are tracking this — results in the first two weeks are often dramatic:",
+      "explorationIds": ["screen-sleep"]
+    },
+    {
+      "pattern": "upf|ultra.?processed|processed food|junk food|whole food|unprocessed",
+      "message": "Ultra Processed Food reduction is one of the most discussed diet levers for mood. {{participants.upf-mood}} explorers are tracking daily UPF % alongside mood and energy:",
+      "explorationIds": ["upf-mood"]
+    },
+    {
+      "pattern": "mood|happiness|wellbeing|well-being|low mood|mental health",
+      "message": "Mood responds to many daily habits — diet, stress practices, and routine. These structured explorations may help:",
+      "explorationIds": ["upf-mood", "relaxation", "eating"]
+    },
+    {
+      "pattern": "eat|food|diet|fast|nutrition|meal|hunger|window|intermittent|metabolic",
+      "message": "Eating habits shape energy and mood. {{participants.eating}} explorers track meal timing; {{participants.upf-mood}} are testing UPF reduction:",
+      "explorationIds": ["eating", "upf-mood"]
+    },
+    {
+      "pattern": "move|exercise|run|walk|gym|sport|workout|fitness|activity",
+      "message": "Physical activity pairs well with morning routines and meal timing for all-day energy. These explorations are the most relevant:",
+      "explorationIds": ["morning-rules", "eating"]
+    },
+    {
+      "pattern": "stress|anxiety|hrv|nervous|burnout|cortisol|overwhelm",
+      "message": "Stress and anxiety respond to daily practices when you track them rigorously. {{participants.relaxation}} explorers are testing vagal breathing, PMR, nature walks, and meditation:",
+      "explorationIds": ["relaxation", "morning-rules"]
+    },
+    {
+      "pattern": "supplement|magnesium|vitamin|ashwagandha|melatonin",
+      "message": "For structured diet and mood explorations on kind, these explorations are the closest fit — whole-food swaps rather than pills:",
+      "explorationIds": ["upf-mood", "eating"]
+    },
+    {
+      "pattern": "focus|brain|cognitive|memory|concentration",
+      "message": "Cognitive performance links closely to sleep quality and afternoon energy. Here are the explorations most likely to surface insights about your focus:",
+      "explorationIds": ["morning-rules", "screen-sleep", "relaxation"]
+    }
+  ]
+}

@@ -2,11 +2,12 @@ import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { feed, explorations } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { colors, fontFamily } from "../theme/colors";
 import { RichTextParts } from "../utils/RichText";
 
 export default function FeedBankScreen() {
+  const { feed, explorations } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const kind = params?.kind === "science" ? "science" : "tips";

@@ -13,6 +13,7 @@ import { query } from "./db.js";
 import { requireAuth } from "./middleware.js";
 import { generateFeedContent } from "./feedContent.js";
 import { morningRulesFeedLibrary } from "./data/morningRulesFeedLibrary.js";
+import mockRouter from "./routes/mock.js";
 
 const FEED_LIBRARIES = {
   "morning-rules": morningRulesFeedLibrary
@@ -23,6 +24,10 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+if (process.env.USE_MOCK_DATA === "true") {
+  app.use(mockRouter);
+}
 
 function defaultRefreshExpiry() {
   return "NOW() + INTERVAL '30 day'";

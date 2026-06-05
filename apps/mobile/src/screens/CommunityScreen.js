@@ -2,15 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, TextInput, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
-import {
-  community,
-  explorationEvidence,
-  explorations,
-  explorationOrderUi,
-  getUserProfile,
-  getResearcher,
-  exploreCopy
-} from "../data/mock";
+import { explorationOrderUi, getUserProfile, getResearcher } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontSize, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -27,6 +20,7 @@ const INITIAL_PANEL_HEIGHT = 420;
 const PANEL_HEIGHT_STEP = 220;
 
 export default function CommunityScreen() {
+  const { community, explorationEvidence, explorations, exploreCopy } = useData();
   const navigation = useNavigation();
   const { isFollowing, toggleFollow, followerIdSet } = useFollow();
   const [tab, setTab] = useState("individuals");
@@ -61,12 +55,12 @@ export default function CommunityScreen() {
     });
   }, [allPeople, query, isFollowing]);
 
-  const evIds = useMemo(() => explorationOrderUi(), []);
+  const evIds = useMemo(() => explorationOrderUi(explorations), [explorations]);
 
   const filteredExplorationIds = useMemo(() => {
     const ids = evIds.filter((id) => {
       const e = explorations[id];
-      const rid = getResearcher(e?.researcherId);
+      const rid = getResearcher(e?.researcherId, community.researchers);
       if (!query) return true;
       return (
         (e?.title || "").toLowerCase().includes(query) ||
@@ -190,7 +184,7 @@ export default function CommunityScreen() {
             {tab === "individuals" &&
               people.slice(0, visibleCount).map((u) => {
             const uid = u.id;
-            const prof = uid ? getUserProfile(uid, new Set()) : u;
+            const prof = uid ? getUserProfile(uid, community, new Set()) : u;
             const following = uid ? isFollowing(uid) : false;
             const badges = (prof.badges || []).slice(0, 2);
             return (
@@ -227,7 +221,7 @@ export default function CommunityScreen() {
             {tab === "explorations" &&
               filteredExplorationIds.slice(0, visibleCount).map((id) => {
             const e = explorations[id];
-            const rid = getResearcher(e.researcherId);
+            const rid = getResearcher(e.researcherId, community.researchers);
             return (
               <Pressable key={id} style={styles.expRow} onPress={() => navigation.navigate("ExplorationDetail", { id })}>
                 <View style={[styles.ico, { backgroundColor: e.bg }]}>

@@ -2,12 +2,14 @@ import React from "react";
 import { View, FlatList, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { community, explorations, getUserProfile } from "../data/mock";
+import { getUserProfile } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 
 export default function ExplorersListScreen() {
+  const { community, explorations } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const explorationId = params?.explorationId;
@@ -17,7 +19,7 @@ export default function ExplorersListScreen() {
 
   const data = ids
     .map((uid) => {
-      const u = getUserProfile(uid, followerIdSet);
+      const u = getUserProfile(uid, community, followerIdSet);
       return u ? { uid, ...u } : null;
     })
     .filter(Boolean);

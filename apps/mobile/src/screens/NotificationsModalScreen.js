@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import notifications from "../../mock-data/notifications.json";
+import { useData } from "../context/DataContext";
 import { colors, fontSize, iconSize, spacing } from "../theme/colors";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
@@ -10,6 +10,7 @@ import { CloseIcon } from "../components/icons/ProtoIcons";
 import { text } from "../theme/textStyles";
 
 export default function NotificationsModalScreen() {
+  const { notifications } = useData();
   const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safe}>
@@ -20,7 +21,7 @@ export default function NotificationsModalScreen() {
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.screen + spacing.xl }}>
-        {notifications.items.map((n) => (
+        {(Array.isArray(notifications) ? notifications : []).map((n) => (
           <View key={n.id} style={[styles.item, n.unread && styles.unread]}>
             {n.avatarKind === "icon" ? (
               <View style={[styles.av, { backgroundColor: n.avatarBg }]}>

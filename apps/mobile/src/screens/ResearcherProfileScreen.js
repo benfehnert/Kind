@@ -2,17 +2,19 @@ import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { explorations, getResearcher } from "../data/mock";
+import { getResearcher } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ResearcherProfileScreen() {
+  const { explorations, community } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const researcherId = params?.researcherId;
-  const r = researcherId ? getResearcher(researcherId) : null;
+  const r = researcherId ? getResearcher(researcherId, community.researchers) : null;
   const { isFollowingResearcher, toggleResearcherFollow } = useFollow();
 
   if (!r || !researcherId) {

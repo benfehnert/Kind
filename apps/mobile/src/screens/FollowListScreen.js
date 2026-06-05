@@ -2,12 +2,14 @@ import React, { useMemo } from "react";
 import { View, FlatList, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { community, getUserProfile } from "../data/mock";
+import { getUserProfile } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 
 export default function FollowListScreen() {
+  const { community } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const mode = params?.mode === "followers" ? "followers" : "following";
@@ -16,13 +18,13 @@ export default function FollowListScreen() {
   const userIds = useMemo(() => {
     if (mode === "following") return [...following];
     return [...(community.socialMeta?.followerIdsExpanded || [])];
-  }, [mode, following]);
+  }, [mode, following, community]);
 
   const rows = useMemo(
     () =>
       userIds
         .map((uid) => {
-          const u = getUserProfile(uid, followerIdSet);
+          const u = getUserProfile(uid, community, followerIdSet);
           return u ? { uid, ...u } : null;
         })
         .filter(Boolean),

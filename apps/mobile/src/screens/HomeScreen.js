@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import Slider from "@react-native-community/slider";
 import { useNavigation } from "@react-navigation/native";
-import { home, feed, explorations } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { colors, fontSize, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -15,6 +15,7 @@ import { Badge } from "../components/primitives/Badge";
 import { Avatar } from "../components/primitives/Avatar";
 import { RichTextParts } from "../utils/RichText";
 export default function HomeScreen() {
+  const { home, feed, explorations } = useData();
   const navigation = useNavigation();
   const [showLog, setShowLog] = useState(false);
   const [saved, setSaved] = useState(false);

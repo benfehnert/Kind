@@ -1,16 +1,18 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { consent } from "../data/mock";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useData } from "./DataContext";
 
 const ConsentContext = createContext(null);
 
-/**
- * Stores the consent choices the explorer (Anna) has agreed to.
- * `completed` is false until the onboarding & consent flow is finished at least once;
- * before then the summary screen shows the demo profile defaults.
- */
 export function ConsentProvider({ children }) {
-  const [choices, setChoices] = useState(() => ({ ...(consent.annaDefaults || {}) }));
+  const data = useData();
+  const [choices, setChoices] = useState({});
   const [completed, setCompleted] = useState(false);
+
+  useEffect(() => {
+    if (data?.consent?.annaDefaults) {
+      setChoices({ ...data.consent.annaDefaults });
+    }
+  }, [data]);
 
   const saveConsent = useCallback((next) => {
     setChoices((prev) => ({ ...prev, ...next }));
@@ -22,7 +24,7 @@ export function ConsentProvider({ children }) {
       choices,
       completed,
       saveConsent,
-      isGranted: (key) => Boolean(choices[key])
+      isGranted: (key) => Boolean(choices[key]),
     }),
     [choices, completed, saveConsent]
   );

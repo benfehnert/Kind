@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { consent } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { colors, fontFamily } from "../theme/colors";
@@ -30,6 +30,7 @@ function CheckRow({ checked, onToggle, label, sub, required }) {
 }
 
 export default function OnboardingConsentScreen() {
+  const { consent } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const review = Boolean(params?.review);

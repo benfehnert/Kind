@@ -1,9 +1,9 @@
 services:
   postgres:
     image: postgres:16
-    container_name: health_protocol_postgres
+    container_name: kind_postgres
     environment:
-      POSTGRES_DB: health_protocol
+      POSTGRES_DB: kind
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:

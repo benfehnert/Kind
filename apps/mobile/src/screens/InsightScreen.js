@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { insight } from "../data/mock";
+import { useData } from "../context/DataContext";
 import { colors, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -35,6 +35,7 @@ function InsightIcon({ variant }) {
 }
 
 export default function InsightScreen() {
+  const { insight } = useData();
   const route = useRoute();
   const [tab, setTab] = useState(route.params?.community ? 1 : 0);
 

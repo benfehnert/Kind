@@ -1,15 +1,21 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { community } from "../data/mock";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useData } from "./DataContext";
 
 const FollowContext = createContext(null);
 
 export function FollowProvider({ children }) {
-  const [following, setFollowing] = useState(
-    () => new Set(community.socialMeta?.followingExplorerIds || [])
-  );
-  const [followingResearchers, setFollowingResearchers] = useState(
-    () => new Set(community.socialMeta?.followingResearcherIds || [])
-  );
+  const data = useData();
+  const [following, setFollowing] = useState(() => new Set());
+  const [followingResearchers, setFollowingResearchers] = useState(() => new Set());
+  const [followerIdSet, setFollowerIdSet] = useState(() => new Set());
+
+  useEffect(() => {
+    if (!data?.community?.socialMeta) return;
+    const { socialMeta } = data.community;
+    setFollowing(new Set(socialMeta.followingExplorerIds || []));
+    setFollowingResearchers(new Set(socialMeta.followingResearcherIds || []));
+    setFollowerIdSet(new Set(socialMeta.followerIdsExpanded || []));
+  }, [data]);
 
   const toggleFollow = useCallback((userId) => {
     setFollowing((prev) => {
@@ -30,7 +36,6 @@ export function FollowProvider({ children }) {
   }, []);
 
   const isFollowing = useCallback((userId) => following.has(userId), [following]);
-  const followerIdSet = useMemo(() => new Set(community.socialMeta?.followerIdsExpanded || []), []);
 
   const value = useMemo(
     () => ({
@@ -41,16 +46,9 @@ export function FollowProvider({ children }) {
       followerIdSet,
       followingResearchers,
       isFollowingResearcher: (rid) => followingResearchers.has(rid),
-      toggleResearcherFollow
+      toggleResearcherFollow,
     }),
-    [
-      following,
-      toggleFollow,
-      isFollowing,
-      followerIdSet,
-      followingResearchers,
-      toggleResearcherFollow
-    ]
+    [following, toggleFollow, isFollowing, followerIdSet, followingResearchers, toggleResearcherFollow]
   );
 
   return <FollowContext.Provider value={value}>{children}</FollowContext.Provider>;
