@@ -9,6 +9,7 @@ on:
       - apps/mobile/**
       - apps/kind-website/**
       - .github/workflows/mobile-web-deploy.yml
+
   workflow_dispatch:
 
 permissions:
@@ -35,8 +36,10 @@ jobs:
           filters: |
             mobile:
               - 'apps/mobile/**'
+              - '.github/workflows/mobile-web-deploy.yml'
             website:
               - 'apps/kind-website/**'
+              - '.github/workflows/mobile-web-deploy.yml'
 
       - name: Setup Node.js
         if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
@@ -57,7 +60,10 @@ jobs:
         working-directory: apps/mobile
         env:
           EXPO_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && secrets.EXPO_PUBLIC_API_URL_PRODUCTION || secrets.EXPO_PUBLIC_API_URL_STAGING }}
-        run: npm run build
+        run: |
+          echo "EXPO_PUBLIC_API_URL set: $([ -n "$EXPO_PUBLIC_API_URL" ] && echo "yes (${#EXPO_PUBLIC_API_URL} chars)" || echo "NO - empty or missing")"
+          npm run build
+          grep -r "localhost:4000" dist/ && echo "WARNING: localhost baked into bundle" || echo "OK: no localhost in bundle"
 
       - name: Deploy mobile web to Cloudflare
         if: steps.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch'
