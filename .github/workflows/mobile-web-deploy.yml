@@ -9,6 +9,7 @@ on:
       - apps/mobile/**
       - apps/kind-website/**
       - .github/workflows/mobile-web-deploy.yml
+
   workflow_dispatch:
 
 permissions:
@@ -35,8 +36,10 @@ jobs:
           filters: |
             mobile:
               - 'apps/mobile/**'
+              - '.github/workflows/mobile-web-deploy.yml'
             website:
               - 'apps/kind-website/**'
+              - '.github/workflows/mobile-web-deploy.yml'
 
       - name: Setup Node.js
         if: steps.changes.outputs.mobile == 'true' || steps.changes.outputs.website == 'true' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
