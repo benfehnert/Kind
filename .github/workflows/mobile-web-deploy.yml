@@ -75,7 +75,6 @@ jobs:
         working-directory: apps/mobile
         env:
           BASE_URL: ${{ steps.base-url.outputs.value }}
-          EXPO_PUBLIC_API_URL: ${{ secrets.EXPO_PUBLIC_API_URL }}
         run: npm run build
 
       - name: Save exported mobile build for reuse
