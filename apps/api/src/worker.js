@@ -16,6 +16,14 @@ const app = new Hono();
 
 app.use("*", cors());
 
+app.onError((err, c) => {
+  c.header("Access-Control-Allow-Origin", "*");
+  c.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  c.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  console.error(err);
+  return c.json({ error: "Internal Server Error" }, 500);
+});
+
 // Init DB connection string from Workers binding (or process.env for local dev)
 app.use("*", async (c, next) => {
   initDb(c.env);
