@@ -62,7 +62,7 @@ jobs:
         if: steps.changes.outputs.mobile == 'true' || steps.mobile-cache.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: apps/mobile/package-lock.json
 
