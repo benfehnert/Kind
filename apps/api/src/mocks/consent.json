@@ -1,0 +1,152 @@
+{
+  "intro": {
+    "eyebrow": "First use",
+    "title": "Welcome to Kind",
+    "body": "Before you start exploring, we'll walk through how Kind works and ask for your consent — one clear choice at a time. Each consent is separate, never pre-ticked, and you can change it later in your profile.",
+    "metaNote": "This is research and self-experimentation, not medical care, and it is voluntary.",
+    "startButton": "Begin",
+    "exitButton": "Not now"
+  },
+  "exploration": {
+    "name": "Do morning rules reduce my chances of an afternoon crash?",
+    "atAGlance": [
+      { "label": "The change you'll make", "value": "Follow your morning rules — early light, stretch, delayed caffeine, meditation" },
+      { "label": "What we'll measure", "value": "Afternoon energy, self-rated 1–10" },
+      { "label": "How long", "value": "8 weeks, alternating periods" },
+      { "label": "Data used", "value": "Your daily ratings + logged morning rules" }
+    ]
+  },
+  "jurisdiction": {
+    "code": "US",
+    "regionLabel": "New York / United States"
+  },
+  "steps": [
+    {
+      "id": "platform",
+      "screen": "Screen 1",
+      "eyebrow": "Common core",
+      "title": "Welcome & platform consent",
+      "body": "Kind lets you run small, structured \"health explorations\" on yourself — testing whether a change you make affects an outcome you care about. You're your own comparison, and you'll get a personalised read-out. This is research and self-experimentation, not medical care, and it is voluntary.",
+      "body2": "Over time we'll offer you specific explorations to join. With your permission, we also study combined, de-identified results to learn what works and for whom, and share findings as research publications.",
+      "footnote": "Research field: lifestyle and behaviour-change effects on everyday health outcomes. You can read the full Participant Information Sheet before deciding.",
+      "withdrawNote": "You can withdraw at any time in Settings. Withdrawing stops future use of your data; results already combined into a published, de-identified dataset can't be pulled back out.",
+      "linkLabel": "See full information sheet",
+      "required": true,
+      "consents": [
+        {
+          "key": "platform_participation",
+          "label": "I agree to take part in the Kind platform and to the use of my data as described in the Participant Information Sheet.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "exploration",
+      "screen": "Screen 2",
+      "eyebrow": "This exploration",
+      "title": "Join your first exploration",
+      "body": "You're about to start your morning rules exploration. Here's what it involves at a glance.",
+      "showExploration": true,
+      "required": true,
+      "consents": [
+        {
+          "key": "exploration_participation",
+          "label": "I want to join this exploration and consent to the use of my data for my personalised (N-of-1) analysis.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "sharing",
+      "screen": "Screen 3",
+      "eyebrow": "Optional sharing",
+      "title": "Optional sharing choices",
+      "body": "These are optional. Your personalised results don't depend on them, and you can change them anytime.",
+      "required": false,
+      "consents": [
+        {
+          "key": "research_contribution",
+          "label": "Use my de-identified data in combined research about how this and other explorations work.",
+          "sub": "Supports research publications (pre-prints). Your data is de-identified before this use.",
+          "required": false
+        },
+        {
+          "key": "result_sharing",
+          "label": "Let me share my own individual results with people I choose.",
+          "sub": "Turns on a share feature for your personal read-out. You control who sees it.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "us-health-data",
+      "screen": "Screen 4a",
+      "eyebrow": "United States · Washington & similar",
+      "title": "Consumer health data",
+      "body": "Because you're in New York / your state, we ask for separate, opt-in permission for your health data, kept apart from our terms of service.",
+      "footnote": "We do not sell your consumer health data. You can withdraw consent, access your data, or delete it anytime — see the Consumer Health Data Privacy Policy.",
+      "linkLabel": "Consumer Health Data Privacy Policy",
+      "required": true,
+      "consents": [
+        {
+          "key": "us_collect",
+          "label": "I consent to Kind COLLECTING my consumer health data for the purposes described in the Consumer Health Data Privacy Policy.",
+          "required": true
+        },
+        {
+          "key": "us_share",
+          "label": "I consent to Kind SHARING my consumer health data as described in that policy (separate from collection).",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "complete": {
+    "eyebrow": "All set",
+    "title": "You're ready to explore",
+    "body": "Thanks, Anna. Your choices are saved and you're in control. You can review or change any of them anytime from your profile.",
+    "summaryHeading": "What you agreed to",
+    "doneButton": "Finish",
+    "reviewButton": "View my consent & data sharing"
+  },
+  "consentLabels": {
+    "platform_participation": "Take part in the Kind platform",
+    "exploration_participation": "Join my morning rules exploration (N-of-1 analysis)",
+    "research_contribution": "Contribute de-identified data to combined research",
+    "result_sharing": "Share my individual results with people I choose",
+    "us_collect": "Allow collection of my consumer health data",
+    "us_share": "Allow sharing of my consumer health data"
+  },
+  "summary": {
+    "eyebrow": "Data & privacy",
+    "title": "My consent & data sharing",
+    "body": "These are the consents you gave during onboarding. Each is separate and you can change it at any time.",
+    "groups": [
+      {
+        "heading": "Platform & exploration",
+        "keys": ["platform_participation", "exploration_participation"]
+      },
+      {
+        "heading": "Optional sharing",
+        "keys": ["research_contribution", "result_sharing"]
+      },
+      {
+        "heading": "Consumer health data (United States)",
+        "keys": ["us_collect", "us_share"]
+      }
+    ],
+    "notStartedTitle": "No consent recorded yet",
+    "notStartedBody": "Run the onboarding and consent process to set your choices. Until then, this shows the defaults on Anna's demo profile.",
+    "withdrawNote": "You're in control. You can leave an exploration, withdraw from research use of future data, turn off result-sharing, or delete your account at any time. Anything already combined into a published, de-identified dataset cannot be extracted.",
+    "grantedLabel": "Agreed",
+    "deniedLabel": "Not agreed"
+  },
+  "annaDefaults": {
+    "platform_participation": true,
+    "exploration_participation": true,
+    "research_contribution": true,
+    "result_sharing": true,
+    "us_collect": true,
+    "us_share": false
+  }
+}
