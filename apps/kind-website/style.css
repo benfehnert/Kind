@@ -66,13 +66,17 @@ p  { color: var(--slate); line-height: 1.7; }
 }
 /* Logo lockup: Onest Bold “kind” + Albert Sans strapline (brand reference) */
 .brand-logo {
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 1px; line-height: 1; text-decoration: none;
+  display: flex; flex-direction: column; align-items: stretch;
+  width: fit-content;
+  gap: 2px; line-height: 1; text-decoration: none;
+  /* Base size drives both lines so "kind" stays the width-definer and the
+     strapline scales with it at every breakpoint. */
+  font-size: clamp(2.05rem, 3.5vw, 2.5rem);
 }
 .brand-logo__word {
   font-family: var(--font-logo);
   font-weight: 700;
-  font-size: clamp(1.95rem, 3.4vw, 2.4rem);
+  font-size: 1em;
   color: var(--charcoal);
   letter-spacing: -0.035em;
   text-transform: lowercase;
@@ -80,15 +84,26 @@ p  { color: var(--slate); line-height: 1.7; }
 .brand-logo__strap {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 0.75rem;
+  /* Smaller than "kind" so its natural width is just under the word, then
+     justified across the full width to track out evenly (brand lockup). */
+  font-size: 0.2em;
   color: var(--accent);
   text-transform: lowercase;
-  letter-spacing: 0.04em;
+  display: block;
+  width: 100%;
+  text-align: justify;
+  text-align-last: justify;
+  text-justify: inter-character;
 }
 .brand-logo--footer .brand-logo__word { color: #fff; }
 .brand-logo--footer .brand-logo__strap { color: var(--accent); }
 
-.nav__logo { flex-shrink: 0; }
+.nav__logo { flex-shrink: 0; display: inline-flex; align-items: center; }
+.nav__logo-img { height: 56px; width: auto; display: block; }
+.footer__logo-img { height: 52px; width: auto; display: block; }
+@media (max-width: 768px) {
+  .nav__logo-img { height: 44px; }
+}
 .nav__links {
   display: flex; align-items: center; gap: 32px;
 }
@@ -611,22 +626,22 @@ p  { color: var(--slate); line-height: 1.7; }
 .footer {
   background: var(--green);
   color: rgba(255,255,255,0.78);
-  padding: 56px 0 32px;
+  padding: 40px 0 24px;
 }
 .footer__inner {
-  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px;
-  margin-bottom: 48px;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px;
+  margin-bottom: 28px;
 }
 .footer__brand { color: white; }
-.footer__brand .logo { margin-bottom: 14px; }
-.footer__brand p { font-size: 0.9rem; }
-.footer__col h4 { color: white; font-size: 0.9rem; margin-bottom: 16px; }
-.footer__col ul { display: flex; flex-direction: column; gap: 10px; }
+.footer__brand .logo { margin-bottom: 8px; }
+.footer__brand p { font-size: 0.9rem; margin-top: 6px; }
+.footer__col h4 { color: white; font-size: 0.9rem; margin-bottom: 10px; }
+.footer__col ul { display: flex; flex-direction: column; gap: 8px; }
 .footer__col a { font-size: 0.875rem; transition: color var(--transition); }
 .footer__col a:hover { color: white; }
 .footer__bottom {
   border-top: 1px solid rgba(255,255,255,0.1);
-  padding-top: 24px; display: flex;
+  padding-top: 16px; display: flex;
   justify-content: space-between; align-items: center;
   font-size: 0.8rem;
 }
@@ -742,8 +757,7 @@ p  { color: var(--slate); line-height: 1.7; }
 @media (max-width: 768px) {
   .nav__links { display: none; }
   .nav__hamburger { display: flex; }
-  .brand-logo__word { font-size: clamp(1.55rem, 5vw, 1.95rem); }
-  .brand-logo__strap { font-size: 0.6875rem; }
+  .brand-logo { font-size: clamp(1.7rem, 5vw, 2.05rem); }
   .hero { padding: 72px 0 64px; }
   .hero-features { margin-top: 40px; }
   .hero-features .feature-row { margin-bottom: 48px; gap: 40px; }
