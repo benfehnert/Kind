@@ -66,8 +66,9 @@ p  { color: var(--slate); line-height: 1.7; }
 }
 /* Logo lockup: Onest Bold “kind” + Albert Sans strapline (brand reference) */
 .brand-logo {
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 1px; line-height: 1; text-decoration: none;
+  display: flex; flex-direction: column; align-items: stretch;
+  width: fit-content;
+  gap: 2px; line-height: 1; text-decoration: none;
 }
 .brand-logo__word {
   font-family: var(--font-logo);
@@ -83,7 +84,14 @@ p  { color: var(--slate); line-height: 1.7; }
   font-size: 0.75rem;
   color: var(--accent);
   text-transform: lowercase;
-  letter-spacing: 0.04em;
+  /* Stretch the strapline to span the exact width of "kind" (brand lockup),
+     distributing space between every character so it tracks out evenly. */
+  display: block;
+  width: 100%;
+  letter-spacing: 0.02em;
+  text-align: justify;
+  text-align-last: justify;
+  text-justify: inter-character;
 }
 .brand-logo--footer .brand-logo__word { color: #fff; }
 .brand-logo--footer .brand-logo__strap { color: var(--accent); }
