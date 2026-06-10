@@ -9,6 +9,7 @@
     "dev:mobile": "node scripts/dev.mjs --service mobile",
     "dev:website": "node scripts/dev.mjs --service website",
     "dev:db": "node scripts/dev.mjs --service db",
+    "dev:ad-prototype": "node scripts/dev.mjs --service ad_prototype",
     "reset:db": "node scripts/dev.mjs --reset-db",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",

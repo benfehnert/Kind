@@ -1,0 +1,218 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --green: #22401f;
+  --green-light: #e6ecd0;
+  --green-mid: #8fa87e;
+  --orange: #f4a261;
+  --orange-dark: #d4743e;
+  --cream: #f7f8f2;
+  --text: #1f2a1f;
+  --text-muted: #666666;
+  --border: #dadfd2;
+}
+
+body {
+  font-family:
+    "Albert Sans",
+    -apple-system,
+    sans-serif;
+  background: #0d1510;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ── Ad viewport — portrait phone proportion ── */
+#ad-viewport {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 40px 120px rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
+}
+
+/* ── Background layer — full-bleed, instant cuts ── */
+#bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+#bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* scrim: gradient darkens top + bottom so text stays legible */
+#bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 38, 18, 0.72) 0%,
+    rgba(20, 38, 18, 0.15) 35%,
+    rgba(20, 38, 18, 0.15) 60%,
+    rgba(20, 38, 18, 0.78) 100%
+  );
+  z-index: 1;
+}
+
+/* ── Content layer ── */
+#content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Logo ── */
+#logo {
+  font-family: "Onest", sans-serif;
+  font-weight: 700;
+  font-size: 56px;
+  letter-spacing: -0.035em;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 8px;
+  margin-top: 52px;
+}
+
+#logo-dot {
+  color: var(--orange);
+}
+
+#logo-sub {
+  font-family: "Albert Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 28px;
+}
+
+/* ── Hero text ── */
+#hero-text {
+  font-size: 32px;
+  font-weight: 700;
+  padding: 0px 32px;
+  color: #fff;
+  text-align: center;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+
+  strong {
+    color: var(--orange);
+  }
+}
+
+/* ── Phone mockup ── */
+/* Sized to the SVG's 559:960 aspect ratio; height derives automatically. */
+#mockup {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 559 / 960;
+  flex-shrink: 0;
+  filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.6));
+  translate: 10% 0;
+}
+
+#mockup-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+}
+
+/* Mask derived from mask0_1_22 in mockup.svg.
+   image1_1_22 (1946×4096) is the alpha mask for the screen area, including the
+   hand curve at the bottom-right. Extracted as screen-mask.png.
+   Screen rect in 559×960 viewBox: translate(100.292 43) / 265.29×562.982
+     mask-position: 100.292/559 = 17.94%  43/960 = 4.48%
+     mask-size:     265.29/559  = 47.46%  562.982/960 = 58.64% */
+#screenshot {
+  position: absolute;
+  left: 17.94%;
+  top: 4.48%;
+  width: 47.46%;
+  height: 58.64%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  z-index: 1;
+  mask-image: url('../assets/screen-mask.png');
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
+
+/* ── Detail text — hidden until mockup slides up ── */
+#detail-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px 32px 40px;
+  background: var(--cream);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(100%);
+  z-index: 2;
+}
+
+#detail-tagline {
+  font-family: "Onest", sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--green);
+  margin-bottom: 10px;
+}
+
+#detail-tagline em {
+  font-style: normal;
+  color: var(--orange-dark);
+}
+
+#detail-body {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+#detail-cta {
+  display: inline-block;
+  background: var(--green);
+  color: #fff;
+  font-family: "Albert Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 11px 28px;
+  border-radius: 999px;
+}

@@ -21,6 +21,7 @@ const DIRS = {
   api: path.join(ROOT, "apps/api"),
   mobile: path.join(ROOT, "apps/mobile"),
   website: path.join(ROOT, "apps/kind-website"),
+  ad_prototype: path.join(ROOT, "apps/ad-prototype"),
 };
 
 const argv = process.argv.slice(2);
@@ -49,7 +50,7 @@ const R = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
-const C = { db: "\x1b[35m", api: "\x1b[36m", mobile: "\x1b[33m", website: "\x1b[32m" };
+const C = { db: "\x1b[35m", api: "\x1b[36m", mobile: "\x1b[33m", website: "\x1b[32m", ad_prototype: "\x1b[34m" };
 
 const DEFS = {
   db: {
@@ -95,6 +96,16 @@ const DEFS = {
       cwd: DIRS.website,
     }),
     displayUrls: (port) => [{ label: "Website     ", url: `http://localhost:${port}` }],
+  },
+  ad_prototype: {
+    port: 3334,
+    fixedPort: false,
+    buildCmd: (port) => ({
+      cmd: "npm",
+      args: ["run", "dev", "--", "--port", String(port)],
+      cwd: DIRS.ad_prototype,
+    }),
+    displayUrls: (port) => [{ label: "Ad Prototype", url: `http://localhost:${port}` }],
   },
 };
 
