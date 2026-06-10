@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { query } from "../db.js";
 import { requireAuth } from "../middleware.js";
-import exploreCopyMock from "../mocks/exploreCopy.json";
-import exploreChat from "../mocks/exploreChat.json";
-import insightMock from "../mocks/insight.json";
-import profileMock from "../mocks/profile.json";
+import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
+import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
+import insightMock from "../mocks/insight.json" with { type: "json" };
+import profileMock from "../mocks/profile.json" with { type: "json" };
 
 const router = new Hono();
 

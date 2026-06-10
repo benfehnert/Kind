@@ -1,16 +1,16 @@
 import { Hono } from "hono";
-import community from "../mocks/community.json";
-import explorations from "../mocks/explorations.json";
-import explorationEvidence from "../mocks/explorationEvidence.json";
-import feed from "../mocks/feed.json";
-import home from "../mocks/home.json";
-import insight from "../mocks/insight.json";
-import profile from "../mocks/profile.json";
-import search from "../mocks/search.json";
-import notifications from "../mocks/notifications.json";
-import exploreCopy from "../mocks/exploreCopy.json";
-import exploreChat from "../mocks/exploreChat.json";
-import consent from "../mocks/consent.json";
+import community from "../mocks/community.json" with { type: "json" };
+import explorations from "../mocks/explorations.json" with { type: "json" };
+import explorationEvidence from "../mocks/explorationEvidence.json" with { type: "json" };
+import feed from "../mocks/feed.json" with { type: "json" };
+import home from "../mocks/home.json" with { type: "json" };
+import insight from "../mocks/insight.json" with { type: "json" };
+import profile from "../mocks/profile.json" with { type: "json" };
+import search from "../mocks/search.json" with { type: "json" };
+import notifications from "../mocks/notifications.json" with { type: "json" };
+import exploreCopy from "../mocks/exploreCopy.json" with { type: "json" };
+import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
+import consent from "../mocks/consent.json" with { type: "json" };
 
 const router = new Hono();
 

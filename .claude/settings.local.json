@@ -6,5 +6,9 @@
       "Read(//opt/**)",
       "Read(//Users/benfehnert/**)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }
