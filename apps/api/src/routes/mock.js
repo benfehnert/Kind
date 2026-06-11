@@ -85,35 +85,8 @@ router.get("/community/individuals/:id", (c) => {
 // Feed
 // ---------------------------------------------------------------------------
 
-function buildFeedItems() {
-  const items = [];
-
-  (feed.staticItems || []).forEach((item) => items.push(item));
-
-  (feed.feedExpIds || []).forEach((expId, i) => {
-    const tips = feed.feedTips?.[expId] || [];
-    const sciences = feed.feedScience?.[expId] || [];
-    const tipTime = feed.feedTipTimes?.[i] || "";
-    const sciTime = feed.feedScienceTimes?.[i] || "";
-
-    tips.forEach((tip) => {
-      items.push({ type: "tip", explorationId: expId, time: tipTime, ...tip });
-    });
-    sciences.forEach((sci) => {
-      items.push({ type: "science", explorationId: expId, time: sciTime, ...sci });
-    });
-  });
-
-  return items;
-}
-
-const feedItems = buildFeedItems();
-
 router.get("/feed", (c) => {
-  const type = c.req.query("type");
-  const items =
-    type && type !== "all" ? feedItems.filter((item) => item.type === type) : feedItems;
-  return c.json({ chips: feed.chips, items });
+  return c.json(feed);
 });
 
 // ---------------------------------------------------------------------------
