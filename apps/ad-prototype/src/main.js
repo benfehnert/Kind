@@ -10,12 +10,12 @@ const SCREENSHOTS = [frame1Src, frame2Src];
 document.getElementById('mockup-frame').src = mockupFrameSrc;
 
 // Each frame is held for this long before cutting to the next.
-// 25 frames × 130 ms ≈ 3.25 s of quick-cut sequence.
-const FRAME_MS = 130;
+const FRAME_MS = 500;
 
 const bgImg      = document.getElementById('bg-img');
 const screenshot = document.getElementById('screenshot');
 const mockup     = document.getElementById('mockup');
+const heroText   = document.getElementById('hero-text')
 const detailText = document.getElementById('detail-text');
 
 function sleep(ms) {
@@ -41,10 +41,13 @@ async function runFrames() {
   for (let i = 0; i < BACKGROUNDS.length; i++) {
     bgImg.src = BACKGROUNDS[i];
     screenshot.src = SCREENSHOTS[i % SCREENSHOTS.length];
-    await sleep(FRAME_MS);
+
+    if (i === 0) {
+      await sleep(1500);
+    } else {
+      await sleep(FRAME_MS);
+    }
   }
-  // Hold last frame briefly before the reveal
-  await sleep(400);
 }
 
 function revealTagline() {
@@ -54,13 +57,20 @@ function revealTagline() {
     .timeline({ easing: 'easeOutExpo', duration: 750 })
     .add({
       targets: mockup,
-      translateY: -panelHeight * 0.5,
+      translateY: -panelHeight * 0.45,
     })
     .add(
       {
         targets: detailText,
         translateY: ['100%', '0%'],
         opacity: [0, 1],
+      },
+      0
+    )
+    .add(
+      {
+        targets: heroText,
+        opacity: [1, 0]
       },
       0
     );
