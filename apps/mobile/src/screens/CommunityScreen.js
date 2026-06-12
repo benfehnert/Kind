@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { explorationOrderUi, getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
+import { useUserExplorations } from "../hooks/useUserExplorations";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontSize, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -20,7 +21,8 @@ const INITIAL_PANEL_HEIGHT = 420;
 const PANEL_HEIGHT_STEP = 220;
 
 export default function CommunityScreen() {
-  const { community, explorationEvidence, explorations, exploreCopy } = useData();
+  const { community, explorationEvidence, exploreCopy } = useData();
+  const explorations = useUserExplorations();
   const navigation = useNavigation();
   const { isFollowing, toggleFollow, followerIdSet } = useFollow();
   const [tab, setTab] = useState("individuals");

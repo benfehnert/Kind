@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
-import Slider from "@react-native-community/slider";
 import { useNavigation } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
-import { colors, fontSize, radius, spacing } from "../theme/colors";
+import { useConsent } from "../context/ConsentContext";
+import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
@@ -14,8 +14,16 @@ import { Card } from "../components/primitives/Card";
 import { Badge } from "../components/primitives/Badge";
 import { Avatar } from "../components/primitives/Avatar";
 import { RichTextParts } from "../utils/RichText";
+import { ExplorationLogFields } from "../components/logging/ExplorationLogFields";
+import {
+  buildInitialFieldValues,
+  buildInitialLogValues,
+  listConsentedExplorationForms
+} from "../utils/explorationLogState";
+
 export default function HomeScreen() {
   const { home, feed, explorations } = useData();
+  const { explorationConsents } = useConsent();
   const navigation = useNavigation();
   const [showLog, setShowLog] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,22 +31,46 @@ export default function HomeScreen() {
   const [tipsExpanded, setTipsExpanded] = useState(false);
   const [scienceExpanded, setScienceExpanded] = useState(false);
 
-  const [rules, setRules] = useState(() => {
-    const m = {};
-    home.morningRules.options.forEach((o) => {
-      m[o.key] = o.defaultChecked;
-    });
-    return m;
-  });
+  const logExplorations = useMemo(
+    () => listConsentedExplorationForms(explorations, explorationConsents),
+    [explorations, explorationConsents]
+  );
 
-  const [rangeVals, setRangeVals] = useState(() => {
-    const o = {};
-    home.ranges.forEach((r) => {
-      o[r.id] = r.default;
+  const [logValues, setLogValues] = useState(() => buildInitialLogValues(logExplorations));
+
+  useEffect(() => {
+    setLogValues((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const ex of logExplorations) {
+        if (!next[ex.id]) {
+          next[ex.id] = buildInitialFieldValues(ex.fields);
+          changed = true;
+        }
+      }
+      for (const id of Object.keys(next)) {
+        if (!logExplorations.some((ex) => ex.id === id)) {
+          delete next[id];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
     });
-    return o;
-  });
-  const [crashIdx, setCrashIdx] = useState(home.crashSelect.defaultIndex ?? 0);
+  }, [logExplorations]);
+
+  const multiExplorationLog = logExplorations.length > 1;
+
+  const savedConfirmBody = useMemo(() => {
+    const tail = home.confirm.body.replace(/^Your data has been saved\.\s*/i, "");
+    if (logExplorations.length > 1) {
+      const names = logExplorations.map((ex) => ex.title).join(" and ");
+      return `Your data has been saved for ${names}. ${tail}`;
+    }
+    if (logExplorations.length === 1) {
+      return `Your ${logExplorations[0].title} log has been saved. ${tail}`;
+    }
+    return home.confirm.body;
+  }, [home.confirm.body, logExplorations]);
 
   const dynamicFeed = useMemo(() => {
     const items = [];
@@ -233,65 +265,53 @@ export default function HomeScreen() {
           ))}
         </MetricGrid>
 
-        {!saved && !showLog && (
+        {logExplorations.length > 0 && !saved && !showLog && (
           <PrimaryButton title="Log today's data" onPress={() => setShowLog(true)} style={{ marginBottom: 12 }} />
         )}
 
-        {showLog && !saved && (
+        {showLog && !saved && logExplorations.length > 0 && (
           <Card style={layout.logForm}>
-            <Text style={[styles.confirmTitle, { marginBottom: 12 }]}>{home.logFormTitle}</Text>
-            <Text style={styles.inputLabel}>{home.morningRules.label}</Text>
-            <View style={styles.chips}>
-              {home.morningRules.options.map((o) => (
-                <Pressable
-                  key={o.key}
-                  style={[styles.check, rules[o.key] && styles.checkOn]}
-                  onPress={() => setRules((r) => ({ ...r, [o.key]: !r[o.key] }))}
-                >
-                  <Text style={[styles.checkTxt, !rules[o.key] && styles.checkTxtOff]}>
-                    {rules[o.key] ? "✓ " : ""}
-                    {o.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            {home.ranges.map((r) => (
-              <View key={r.id} style={{ marginBottom: 14 }}>
-                <Text style={styles.inputLabel}>{r.label}</Text>
-                <View style={styles.rangeRow}>
-                  <Slider
-                    style={{ flex: 1, height: 40 }}
-                    minimumValue={r.min}
-                    maximumValue={r.max}
-                    step={1}
-                    value={rangeVals[r.id]}
-                    onValueChange={(v) => setRangeVals((o) => ({ ...o, [r.id]: Math.round(v) }))}
-                    minimumTrackTintColor={colors.greenDark}
-                    maximumTrackTintColor={colors.border}
-                    thumbTintColor={colors.greenDark}
-                  />
-                  <Text style={styles.rangeVal}>{rangeVals[r.id]}</Text>
-                </View>
-                {r.hints ? (
-                  <View style={styles.hintRow}>
-                    <Text style={styles.hint}>{r.hints[0]}</Text>
-                    <Text style={styles.hint}>{r.hints[1]}</Text>
+            <Text style={[styles.confirmTitle, { marginBottom: multiExplorationLog ? 6 : 12 }]}>
+              {home.logFormTitle}
+            </Text>
+            {multiExplorationLog ? (
+              <Text style={styles.logIntro}>
+                You're logging for {logExplorations.length} health explorations today. Each section below
+                shows which exploration you're recording data for.
+              </Text>
+            ) : null}
+
+            {logExplorations.map((ex, index) => (
+              <View
+                key={ex.id}
+                style={[
+                  styles.explorationSection,
+                  index > 0 && styles.explorationSectionBorder,
+                  { borderLeftColor: ex.text || colors.greenDark }
+                ]}
+              >
+                <View style={[styles.explorationHeader, { backgroundColor: ex.bg || colors.greenLight }]}>
+                  <Text style={styles.explorationIcon}>{ex.icon || "⬡"}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.explorationEyebrow}>Health exploration</Text>
+                    <Text style={[styles.explorationTitle, { color: ex.text || colors.greenDark }]}>
+                      {ex.title}
+                    </Text>
                   </View>
-                ) : null}
+                </View>
+                <ExplorationLogFields
+                  fields={ex.fields}
+                  values={logValues[ex.id] || {}}
+                  onChange={(fieldId, value) =>
+                    setLogValues((prev) => ({
+                      ...prev,
+                      [ex.id]: { ...prev[ex.id], [fieldId]: value }
+                    }))
+                  }
+                />
               </View>
             ))}
-            <Text style={styles.inputLabel}>{home.crashSelect.label}</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {home.crashSelect.options.map((opt, idx) => (
-                <Pressable
-                  key={opt}
-                  style={[styles.crashChip, crashIdx === idx && styles.crashChipOn]}
-                  onPress={() => setCrashIdx(idx)}
-                >
-                  <Text style={[styles.crashTxt, crashIdx === idx && styles.crashTxtOn]}>{opt}</Text>
-                </Pressable>
-              ))}
-            </View>
+
             <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
               <GhostButton
                 title="Cancel"
@@ -301,7 +321,7 @@ export default function HomeScreen() {
               />
               <PrimaryButton
                 style={{ flex: 2 }}
-                title="Save log"
+                title={multiExplorationLog ? "Save all logs" : "Save log"}
                 onPress={() => {
                   setSaved(true);
                   setShowLog(false);
@@ -314,7 +334,7 @@ export default function HomeScreen() {
         {saved && (
           <Card style={{ backgroundColor: colors.greenLight, borderColor: colors.greenDark }}>
             <Text style={styles.confirmTitle}>{home.confirm.title}</Text>
-            <Text style={styles.confirmBody}>{home.confirm.body}</Text>
+            <Text style={styles.confirmBody}>{savedConfirmBody}</Text>
           </Card>
         )}
 
@@ -349,36 +369,36 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   pad: layout.screenPad,
-  inputLabel: { ...text.label, marginBottom: 7 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
-  check: {
-    borderWidth: 1,
-    borderColor: colors.borderMed,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.chipPadY,
-    minHeight: 32,
-    justifyContent: "center"
+  logIntro: { ...type.exploreDesc, color: colors.textMuted, marginBottom: spacing.lg, lineHeight: 20 },
+  explorationSection: {
+    borderLeftWidth: 3,
+    paddingLeft: spacing.lg,
+    marginBottom: spacing.lg
   },
-  checkOn: { backgroundColor: colors.greenLight, borderColor: colors.greenDark },
-  checkTxt: { ...type.chip, color: colors.greenDark },
-  checkTxtOff: { ...type.chip, color: colors.textMuted },
-  rangeRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-  rangeVal: { ...type.button, minWidth: 32, textAlign: "right", color: colors.text },
-  hintRow: { flexDirection: "row", justifyContent: "space-between", marginTop: spacing.xs },
-  hint: { ...type.caption, color: colors.textMuted },
-  crashChip: {
-    borderWidth: 1,
-    borderColor: colors.borderMed,
-    borderRadius: radius.pill,
+  explorationSectionBorder: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderMed
+  },
+  explorationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.chipPadY,
-    minHeight: 32,
-    justifyContent: "center"
+    marginBottom: spacing.lg
   },
-  crashChipOn: { backgroundColor: colors.greenDark, borderColor: colors.greenDark },
-  crashTxt: { ...type.chip, color: colors.textMuted },
-  crashTxtOn: { ...type.chip, color: "#fff" },
+  explorationIcon: { fontSize: 22 },
+  explorationEyebrow: {
+    ...type.caption,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 2
+  },
+  explorationTitle: { ...type.buttonMd },
   confirmTitle: { ...type.buttonMd, color: colors.greenDark, marginBottom: spacing.xs },
   confirmBody: { ...type.exploreDesc, color: colors.textMuted },
   feed: layout.feedItem,

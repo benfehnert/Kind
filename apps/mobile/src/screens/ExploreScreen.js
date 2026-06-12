@@ -11,6 +11,8 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { explorationOrderUi } from "../data/mock";
 import { useData } from "../context/DataContext";
+import { useUiShell } from "../context/UiContext";
+import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
 import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
@@ -21,7 +23,10 @@ import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 
 export default function ExploreScreen() {
-  const { exploreCopy, explorations } = useData();
+  const { exploreCopy } = useData();
+  const explorations = useUserExplorations();
+  const startExploration = useExplorationStart();
+  const { showToast } = useUiShell();
   const navigation = useNavigation();
   const [q, setQ] = useState("");
   const [chat, setChat] = useState(null);
@@ -192,9 +197,15 @@ export default function ExploreScreen() {
                   </View>
                 </View>
                 <View style={styles.areaStatus}>
-                  <View style={[styles.startPill, { backgroundColor: e.bg }]}>
+                  <Pressable
+                    style={[styles.startPill, { backgroundColor: e.bg }]}
+                    onPress={(ev) => {
+                      ev.stopPropagation?.();
+                      startExploration(navigation, id, { showToast });
+                    }}
+                  >
                     <Text style={[styles.startTxt, { color: e.text }]}>Start</Text>
-                  </View>
+                  </Pressable>
                 </View>
               </Pressable>
             );

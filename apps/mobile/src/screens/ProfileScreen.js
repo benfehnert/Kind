@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, Platform } from "react-native";
+import * as Notifications from "expo-notifications";
 import { useNavigation } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
+import { useConsent } from "../context/ConsentContext";
+import { useProfile } from "../context/ProfileContext";
 import { useUiShell } from "../context/UiContext";
+import { formatConsentDate } from "../hooks/useUserExplorations";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -11,39 +15,75 @@ import { Card, CardTitle } from "../components/primitives/Card";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { Avatar } from "../components/primitives/Avatar";
-
-function pravatarNum(key) {
-  if (!key || typeof key !== "string") return undefined;
-  const m = key.match(/pravatar-(\d+)/);
-  return m ? parseInt(m[1], 10) : undefined;
-}
+import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 
 export default function ProfileScreen() {
-  const { profile } = useData();
+  const { profile, explorations } = useData();
   const navigation = useNavigation();
   const { followingCount } = useFollow();
+  const { privacyPrefs, updatePrivacyPref, explorationConsents, activeExplorationId } = useConsent();
+  const { displayName, avatar, initials, avatarProps, updateDisplayName, updateAvatar } = useProfile();
   const { showToast } = useUiShell();
+  const [nameModalOpen, setNameModalOpen] = useState(false);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
 
   const toggles = profile.privacy?.toggles || [];
-  const [t1, setT1] = useState(toggles[0]?.defaultOn ?? true);
-  const [t2, setT2] = useState(toggles[1]?.defaultOn ?? true);
-  const [t3, setT3] = useState(toggles[2]?.defaultOn ?? true);
-  const vals = [t1, t2, t3];
-  const setters = [setT1, setT2, setT3];
+
+  const consentedExplorations = Object.entries(explorationConsents || {})
+    .filter(([, v]) => v?.granted)
+    .map(([id, v]) => {
+      const ex = explorations?.[id];
+      return {
+        id,
+        title: ex?.feedLabel || ex?.title || id,
+        consentedAt: v.consentedAt,
+        active: activeExplorationId === id
+      };
+    });
+
+  const handleToggle = async (key, next) => {
+    if (key === "reminders" && next) {
+      if (Platform.OS === "web") {
+        showToast("Daily reminders are available in the iOS and Android apps.");
+        return;
+      }
+      const { status: existing } = await Notifications.getPermissionsAsync();
+      if (existing !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== "granted") {
+          showToast("Enable notifications in your device settings to receive daily reminders.");
+          return;
+        }
+      }
+    }
+    updatePrivacyPref(key, next);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={layout.screenPad}>
         <View style={styles.hero}>
-          <Avatar
-            size={64}
-            img={pravatarNum(profile.hero.avatarKey) ?? pravatarNum(profile.navProfile.avatarKey)}
-            initials={profile.navProfile.initials}
-            borderColor={colors.orange}
-            borderWidth={2}
-          />
+          <Pressable
+            onPress={() => setAvatarModalOpen(true)}
+            accessibilityLabel="Edit profile image"
+            style={styles.avatarWrap}
+          >
+            <Avatar
+              size={64}
+              {...avatarProps}
+              initials={initials}
+              borderColor={colors.orange}
+              borderWidth={2}
+            />
+            <View style={styles.editBadge}>
+              <Text style={styles.editBadgeTxt}>Edit</Text>
+            </View>
+          </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{profile.hero.name}</Text>
+            <Pressable onPress={() => setNameModalOpen(true)} accessibilityLabel="Edit your name">
+              <Text style={styles.name}>{displayName}</Text>
+              <Text style={styles.editHint}>Tap to edit name</Text>
+            </Pressable>
             <Text style={styles.loc}>{profile.hero.locationLine}</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
               {(profile.hero.badges || []).map((b) => (
@@ -88,45 +128,119 @@ export default function ProfileScreen() {
         </Card>
 
         <Card>
-          <CardTitle>{profile.privacy.title}</CardTitle>
-          {toggles.map((t, i) => (
-            <View key={t.key} style={[styles.setRow, i === toggles.length - 1 && { borderBottomWidth: 0 }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sl}>{t.label}</Text>
-                <Text style={styles.ss}>{t.sub}</Text>
-              </View>
-              <Pressable
-                style={[styles.toggle, !vals[i] && styles.toggleOff]}
-                onPress={() => setters[i](!vals[i])}
-                accessibilityRole="switch"
-                accessibilityState={{ checked: vals[i] }}
+          <CardTitle>My health explorations</CardTitle>
+          {consentedExplorations.length === 0 ? (
+            <Text style={styles.exploreEmpty}>
+              You haven't consented to any explorations yet. Browse the Exploration tab to join one.
+            </Text>
+          ) : (
+            consentedExplorations.map((ex, i, arr) => (
+              <View
+                key={ex.id}
+                style={[
+                  styles.exploreRow,
+                  i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border }
+                ]}
               >
-                <View style={[styles.toggleKnob, !vals[i] && styles.toggleKnobOff]} />
-              </Pressable>
-            </View>
-          ))}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.exploreTitle}>{ex.title}</Text>
+                  {ex.consentedAt ? (
+                    <Text style={styles.exploreMeta}>
+                      Exploration consent · {formatConsentDate(ex.consentedAt)}
+                    </Text>
+                  ) : null}
+                </View>
+                {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Joined</Badge>}
+              </View>
+            ))
+          )}
+          <Pressable style={styles.po} onPress={() => navigation.navigate("ConsentSummary")}>
+            <Text style={styles.poT}>Consent and data sharing</Text>
+          </Pressable>
+        </Card>
+
+        <Card>
+          <CardTitle>{profile.privacy.title}</CardTitle>
+          {toggles.map((t, i) => {
+            const on = Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            return (
+              <View key={t.key} style={[styles.setRow, i === toggles.length - 1 && { borderBottomWidth: 0 }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sl}>{t.label}</Text>
+                  <Text style={styles.ss}>{t.sub}</Text>
+                </View>
+                <Pressable
+                  style={[styles.toggle, !on && styles.toggleOff]}
+                  onPress={() => handleToggle(t.key, !on)}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: on }}
+                >
+                  <View style={[styles.toggleKnob, !on && styles.toggleKnobOff]} />
+                </Pressable>
+              </View>
+            );
+          })}
           {(profile.privacy.actions || []).map((a) => (
             <Pressable key={a.id} style={styles.po} onPress={() => showToast(a.toast)}>
               <Text style={styles.poT}>{a.label}</Text>
             </Pressable>
           ))}
-          <Pressable style={styles.po} onPress={() => navigation.navigate("OnboardingConsent")}>
-            <Text style={styles.poT}>Onboarding and consent process</Text>
-          </Pressable>
-          <Pressable style={styles.po} onPress={() => navigation.navigate("ConsentSummary")}>
-            <Text style={styles.poT}>View my consent and data sharing</Text>
-          </Pressable>
         </Card>
+
+        <View style={styles.legalLinks}>
+          <Pressable onPress={() => navigation.navigate("PrivacyPolicy")}>
+            <Text style={styles.legalLink}>Privacy policy</Text>
+          </Pressable>
+          <Text style={styles.legalSep}>·</Text>
+          <Pressable onPress={() => navigation.navigate("ResearchEthics")}>
+            <Text style={styles.legalLink}>Research ethics</Text>
+          </Pressable>
+        </View>
 
         <ScienceBanner title={profile.contributionBanner.title} body={profile.contributionBanner.body} />
       </ScrollView>
+
+      <EditNameModal
+        visible={nameModalOpen}
+        initialName={displayName}
+        onSave={(name) => {
+          updateDisplayName(name);
+          setNameModalOpen(false);
+        }}
+        onClose={() => setNameModalOpen(false)}
+      />
+      <EditAvatarModal
+        visible={avatarModalOpen}
+        currentAvatar={avatar}
+        onSave={(next) => {
+          updateAvatar(next);
+          setAvatarModalOpen(false);
+        }}
+        onClose={() => setAvatarModalOpen(false)}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   hero: { flexDirection: "row", gap: spacing.screen, marginBottom: spacing.sectionGap, alignItems: "center" },
+  avatarWrap: { position: "relative" },
+  editBadge: {
+    position: "absolute",
+    bottom: -2,
+    right: -4,
+    backgroundColor: colors.greenDark,
+    borderRadius: 999,
+    paddingHorizontal: 6,
+    paddingVertical: 2
+  },
+  editBadgeTxt: {
+    color: "#fff",
+    fontSize: 9,
+    fontFamily: "AlbertSans_600SemiBold"
+  },
   name: { ...type.profileName, fontSize: 18, color: colors.text },
+  editHint: { ...text.profileMeta, fontSize: 11, color: colors.greenDark, marginTop: 2, marginBottom: 2 },
   loc: { ...text.profileMeta, marginBottom: 0 },
   ff: {
     flexDirection: "row",
@@ -185,5 +299,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     alignItems: "center"
   },
-  poT: { ...text.link, fontSize: 14 }
+  poT: { ...text.link, fontSize: 14 },
+  exploreEmpty: { ...text.body, marginBottom: spacing.md },
+  exploreRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.lg
+  },
+  exploreTitle: { ...text.label, marginBottom: 2 },
+  exploreMeta: text.profileMeta,
+  legalLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    marginBottom: spacing.sectionGap
+  },
+  legalLink: {
+    ...text.link,
+    fontSize: 14,
+    color: colors.greenDark
+  },
+  legalSep: { color: colors.textMuted, fontSize: 14 }
 });
