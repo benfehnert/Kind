@@ -149,6 +149,71 @@ export default function HomeScreen() {
 
   const showMoreTips = chip === "all" || chip === "tip";
   const showMoreSci = chip === "all" || chip === "science";
+  const demoReports = feed.demoReportItems || [];
+
+  function handleFeedPress(item) {
+    if (item.route) navigation.navigate(item.route, item.routeParams ?? {});
+    else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
+    else if (item.type === "insight")
+      navigation.navigate("MainTabs", {
+        screen: "Insight",
+        params: { community: item.insightTab === "community" }
+      });
+    else if (item.explorationId) navigation.navigate("ExplorationDetail", { id: item.explorationId });
+  }
+
+  function renderFeedItem(item) {
+    return (
+      <Pressable key={item.id} style={styles.feed} onPress={() => handleFeedPress(item)}>
+        <View style={styles.feedHead}>
+          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
+            <View
+              style={[
+                styles.feedAv,
+                {
+                  backgroundColor: item.avatarBg || item.avatarBgStyle,
+                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
+                }
+              ]}
+            >
+              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
+                {item.icon || item.glyph}
+              </Text>
+            </View>
+          ) : (
+            <Avatar
+              size={34}
+              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
+              sceneKey={item.sceneKey}
+              initials={item.initials}
+              backgroundColor={item.avatarBgStyle}
+            />
+          )}
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+              <Text style={styles.feedName}>{item.displayName}</Text>
+              {item.badge ? <Badge variant={item.badge}>{item.badgeLabel}</Badge> : null}
+            </View>
+            <Text style={styles.feedTime}>{item.time}</Text>
+          </View>
+        </View>
+        <RichTextParts
+          html={item.body}
+          style={[text.feedBody, { marginTop: spacing.xs }]}
+          strongStyle={{ color: colors.text, ...type.bodyStrong }}
+        />
+        {item.highlight ? (
+          <View style={styles.hl}>
+            <RichTextParts
+              html={item.highlight}
+              style={text.feedHighlight}
+              strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
+            />
+          </View>
+        ) : null}
+      </Pressable>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -255,69 +320,7 @@ export default function HomeScreen() {
 
         <ChipRow chips={feed.chips || []} value={chip} onChange={setChip} />
 
-        {visible.map((item) => (
-          <Pressable
-            key={item.id}
-            style={styles.feed}
-            onPress={() => {
-              if (item.route) navigation.navigate(item.route);
-              else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
-              else if (item.type === "insight")
-                navigation.navigate("MainTabs", {
-                  screen: "Insight",
-                  params: { community: item.insightTab === "community" }
-                });
-              else if (item.explorationId) navigation.navigate("ExplorationDetail", { id: item.explorationId });
-            }}
-          >
-            <View style={styles.feedHead}>
-              {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
-                <View
-                  style={[
-                    styles.feedAv,
-                    {
-                      backgroundColor: item.avatarBg || item.avatarBgStyle,
-                      borderRadius: item.avatarKind === "glyph" ? 8 : 999
-                    }
-                  ]}
-                >
-                  <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
-                    {item.icon || item.glyph}
-                  </Text>
-                </View>
-              ) : (
-                <Avatar
-                  size={34}
-                  img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-                  sceneKey={item.sceneKey}
-                  initials={item.initials}
-                  backgroundColor={item.avatarBgStyle}
-                />
-              )}
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-                  <Text style={styles.feedName}>{item.displayName}</Text>
-                  {item.badge ? <Badge variant={item.badge}>{item.badgeLabel}</Badge> : null}
-                </View>
-                <Text style={styles.feedTime}>{item.time}</Text>
-              </View>
-            </View>
-            <RichTextParts
-              html={item.body}
-              style={[text.feedBody, { marginTop: spacing.xs }]}
-              strongStyle={{ color: colors.text, ...type.bodyStrong }}
-            />
-            {item.highlight ? (
-              <View style={styles.hl}>
-                <RichTextParts
-                  html={item.highlight}
-                  style={text.feedHighlight}
-                  strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
-                />
-              </View>
-            ) : null}
-          </Pressable>
-        ))}
+        {visible.map((item) => renderFeedItem(item))}
 
         {showMoreTips && !tipsExpanded && (
           <Pressable style={styles.more} onPress={() => setTipsExpanded(true)}>
@@ -331,6 +334,13 @@ export default function HomeScreen() {
             <Text style={styles.moreS}>5 science updates for each exploration</Text>
           </Pressable>
         )}
+
+        {demoReports.length > 0 ? (
+          <View style={styles.demoSection}>
+            <Text style={styles.demoSectionTitle}>Personalised trial final reports (demo)</Text>
+            {demoReports.map((item) => renderFeedItem(item))}
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -391,5 +401,13 @@ const styles = StyleSheet.create({
   },
   more: layout.feedMore,
   moreT: text.feedMoreTitle,
-  moreS: text.feedMoreSub
+  moreS: text.feedMoreSub,
+  demoSection: { marginTop: spacing.xl, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border },
+  demoSectionTitle: {
+    ...type.label,
+    color: colors.textMuted,
+    marginBottom: spacing.lg,
+    textTransform: "uppercase",
+    letterSpacing: 0.4
+  }
 });
