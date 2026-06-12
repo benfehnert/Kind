@@ -344,62 +344,13 @@
     <div class="waitlist-inner">
       <h2>Shape Kind from the start</h2>
       <p>We're actively recruiting research partners to co-design our platform and contribute the first wave of explorations. Join the waitlist to be part of it.</p>
-      <div class="waitlist-form">
-        <form class="waitlist-form-el">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="res-first">First name</label>
-              <input type="text" id="res-first" name="first" placeholder="Jordan" required />
-            </div>
-            <div class="form-group">
-              <label for="res-last">Last name</label>
-              <input type="text" id="res-last" name="last" placeholder="Taylor" required />
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="res-email">Work email</label>
-            <input type="email" id="res-email" name="email" placeholder="jordan@university.ac.uk" required />
-          </div>
-          <div class="form-group">
-            <label for="res-org">Institution or organisation</label>
-            <input type="text" id="res-org" name="org" placeholder="e.g. University of Edinburgh" />
-          </div>
-          <div class="form-group">
-            <label for="res-role">Your role</label>
-            <select id="res-role" name="role">
-              <option value="">Select your role…</option>
-              <option>Academic researcher (PhD / postdoc)</option>
-              <option>Faculty / senior researcher</option>
-              <option>Health advocacy organisation</option>
-              <option>Clinical specialist / practitioner</option>
-              <option>Intervention provider / company</option>
-              <option>Independent researcher</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="res-area">Primary research area</label>
-            <select id="res-area" name="area">
-              <option value="">Select an area…</option>
-              <option>Sleep science</option>
-              <option>Energy and performance</option>
-              <option>Mental health and wellbeing</option>
-              <option>Nutrition and gut health</option>
-              <option>Cardiovascular health</option>
-              <option>Metabolic health</option>
-              <option>Other — I'll explain when we connect</option>
-            </select>
-          </div>
-          <button type="submit" class="form-submit form-submit--green">Join the researcher waitlist →</button>
-          <p class="form-note">We'll follow up with more details about research partnership opportunities. No spam.</p>
-        </form>
-        <div class="success-message">
-          <div class="check svg-icon svg-icon--success" aria-hidden="true">
-            <svg viewBox="0 0 56 56" width="56" height="56"><use href="assets/kind-brand-sprite.svg#ib-evidence"/></svg>
-          </div>
-          <h3>Great to have you on board!</h3>
-          <p>Thanks for your interest in partnering with Kind. We'll be in touch shortly to discuss research opportunities and next steps.</p>
-        </div>
+      <div class="waitlist-form waitlist-form--embed">
+        <!-- ScoreApp inline waitlist embed (initialised by embedding.js loaded before </body>) -->
+        <div
+          data-sa-url="https://a0b8c2c8-88e4-456b-91a7-fc4a6abd74e4.scoreapp.com/?sa_target=_top"
+          data-sa-view="inline"
+          data-sa-auto-height="1"
+          style="max-width: 100%; width: 100%"></div>
       </div>
     </div>
   </div>
@@ -428,6 +379,7 @@
       <div class="footer__col">
         <h4>Legal</h4>
         <ul>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
           <li><a href="cookie-policy.html">Cookie Policy</a></li>
           <li><a href="#" data-kind-cookie-settings>Cookie preferences</a></li>
         </ul>
@@ -453,7 +405,7 @@
 <script src="cookie-consent.js"></script>
 <script src="script.js"></script>
 
-<!-- ScoreApp embed initialiser (waitlist triggers in nav/footer) -->
+<!-- ScoreApp embed initialiser (inline waitlist embed + nav/footer triggers) -->
 <script src="https://static.scoreapp.com/js/integration/v1/embedding.js?v=GZEkFI"></script>
 </body>
 </html>

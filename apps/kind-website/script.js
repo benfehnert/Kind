@@ -11,24 +11,45 @@ if (hamburger) {
 }
 
 // Highlight the current page in top navigation (desktop + mobile)
-function currentNavFilename() {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const name = parts.length ? parts[parts.length - 1] : '';
-  if (!name || !name.includes('.')) return 'index.html';
-  return name;
-}
-
-const NAV_PAGE_BY_FILE = {
+const NAV_PAGE_BY_SLUG = {
+  '': 'home',
   'index.html': 'home',
   'individuals.html': 'individuals',
+  'individuals': 'individuals',
   'researchers.html': 'researchers',
-  'faq.html': 'faq'
+  'researchers': 'researchers',
+  'faq.html': 'faq',
+  'faq': 'faq'
 };
 
+const BODY_CLASS_NAV = {
+  'path-home': 'home',
+  'path-individuals': 'individuals',
+  'path-researchers': 'researchers',
+  'path-faq': 'faq'
+};
+
+let scrollNavOverride = null;
+
+function navSlugFromPathname() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  return (parts.length ? parts[parts.length - 1] : '').toLowerCase();
+}
+
+function navPageFromBody() {
+  for (const [className, page] of Object.entries(BODY_CLASS_NAV)) {
+    if (document.body.classList.contains(className)) return page;
+  }
+  return null;
+}
+
+function navPageFromPath() {
+  return NAV_PAGE_BY_SLUG[navSlugFromPathname()] ?? null;
+}
+
 function getCurrentNavPage() {
-  if (document.body.classList.contains('path-individuals')) return 'individuals';
-  if (document.body.classList.contains('path-researchers')) return 'researchers';
-  return NAV_PAGE_BY_FILE[currentNavFilename().toLowerCase()] || null;
+  if (scrollNavOverride) return scrollNavOverride;
+  return navPageFromBody() ?? navPageFromPath();
 }
 
 function getLinkNavPage(link) {
@@ -37,17 +58,17 @@ function getLinkNavPage(link) {
   if (!href || href.startsWith('#') || href.startsWith('mailto:')) return null;
   try {
     const parts = new URL(href, window.location.href).pathname.split('/').filter(Boolean);
-    const name = parts.length ? parts[parts.length - 1] : '';
-    const file = !name || !name.includes('.') ? 'index.html' : name.toLowerCase();
-    return NAV_PAGE_BY_FILE[file] || null;
+    const slug = (parts.length ? parts[parts.length - 1] : '').toLowerCase();
+    return NAV_PAGE_BY_SLUG[slug] ?? null;
   } catch {
     return null;
   }
 }
 
-function initActiveNav() {
+function applyActiveNav() {
   const current = getCurrentNavPage();
   if (current) document.body.dataset.navPage = current;
+  else delete document.body.dataset.navPage;
 
   document.querySelectorAll('.nav__links a:not(.nav__cta), .nav__mobile a:not(.btn)').forEach(link => {
     link.classList.remove('active');
@@ -57,6 +78,26 @@ function initActiveNav() {
       link.setAttribute('aria-current', 'page');
     }
   });
+}
+
+function initInPageSectionNav() {
+  const faqSection = document.getElementById('faq');
+  const pageDefault = navPageFromBody();
+  if (!faqSection || !pageDefault || pageDefault === 'faq') return;
+
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      scrollNavOverride = entry.isIntersecting ? 'faq' : null;
+      applyActiveNav();
+    },
+    { rootMargin: '-20% 0px -40% 0px', threshold: 0 }
+  );
+  observer.observe(faqSection);
+}
+
+function initActiveNav() {
+  applyActiveNav();
+  initInPageSectionNav();
 }
 
 initActiveNav();

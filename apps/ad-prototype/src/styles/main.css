@@ -34,8 +34,8 @@ body {
 /* ── Ad viewport — portrait phone proportion ── */
 #ad-viewport {
   position: relative;
-  width: 390px;
   height: 844px;
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 4px;
   box-shadow:
@@ -88,10 +88,9 @@ body {
 #logo {
   font-family: "Onest", sans-serif;
   font-weight: 700;
-  font-size: 56px;
-  letter-spacing: -0.035em;
+  font-size: 72px;
   color: #fff;
-  line-height: 1;
+  line-height: 0.6;
   margin-bottom: 8px;
   margin-top: 52px;
 }
@@ -101,25 +100,23 @@ body {
 }
 
 #logo-sub {
-  font-family: "Albert Sans", sans-serif;
-  font-size: 9px;
-  font-weight: 500;
+  font-family: "Onest", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
   letter-spacing: 0.18em;
-  text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
   margin-bottom: 28px;
 }
 
 /* ── Hero text ── */
 #hero-text {
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 700;
   padding: 0px 32px;
   color: #fff;
   text-align: center;
   line-height: 1.25;
   letter-spacing: -0.02em;
-  margin-bottom: 28px;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 
   strong {
@@ -131,11 +128,11 @@ body {
 /* Sized to the SVG's 559:960 aspect ratio; height derives automatically. */
 #mockup {
   position: relative;
-  width: 100%;
+  width: 120%;
   aspect-ratio: 559 / 960;
   flex-shrink: 0;
   filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.6));
-  translate: 10% 0;
+  translate: 9% 0;
 }
 
 #mockup-frame {
@@ -147,18 +144,13 @@ body {
   display: block;
 }
 
-/* Mask derived from mask0_1_22 in mockup.svg.
-   image1_1_22 (1946×4096) is the alpha mask for the screen area, including the
-   hand curve at the bottom-right. Extracted as screen-mask.png.
-   Screen rect in 559×960 viewBox: translate(100.292 43) / 265.29×562.982
-     mask-position: 100.292/559 = 17.94%  43/960 = 4.48%
-     mask-size:     265.29/559  = 47.46%  562.982/960 = 58.64% */
+/* Mask derived from mask0_1_22 in mockup.svg. Primarily for the hands cutoff.*/
 #screenshot {
   position: absolute;
   left: 17.94%;
-  top: 4.48%;
-  width: 47.46%;
-  height: 58.64%;
+  top: 8.1%;
+  width: 47.9%;
+  height: 54.7%;
   object-fit: cover;
   object-position: top;
   display: block;
@@ -174,6 +166,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
+  margin: 0.75rem;
+  border-radius: .375rem;
   padding: 28px 32px 40px;
   background: var(--cream);
   text-align: center;
@@ -185,7 +179,7 @@ body {
 #detail-tagline {
   font-family: "Onest", sans-serif;
   font-weight: 700;
-  font-size: 26px;
+  font-size: 32px;
   letter-spacing: -0.025em;
   line-height: 1.2;
   color: var(--green);
@@ -198,7 +192,7 @@ body {
 }
 
 #detail-body {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--text-muted);
   line-height: 1.6;
@@ -210,9 +204,9 @@ body {
   background: var(--green);
   color: #fff;
   font-family: "Albert Sans", sans-serif;
-  font-size: 13px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  padding: 11px 28px;
+  padding: 16px 32px;
   border-radius: 999px;
 }
