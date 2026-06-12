@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { KindNavBar } from "../components/primitives/KindNavBar";
 import { KindTabBar } from "../components/primitives/KindTabBar";
 import { useData } from "../context/DataContext";
+import { useProfile } from "../context/ProfileContext";
 import HomeScreen from "../screens/HomeScreen";
 import ExploreScreen from "../screens/ExploreScreen";
 import InsightScreen from "../screens/InsightScreen";
@@ -12,12 +13,6 @@ import CommunityScreen from "../screens/CommunityScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
-
-function pravatarNum(key) {
-  if (!key || typeof key !== "string") return undefined;
-  const m = key.match(/pravatar-(\d+)/);
-  return m ? parseInt(m[1], 10) : undefined;
-}
 
 function TabChromeBridge({ onChrome, state, navigation, descriptors }) {
   useEffect(() => {
@@ -29,12 +24,13 @@ function TabChromeBridge({ onChrome, state, navigation, descriptors }) {
 
 export default function MainTabShell() {
   const { profile } = useData();
+  const { initials, avatarProps } = useProfile();
   const stackNav = useNavigation();
   const [tabChrome, setTabChrome] = useState(null);
 
   const navProfile = {
-    img: pravatarNum(profile.navProfile?.avatarKey) ?? 28,
-    initials: profile.navProfile?.initials || "AR"
+    ...avatarProps,
+    initials: initials || profile.navProfile?.initials || "AR"
   };
 
   return (
