@@ -4,8 +4,11 @@ import { BACKGROUNDS } from './fixtures/backgrounds.js';
 import mockupFrameSrc from './assets/mockup.svg';
 import frame1Src from './assets/frame-1.png';
 import frame2Src from './assets/frame-2.png';
+import frame3Src from './assets/frame-3.png';
+import frame4Src from './assets/frame-4.png'
+import frame5Src from './assets/frame-5.png'
 
-const SCREENSHOTS = [frame1Src, frame2Src];
+const SCREENSHOTS = [frame1Src, frame2Src, frame3Src, frame4Src, frame5Src];
 
 document.getElementById('mockup-frame').src = mockupFrameSrc;
 

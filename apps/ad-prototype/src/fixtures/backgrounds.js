@@ -6,6 +6,5 @@ export const BACKGROUNDS = [
   'https://images.unsplash.com/photo-1588714477688-cf28a50e94f7?w=390&h=844&fit=crop&q=80',
   'https://images.unsplash.com/photo-1620004071518-52531ff9162c?w=390&h=844&fit=crop&q=80',
   'https://images.unsplash.com/photo-1718220216044-006f43e3a9b1?w=390&h=844&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1631856956771-bd96b2bd71f6?w=390&h=844&fit=crop&q=80',
   'https://images.unsplash.com/photo-1586073305502-5c5cc4a594bd?w=390&h=844&fit=crop&q=80',
 ]
