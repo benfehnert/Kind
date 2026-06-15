@@ -14,6 +14,8 @@ import { StatusBar } from "expo-status-bar";
 import { DataProvider } from "./src/context/DataContext";
 import { FollowProvider } from "./src/context/FollowContext";
 import { ConsentProvider } from "./src/context/ConsentContext";
+import { ProfileProvider } from "./src/context/ProfileContext";
+import { OnboardingProvider, useOnboarding } from "./src/context/OnboardingContext";
 import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
@@ -21,9 +23,12 @@ import { ProtoToast } from "./src/components/ProtoToast";
 
 function Shell() {
   const { toast } = useUiShell();
+  const { completed, hydrating } = useOnboarding();
+  const inOnboarding = !hydrating && !completed;
+
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={inOnboarding ? "dark" : "light"} />
       <AppNavigator />
       <ProtoToast message={toast} visible={!!toast} />
     </>
@@ -49,7 +54,9 @@ export default function App() {
   return (
     <DataProvider>
     <FollowProvider>
+      <OnboardingProvider>
       <ConsentProvider>
+        <ProfileProvider>
         <UiProvider>
           <SafeAreaProvider>
             <ProtoAppFrame>
@@ -59,7 +66,9 @@ export default function App() {
             </ProtoAppFrame>
           </SafeAreaProvider>
         </UiProvider>
+        </ProfileProvider>
       </ConsentProvider>
+      </OnboardingProvider>
     </FollowProvider>
     </DataProvider>
   );

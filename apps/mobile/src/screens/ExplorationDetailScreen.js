@@ -3,16 +3,21 @@ import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
+import { useUiShell } from "../context/UiContext";
+import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
-  const { explorations, community } = useData();
+  const { community } = useData();
+  const userExplorations = useUserExplorations();
+  const startExploration = useExplorationStart();
+  const { showToast } = useUiShell();
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
-  const e = id ? explorations[id] : null;
+  const e = id ? userExplorations[id] : null;
 
   if (!e) {
     return (
@@ -114,9 +119,15 @@ export default function ExplorationDetailScreen() {
         </Text>
 
         {!e.active ? (
-          <PrimaryButton title="Start this exploration" onPress={() => {}} style={{ marginTop: 16 }} />
+          <PrimaryButton
+            title="Start this exploration"
+            onPress={() => startExploration(navigation, id, { showToast })}
+            style={{ marginTop: 16 }}
+          />
         ) : (
-          <Text style={{ marginTop: 8, fontSize: 12, color: colors.greenDark, fontWeight: "600" }}>You're active · keep logging consistently.</Text>
+          <Text style={{ marginTop: 8, fontSize: 12, color: colors.greenDark, fontWeight: "600" }}>
+            You're active · keep logging consistently.
+          </Text>
         )}
 
         <Pressable style={{ marginTop: 24 }} onPress={() => navigation.navigate("ExplorersList", { explorationId: id })}>

@@ -27,22 +27,28 @@
     "title": "Data & privacy",
     "toggles": [
       {
+        "key": "globalConsent",
+        "label": "Global consent",
+        "sub": "Take part in Kind — health exploration",
+        "defaultOn": false
+      },
+      {
         "key": "science",
         "label": "Contribute to citizen science",
         "sub": "Anonymised data used in research publications",
-        "defaultOn": true
+        "defaultOn": false
       },
       {
         "key": "visible",
         "label": "Visible in community",
         "sub": "Others can see your progress and follow you",
-        "defaultOn": true
+        "defaultOn": false
       },
       {
         "key": "reminders",
         "label": "Daily reminders",
         "sub": "Support to keep on track",
-        "defaultOn": true
+        "defaultOn": false
       }
     ],
     "actions": [
