@@ -11,6 +11,8 @@ import notifications from "../mocks/notifications.json" with { type: "json" };
 import exploreCopy from "../mocks/exploreCopy.json" with { type: "json" };
 import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
 import consent from "../mocks/consent.json" with { type: "json" };
+import trialReports from "../data/explorationTrialReports.json" with { type: "json" };
+import { ANNA_DEMO_ONBOARDING } from "../lib/meData.js";
 
 const router = new Hono();
 
@@ -158,6 +160,113 @@ router.get("/consent", (c) => {
 
 router.post("/consent", (c) => {
   return c.json({ ok: true });
+});
+
+// ---------------------------------------------------------------------------
+// Onboarding, user explorations, reports, logs (mock parity)
+// ---------------------------------------------------------------------------
+
+const MOCK_EXPLORATION_CONSENTS = {
+  "morning-rules": { granted: true, consentedAt: "2026-05-15T09:00:00.000Z" },
+  eating: { granted: true, consentedAt: "2026-03-03T09:00:00.000Z" },
+  "screen-sleep": { granted: true, consentedAt: "2026-01-10T09:00:00.000Z" },
+  relaxation: { granted: true, consentedAt: "2025-11-05T09:00:00.000Z" },
+  "upf-mood": { granted: true, consentedAt: "2026-02-01T09:00:00.000Z" }
+};
+
+router.get("/onboarding", (c) =>
+  c.json({ completed: true, completedAt: "2026-05-01T12:00:00.000Z", answers: ANNA_DEMO_ONBOARDING })
+);
+
+router.put("/onboarding", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  return c.json({ ok: true, completed: Boolean(body.completed), answers: body.answers ?? body });
+});
+
+router.post("/onboarding/complete", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  return c.json({
+    ok: true,
+    completed: true,
+    answers: { ...ANNA_DEMO_ONBOARDING, ...(body.answers ?? body) }
+  });
+});
+
+router.get("/consent/state", (c) =>
+  c.json({
+    ...consent,
+    choices: consent.annaDefaults,
+    privacyPrefs: {
+      globalConsent: true,
+      science: true,
+      visible: true,
+      reminders: true
+    },
+    explorationConsents: MOCK_EXPLORATION_CONSENTS,
+    activeExplorationId: "morning-rules"
+  })
+);
+
+router.get("/me/explorations", (c) =>
+  c.json({
+    activeExplorationId: "morning-rules",
+    items: EXPLORATION_ORDER.map((explorationId) => {
+      const exp = explorations[explorationId];
+      const complete = explorationId !== "morning-rules";
+      return {
+        explorationId,
+        title: exp?.title,
+        durationLabel: exp?.duration,
+        weekCurrent: complete ? 6 : 3,
+        weeksTotal: explorationId === "morning-rules" ? 8 : 6,
+        status: complete ? "complete" : "active",
+        streakDays: complete ? 40 : 9,
+        isActive: explorationId === "morning-rules",
+        consented: true,
+        hasReport: true
+      };
+    })
+  })
+);
+
+router.get("/me/explorations/:id/report", (c) => {
+  const explorationId = c.req.param("id");
+  const report = trialReports[explorationId];
+  if (!report) return c.json({ error: "Report not found" }, 404);
+  return c.json({ explorationId, report, generatedAt: new Date().toISOString() });
+});
+
+router.get("/explorations/:id/report-template", (c) => {
+  const explorationId = c.req.param("id");
+  const report = trialReports[explorationId];
+  if (!report) return c.json({ error: "Report template not found" }, 404);
+  return c.json({ explorationId, report });
+});
+
+router.post("/me/explorations/:id/consent", (c) =>
+  c.json({ ok: true, explorationId: c.req.param("id"), granted: true, isActive: true })
+);
+
+router.patch("/me/explorations/:id/active", (c) =>
+  c.json({ ok: true, activeExplorationId: c.req.param("id") })
+);
+
+router.post("/me/explorations/:id/complete", (c) => {
+  const explorationId = c.req.param("id");
+  const report = trialReports[explorationId];
+  if (!report) return c.json({ error: "Report template not found" }, 404);
+  return c.json({ ok: true, explorationId, report, generatedAt: new Date().toISOString() });
+});
+
+router.get("/me/logs", (c) => c.json({ explorationId: c.req.query("explorationId"), items: [] }));
+
+router.post("/me/logs", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  return c.json({
+    ok: true,
+    logDate: body.logDate ?? new Date().toISOString().slice(0, 10),
+    fieldValues: body.fieldValues ?? {}
+  });
 });
 
 // ---------------------------------------------------------------------------
