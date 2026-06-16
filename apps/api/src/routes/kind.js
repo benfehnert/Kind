@@ -3,9 +3,19 @@ import { query } from "../db.js";
 import { requireAuth } from "../middleware.js";
 import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
 import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
+import consentMock from "../mocks/consent.json" with { type: "json" };
 import feedMock from "../mocks/feed.json" with { type: "json" };
 import insightMock from "../mocks/insight.json" with { type: "json" };
 import profileMock from "../mocks/profile.json" with { type: "json" };
+import {
+  buildConsentPayload,
+  fetchConsentChoices,
+  fetchExplorationConsents,
+  fetchOnboardingRow,
+  fetchPrivacyPrefs,
+  upsertIndividualConsents
+} from "../lib/meData.js";
+import meRouter from "./me.js";
 
 const router = new Hono();
 
@@ -358,7 +368,7 @@ router.get("/home", async (c) => {
             e.title, e.icon, e.theme_bg AS bg, e.theme_text AS text
      FROM user_explorations ue
      JOIN explorations e ON e.id = ue.exploration_id
-     WHERE ue.individual_id = $1 AND ue.status = 'active'
+     WHERE ue.individual_id = $1 AND ue.is_active = TRUE
      LIMIT 1`,
     [individualId]
   );
@@ -513,16 +523,25 @@ router.patch("/profile/privacy", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const body = await c.req.json();
-  const { science, visible, reminders } = body;
+  const { science, visible, reminders, globalConsent } = body;
   await query(
-    `INSERT INTO privacy_settings (individual_id, contribute_to_citizen_science, visible_in_community, daily_reminders)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (individual_id) DO UPDATE
-       SET contribute_to_citizen_science = EXCLUDED.contribute_to_citizen_science,
-           visible_in_community          = EXCLUDED.visible_in_community,
-           daily_reminders               = EXCLUDED.daily_reminders,
-           updated_at                    = NOW()`,
-    [individualId, science ?? true, visible ?? true, reminders ?? true]
+    `INSERT INTO privacy_settings (
+       individual_id, platform_consent, contribute_to_citizen_science,
+       visible_in_community, daily_reminders
+     ) VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (individual_id) DO UPDATE SET
+       platform_consent = COALESCE(EXCLUDED.platform_consent, privacy_settings.platform_consent),
+       contribute_to_citizen_science = EXCLUDED.contribute_to_citizen_science,
+       visible_in_community = EXCLUDED.visible_in_community,
+       daily_reminders = EXCLUDED.daily_reminders,
+       updated_at = NOW()`,
+    [
+      individualId,
+      globalConsent ?? false,
+      science ?? true,
+      visible ?? true,
+      reminders ?? true
+    ]
   );
   return c.json({ ok: true, privacy: body });
 });
@@ -531,19 +550,72 @@ router.patch("/profile/privacy", async (c) => {
 // Consent (mostly static)
 // ---------------------------------------------------------------------------
 
-router.get("/consent", (c) => {
+router.get("/consent", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json(consentMock);
+
+  const [choices, privacyPrefs, onboarding, { map, activeExplorationId }] = await Promise.all([
+    fetchConsentChoices(individualId),
+    fetchPrivacyPrefs(individualId),
+    fetchOnboardingRow(individualId),
+    fetchExplorationConsents(individualId)
+  ]);
+
+  const mergedChoices = {
+    ...consentMock.annaDefaults,
+    ...choices,
+    platform_participation: privacyPrefs.globalConsent,
+    research_contribution: privacyPrefs.science,
+    result_sharing: privacyPrefs.visible
+  };
+
   return c.json({
-    title: "Your data & consent",
-    sections: [
-      { heading: "What we collect", body: "Your daily logs and exploration progress — always anonymised before use." },
-      { heading: "How it's used", body: "Anonymised data supports citizen science research. You can opt out at any time." },
-      { heading: "Your rights", body: "Download or delete your data at any time from the Profile screen." }
-    ]
+    ...consentMock,
+    ...buildConsentPayload(mergedChoices, privacyPrefs),
+    choices: mergedChoices,
+    onboarding: {
+      completed: Boolean(onboarding?.completed_at),
+      answers: onboarding?.answers ?? {}
+    },
+    explorationConsents: map,
+    activeExplorationId
   });
 });
 
-router.post("/consent", (c) => {
-  return c.json({ ok: true });
+router.post("/consent", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ ok: true });
+
+  const body = await c.req.json().catch(() => ({}));
+  const choices = body.choices ?? body;
+  await upsertIndividualConsents(individualId, choices);
+
+  if (
+    choices.platform_participation !== undefined ||
+    choices.research_contribution !== undefined ||
+    choices.result_sharing !== undefined ||
+    choices.us_collect !== undefined ||
+    choices.us_share !== undefined
+  ) {
+    await query(
+      `INSERT INTO privacy_settings (
+         individual_id, platform_consent, contribute_to_citizen_science, visible_in_community
+       ) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (individual_id) DO UPDATE SET
+         platform_consent = COALESCE($2, privacy_settings.platform_consent),
+         contribute_to_citizen_science = COALESCE($3, privacy_settings.contribute_to_citizen_science),
+         visible_in_community = COALESCE($4, privacy_settings.visible_in_community),
+         updated_at = NOW()`,
+      [
+        individualId,
+        choices.platform_participation ?? null,
+        choices.research_contribution ?? null,
+        choices.result_sharing ?? null
+      ]
+    );
+  }
+
+  return c.json({ ok: true, choices });
 });
 
 // ---------------------------------------------------------------------------
@@ -712,5 +784,7 @@ router.post("/explore/chat", async (c) => {
     explorationIds: (def.explorationIds || []).slice(0, def.maxIds || def.explorationIds?.length || 99)
   });
 });
+
+router.route("/", meRouter);
 
 export default router;
