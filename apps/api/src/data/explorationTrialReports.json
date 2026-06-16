@@ -1,0 +1,785 @@
+{
+  "morning-rules": {
+    "explorationName": "Morning rules & afternoon energy",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Energy & Focus",
+    "subMeta": "Anna · 8 Apr – 2 Jun 2026 · 89% of days logged",
+    "lede": "Your afternoons got steadier. Here's what your own data — not a study average — suggests worked for you.",
+    "tiles": [
+      {
+        "label": "Afternoon energy",
+        "value": "5.2 → 6.8",
+        "delta": "+1.6 pts"
+      },
+      {
+        "label": "Days with a real crash",
+        "value": "64% → 29%",
+        "delta": "−35 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Afternoon energy by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.2
+        },
+        {
+          "label": "Morning rules",
+          "v": 6.1
+        },
+        {
+          "label": "Optimise",
+          "v": 6.8
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Extra afternoon energy on the days you did each rule.",
+      "rows": [
+        {
+          "icon": "☀️",
+          "label": "Morning sunlight",
+          "value": "+2.1",
+          "width": 100,
+          "bar": "#1D9E75",
+          "badge": "Strong evidence · 82% of days",
+          "badgeBg": "#E1F5EE",
+          "badgeText": "#085041"
+        },
+        {
+          "icon": "🤸",
+          "label": "Morning movement",
+          "value": "+1.4",
+          "width": 67,
+          "bar": "#1D9E75",
+          "badge": "Moderate–strong · 68% of days",
+          "badgeBg": "#E1F5EE",
+          "badgeText": "#085041"
+        },
+        {
+          "icon": "🧘",
+          "label": "Morning meditation",
+          "value": "+0.9",
+          "width": 43,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 47% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "☕",
+          "label": "Caffeine offsetting",
+          "value": "+0.4",
+          "width": 19,
+          "bar": "#888780",
+          "valColor": "#5F6B5C",
+          "badge": "Experimental · too small to call",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "How your afternoons felt",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Optimise (wks 6–7)",
+      "before": [
+        {
+          "w": 18,
+          "c": "#5DCAA5"
+        },
+        {
+          "w": 18,
+          "c": "#FAC775"
+        },
+        {
+          "w": 40,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 24,
+          "c": "#E24B4A"
+        }
+      ],
+      "after": [
+        {
+          "w": 46,
+          "c": "#5DCAA5"
+        },
+        {
+          "w": 25,
+          "c": "#FAC775"
+        },
+        {
+          "w": 22,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 7,
+          "c": "#E24B4A"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#5DCAA5",
+          "label": "None"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Mild dip"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "Noticeable"
+        },
+        {
+          "c": "#E24B4A",
+          "label": "Severe"
+        }
+      ]
+    },
+    "keepList": {
+      "items": [
+        "Morning sunlight",
+        "Morning movement"
+      ],
+      "body": "These two tracked most closely with your better afternoons. Worth keeping. You can park meditation and the caffeine delay, or revisit them later."
+    },
+    "compare": {
+      "body": "Explorers improved afternoon energy by about 1.1 points on average. Your +1.6 puts you a little ahead of the group — and you logged more consistently than most (89% vs ~78%)."
+    },
+    "disclaimer": "This is a study of one person — you — over a short window. Sleep, stress and lunch sway afternoons too, so read this as a strong personal hint rather than proof. The rule that worked for you is the one worth keeping.",
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on morning sunlight and morning movement."
+    }
+  },
+  "eating": {
+    "explorationName": "Time-restricted eating",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Metabolic Health",
+    "subMeta": "Anna · 3 Mar – 14 Apr 2026 · 91% of days logged",
+    "lede": "Compressing your eating window shifted your daily energy curve. Here's what your logs suggest about timing — not calories — for you.",
+    "tiles": [
+      {
+        "label": "Daily energy",
+        "value": "5.2 → 7.6",
+        "delta": "+2.4 pts"
+      },
+      {
+        "label": "Eating window",
+        "value": "14h → 10h",
+        "delta": "−4 hrs"
+      }
+    ],
+    "phaseChart": {
+      "title": "Daily energy by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.2
+        },
+        {
+          "label": "10-hour",
+          "v": 6.8
+        },
+        {
+          "label": "Week 6",
+          "v": 7.6
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Extra daily energy linked to each timing habit.",
+      "rows": [
+        {
+          "icon": "🕐",
+          "label": "Consistent 10-hour window",
+          "value": "+1.8",
+          "width": 100,
+          "bar": "#1D9E75",
+          "badge": "Strong signal · 88% of intervention days",
+          "badgeBg": "#E1F5EE",
+          "badgeText": "#085041"
+        },
+        {
+          "icon": "🌅",
+          "label": "Fixed first meal (~8am)",
+          "value": "+1.2",
+          "width": 67,
+          "bar": "#1D9E75",
+          "badge": "Moderate–strong · 74% of days",
+          "badgeBg": "#E1F5EE",
+          "badgeText": "#085041"
+        },
+        {
+          "icon": "🌙",
+          "label": "Last meal before 6pm",
+          "value": "+0.9",
+          "width": 50,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 62% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "💧",
+          "label": "Water outside window only",
+          "value": "+0.3",
+          "width": 17,
+          "bar": "#888780",
+          "valColor": "#5F6B5C",
+          "badge": "Unclear · too inconsistent",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "Hunger comfort through the day",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 12,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 28,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 35,
+          "c": "#FAC775"
+        },
+        {
+          "w": 25,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 8,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 18,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 38,
+          "c": "#FAC775"
+        },
+        {
+          "w": 36,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "Very hungry"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "Hungry"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Manageable"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Comfortable"
+        }
+      ]
+    },
+    "keepList": {
+      "items": [
+        "10-hour eating window",
+        "First meal ~8am"
+      ],
+      "body": "Your clearest gains came from a stable window rather than pushing to 8 hours. Hunger comfort normalised by week 4 — worth keeping the rhythm you found."
+    },
+    "compare": {
+      "body": "Explorers in this study improved mean daily energy by about +1.1 points. Your +2.4 is well above the group average, with logging consistency in the top quartile."
+    },
+    "disclaimer": "Meal timing affects people differently. Stress, sleep and activity all influence energy too — treat this as your personal signal, not a prescription.",
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on your 10-hour window and first-meal time."
+    }
+  },
+  "screen-sleep": {
+    "explorationName": "Screen moderation & sleep",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Rest & Sleep",
+    "subMeta": "Anna · 10 Jan – 21 Feb 2026 · 86% of nights logged",
+    "lede": "Cutting evening screen time changed how quickly you switched off and how restored mornings felt. Here's your personal sleep story.",
+    "tiles": [
+      {
+        "label": "Sleep quality",
+        "value": "5.4 → 7.8",
+        "delta": "+2.4 pts"
+      },
+      {
+        "label": "Time to fall asleep",
+        "value": "20–40m → <10m",
+        "delta": "Faster"
+      }
+    ],
+    "phaseChart": {
+      "title": "Sleep quality by phase",
+      "min": 4,
+      "max": 9,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.4
+        },
+        {
+          "label": "30-min free",
+          "v": 6.9
+        },
+        {
+          "label": "60-min free",
+          "v": 7.8
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Extra sleep quality on nights you followed each habit.",
+      "rows": [
+        {
+          "icon": "📵",
+          "label": "60-min screen-free before bed",
+          "value": "+2.0",
+          "width": 100,
+          "bar": "#185FA5",
+          "badge": "Strong signal · 79% of nights",
+          "badgeBg": "#E6F1FB",
+          "badgeText": "#185FA5"
+        },
+        {
+          "icon": "🛏️",
+          "label": "No screens in bed",
+          "value": "+1.5",
+          "width": 75,
+          "bar": "#185FA5",
+          "badge": "Moderate–strong · 71% of nights",
+          "badgeBg": "#E6F1FB",
+          "badgeText": "#185FA5"
+        },
+        {
+          "icon": "📖",
+          "label": "Reading wind-down",
+          "value": "+0.8",
+          "width": 40,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 54% of nights",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🧘",
+          "label": "Stretching before bed",
+          "value": "+0.5",
+          "width": 25,
+          "bar": "#888780",
+          "valColor": "#5F6B5C",
+          "badge": "Mild · inconsistent",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "How rested mornings felt",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 22,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 38,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 28,
+          "c": "#FAC775"
+        },
+        {
+          "w": 12,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 8,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 22,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 42,
+          "c": "#FAC775"
+        },
+        {
+          "w": 28,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "Unrested"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "OK"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Rested"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Fully restored"
+        }
+      ]
+    },
+    "keepList": {
+      "items": [
+        "60-min screen-free",
+        "No screens in bed"
+      ],
+      "body": "The 60-minute buffer made the biggest difference — especially when paired with no in-bed scrolling. Reading on paper helped on tougher nights."
+    },
+    "compare": {
+      "body": "Explorers who hit both habits on 5+ nights per week gained about +1.4 sleep-quality points on average. Your +2.4 puts you among the strongest responders in the cohort."
+    },
+    "disclaimer": "Sleep is sensitive to stress, caffeine and illness. This report reflects your logs over six weeks — a useful personal pattern, not a clinical assessment.",
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on screen-free evenings and no in-bed screens."
+    }
+  },
+  "relaxation": {
+    "explorationName": "Relaxation practices & composure",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Mental Health",
+    "subMeta": "Anna · 5 Nov – 16 Dec 2025 · 84% of days logged",
+    "lede": "Regular relaxation practices shifted your stress baseline. Here's which techniques your data links to calmer, more composed days.",
+    "tiles": [
+      {
+        "label": "Stress level",
+        "value": "6.2 → 4.1",
+        "delta": "−2.1 pts"
+      },
+      {
+        "label": "Composure",
+        "value": "5.5 → 7.4",
+        "delta": "+1.9 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Composure by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.5
+        },
+        {
+          "label": "Practices",
+          "v": 6.4
+        },
+        {
+          "label": "Week 6",
+          "v": 7.4
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Lower stress on days you used each practice.",
+      "rows": [
+        {
+          "icon": "🌬️",
+          "label": "Vagal breathing",
+          "value": "−1.8",
+          "width": 100,
+          "bar": "#534AB7",
+          "badge": "Strong signal · 76% of practice days",
+          "badgeBg": "#EEEDFE",
+          "badgeText": "#534AB7"
+        },
+        {
+          "icon": "🌿",
+          "label": "Short nature walk",
+          "value": "−1.4",
+          "width": 78,
+          "bar": "#534AB7",
+          "badge": "Moderate–strong · 58% of days",
+          "badgeBg": "#EEEDFE",
+          "badgeText": "#534AB7"
+        },
+        {
+          "icon": "💪",
+          "label": "Progressive muscle relaxation",
+          "value": "−1.0",
+          "width": 56,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 45% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🧘",
+          "label": "Meditation / visualisation",
+          "value": "−0.6",
+          "width": 33,
+          "bar": "#888780",
+          "valColor": "#5F6B5C",
+          "badge": "Mild · less consistent",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "Anxiety through the week",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 15,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 35,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 32,
+          "c": "#FAC775"
+        },
+        {
+          "w": 18,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 6,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 20,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 38,
+          "c": "#FAC775"
+        },
+        {
+          "w": 36,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "High (7–10)"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "Moderate (5–6)"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Mild (3–4)"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Calm (1–2)"
+        }
+      ]
+    },
+    "keepList": {
+      "items": [
+        "Vagal breathing",
+        "Short nature walk"
+      ],
+      "body": "Breathing gave you the fastest drop in stress; nature walks sustained composure through the afternoon. PMR helped on high-stress days — worth keeping both core habits."
+    },
+    "compare": {
+      "body": "Explorers logging 4+ practice days per week reduced mean stress by about 1.3 points. Your −2.1 stress shift and +1.9 composure gain are above the group average."
+    },
+    "disclaimer": "Self-reported stress and anxiety aren't clinical measures. If you're struggling, professional support matters — this report is a personal reflection, not a diagnosis.",
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on vagal breathing and nature walks."
+    }
+  },
+  "upf-mood": {
+    "explorationName": "UPF reduction & mood",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Diet & Nutrition",
+    "subMeta": "Anna · 1 Feb – 14 Mar 2026 · 87% of days logged",
+    "lede": "Swapping ultra-processed foods for whole alternatives shifted your daily mood. Here's how your UPF intake tracked with how you felt.",
+    "tiles": [
+      {
+        "label": "Daily mood",
+        "value": "5.6 → 7.2",
+        "delta": "+1.6 pts"
+      },
+      {
+        "label": "UPF share of diet",
+        "value": "58% → 32%",
+        "delta": "−26 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Daily mood by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.6
+        },
+        {
+          "label": "Reduction",
+          "v": 6.4
+        },
+        {
+          "label": "Week 6",
+          "v": 7.2
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Higher mood on days with lower UPF and these swaps.",
+      "rows": [
+        {
+          "icon": "🥣",
+          "label": "Whole-food breakfast swap",
+          "value": "+1.5",
+          "width": 100,
+          "bar": "#3B6D11",
+          "badge": "Strong signal · 81% of swap days",
+          "badgeBg": "#EAF3DE",
+          "badgeText": "#3B6D11"
+        },
+        {
+          "icon": "🥜",
+          "label": "Unprocessed snacks",
+          "value": "+1.1",
+          "width": 73,
+          "bar": "#3B6D11",
+          "badge": "Moderate–strong · 67% of days",
+          "badgeBg": "#EAF3DE",
+          "badgeText": "#3B6D11"
+        },
+        {
+          "icon": "🍳",
+          "label": "Home-cooked main meals",
+          "value": "+0.9",
+          "width": 60,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 52% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🥤",
+          "label": "Dropping sweetened drinks",
+          "value": "+0.4",
+          "width": 27,
+          "bar": "#888780",
+          "valColor": "#5F6B5C",
+          "badge": "Mild · partial adherence",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "UPF share of daily diet",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 45,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 35,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 20,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 12,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 38,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 50,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "50%+ UPF"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "30–50% UPF"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Under 30% UPF"
+        }
+      ]
+    },
+    "keepList": {
+      "items": [
+        "Whole-food breakfast",
+        "Unprocessed snacks"
+      ],
+      "body": "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
+    },
+    "compare": {
+      "body": "Explorers cutting UPF by 15+ percentage points reported about +0.9 mood points by week 5. Your −26 point UPF drop and +1.6 mood gain are among the clearest signals in this small cohort."
+    },
+    "disclaimer": "Diet and mood interact with sleep, stress and social context. This is your personal log over six weeks — informative, not medical advice.",
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on whole-food breakfasts and unprocessed snacks."
+    }
+  }
+}

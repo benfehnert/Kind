@@ -24,6 +24,8 @@ const mocks = join(__dir, "../src/mocks");
 const explorations = require(join(mocks, "explorations.json"));
 const community = require(join(mocks, "community.json"));
 const feed = require(join(mocks, "feed.json"));
+const consent = require(join(mocks, "consent.json"));
+const trialReports = require(join(__dir, "../src/data/explorationTrialReports.json"));
 
 // ---------------------------------------------------------------------------
 // Supabase admin client (service role — bypasses RLS)
@@ -64,8 +66,10 @@ const UUID_PK_TABLES = [
   "researcher_exploration_nices",
   "activity_posts",
   "individual_badges",
+  "user_exploration_reports",
   "daily_logs",
   "user_explorations",
+  "individual_consents",
   "researcher_areas",
   "log_field_defs",
   "exploration_chart_points",
@@ -80,6 +84,7 @@ const TEXT_PK_TABLES = [
   "individual_follows",
   "researcher_follows",
   "researcher_explorations",
+  "exploration_trial_report_templates",
   "explorations",
   "researchers"
 ];
@@ -93,6 +98,14 @@ async function clearAll() {
     if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
   }
 
+  for (const table of ["exploration_consents", "individual_onboarding"]) {
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .gte("individual_id", "00000000-0000-0000-0000-000000000000");
+    if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
+  }
+
   for (const table of UUID_PK_TABLES) {
     const { error } = await supabase
       .from(table)
@@ -101,7 +114,7 @@ async function clearAll() {
     if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
   }
 
-  for (const table of ["explorations", "researchers"]) {
+  for (const table of TEXT_PK_TABLES) {
     const { error } = await supabase.from(table).delete().neq("id", "__never__");
     if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
   }
@@ -334,6 +347,25 @@ async function seedIndividuals() {
 const DEMO_EMAIL = "anna@kind.example";
 const DEMO_PASSWORD = "demo1234";
 const DEMO_SLUG = "anna-ross";
+const ANNA_ONBOARDING = {
+  consentPrivacy: true,
+  consentCitizenScience: true,
+  consentDiscoverable: true,
+  name: "Anna Ross",
+  birthYear: "1992",
+  sexAssignedAtBirth: "female",
+  healthGoals: ["energy_focus", "sleep"],
+  kindHelp: ["trials", "explore", "insight"],
+  longevityImportance: "matters",
+  remindersEnabled: true
+};
+const EXPLORATION_WEEKS = {
+  "morning-rules": 8,
+  eating: 6,
+  "screen-sleep": 6,
+  relaxation: 6,
+  "upf-mood": 6
+};
 
 async function seedDemoUser() {
   console.log("Seeding demo user (Anna Ross)…");
@@ -388,6 +420,7 @@ async function seedDemoUser() {
     "privacy_settings",
     {
       individual_id: anna.id,
+      platform_consent: true,
       contribute_to_citizen_science: true,
       visible_in_community: true,
       daily_reminders: true
@@ -439,8 +472,7 @@ async function seedUserExplorations() {
   const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
   if (!annaId) return;
 
-  await upsert(
-    "user_explorations",
+  const rows = [
     {
       individual_id: annaId,
       exploration_id: "morning-rules",
@@ -448,12 +480,143 @@ async function seedUserExplorations() {
       weeks_total: 8,
       status: "active",
       streak_days: 9,
-      started_at: "2026-05-15"
+      started_at: "2026-05-15",
+      is_active: true
     },
-    { onConflict: "individual_id,exploration_id" }
+    {
+      individual_id: annaId,
+      exploration_id: "eating",
+      week_current: 6,
+      weeks_total: 6,
+      status: "complete",
+      streak_days: 42,
+      started_at: "2026-03-03",
+      completed_at: "2026-04-14",
+      is_active: false
+    },
+    {
+      individual_id: annaId,
+      exploration_id: "screen-sleep",
+      week_current: 6,
+      weeks_total: 6,
+      status: "complete",
+      streak_days: 38,
+      started_at: "2026-01-10",
+      completed_at: "2026-02-21",
+      is_active: false
+    },
+    {
+      individual_id: annaId,
+      exploration_id: "relaxation",
+      week_current: 6,
+      weeks_total: 6,
+      status: "complete",
+      streak_days: 35,
+      started_at: "2025-11-05",
+      completed_at: "2025-12-16",
+      is_active: false
+    },
+    {
+      individual_id: annaId,
+      exploration_id: "upf-mood",
+      week_current: 6,
+      weeks_total: 6,
+      status: "complete",
+      streak_days: 40,
+      started_at: "2026-02-01",
+      completed_at: "2026-03-14",
+      is_active: false
+    }
+  ];
+
+  for (const row of rows) {
+    await upsert("user_explorations", row, { onConflict: "individual_id,exploration_id" });
+  }
+
+  console.log("  ✓ Anna explorations (1 active, 4 complete)");
+}
+
+async function seedOnboardingAndConsents() {
+  console.log("Seeding onboarding & consents…");
+  const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
+  if (!annaId) return;
+
+  await upsert(
+    "individual_onboarding",
+    {
+      individual_id: annaId,
+      answers: ANNA_ONBOARDING,
+      completed_at: new Date().toISOString()
+    },
+    { onConflict: "individual_id" }
   );
 
-  console.log("  ✓ Anna's morning-rules run (week 3 of 8, streak 9)");
+  const consentRows = Object.entries(consent.annaDefaults ?? {}).map(([consent_key, granted]) => ({
+    individual_id: annaId,
+    consent_key,
+    granted: Boolean(granted),
+    consented_at: granted ? new Date().toISOString() : null
+  }));
+  for (const row of consentRows) {
+    await upsert("individual_consents", row, { onConflict: "individual_id,consent_key" });
+  }
+
+  const explorationIds = Object.keys(EXPLORATION_WEEKS);
+  for (const explorationId of explorationIds) {
+    await upsert(
+      "exploration_consents",
+      {
+        individual_id: annaId,
+        exploration_id: explorationId,
+        granted: true,
+        consented_at: new Date().toISOString(),
+        is_active: explorationId === "morning-rules"
+      },
+      { onConflict: "individual_id,exploration_id" }
+    );
+  }
+
+  console.log("  ✓ Anna onboarding, platform consents, and exploration consents");
+}
+
+async function seedTrialReports() {
+  console.log("Seeding trial report templates & Anna reports…");
+  const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
+
+  for (const [explorationId, content] of Object.entries(trialReports)) {
+    await upsert(
+      "exploration_trial_report_templates",
+      {
+        exploration_id: explorationId,
+        report_title_label: content.reportTitleLabel ?? "Personalised trial final report",
+        content
+      },
+      { onConflict: "exploration_id" }
+    );
+
+    if (!annaId) continue;
+
+    const { data: ue } = await supabase
+      .from("user_explorations")
+      .select("id")
+      .eq("individual_id", annaId)
+      .eq("exploration_id", explorationId)
+      .maybeSingle();
+
+    await upsert(
+      "user_exploration_reports",
+      {
+        individual_id: annaId,
+        exploration_id: explorationId,
+        user_exploration_id: ue?.id ?? null,
+        content,
+        generated_at: new Date().toISOString()
+      },
+      { onConflict: "individual_id,exploration_id" }
+    );
+  }
+
+  console.log(`  ✓ ${Object.keys(trialReports).length} report templates and Anna demo reports`);
 }
 
 // ---------------------------------------------------------------------------
@@ -617,6 +780,8 @@ async function main() {
   const annaId = await seedDemoUser();
   await seedBadges();
   await seedUserExplorations();
+  await seedOnboardingAndConsents();
+  await seedTrialReports();
   await seedFollows();
   await seedActivityPosts();
   await seedFeedItems();
