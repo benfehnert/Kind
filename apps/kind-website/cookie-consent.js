@@ -6,8 +6,11 @@
 (function () {
   const CONSENT_KEY = 'kind_cookie_consent';
   const CONSENT_VERSION = 1;
+  /** Google Analytics 4 — injected only after analytics consent */
+  const GOOGLE_ANALYTICS_GTAG_ID = 'G-86X6NL7THP';
   /** Google Ads / gtag conversion tag — injected only after marketing consent */
   const GOOGLE_ADS_GTAG_ID = 'AW-18188306688';
+  const GTAG_SCRIPT_ID = 'kind-gtag-js';
 
   const defaults = {
     version: CONSENT_VERSION,
@@ -86,39 +89,48 @@
     });
   }
 
+  function loadGtagLibrary(measurementId, onReady) {
+    const gtag = ensureGtag();
+    const existing = document.getElementById(GTAG_SCRIPT_ID);
+
+    if (existing) {
+      if (existing.getAttribute('data-loaded') === 'true') {
+        onReady();
+      } else {
+        existing.addEventListener('load', onReady, { once: true });
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = GTAG_SCRIPT_ID;
+    script.async = true;
+    script.src =
+      'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+    script.onload = function () {
+      script.setAttribute('data-loaded', 'true');
+      gtag('js', new Date());
+      onReady();
+    };
+    document.head.appendChild(script);
+  }
+
   function loadAnalyticsTags() {
     window.dispatchEvent(new CustomEvent('kind:cookies:analytics', { detail: readConsent() }));
-    /* Example: load Google Analytics when you have a measurement ID
-    if (!document.getElementById('kind-ga4')) {
-      const s = document.createElement('script');
-      s.id = 'kind-ga4';
-      s.async = true;
-      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX';
-      document.head.appendChild(s);
-      gtag('js', new Date());
-      gtag('config', 'G-XXXXXXXX', { anonymize_ip: true });
-    }
-    */
+    if (!hasConsent('analytics')) return;
+
+    loadGtagLibrary(GOOGLE_ANALYTICS_GTAG_ID, () => {
+      ensureGtag()('config', GOOGLE_ANALYTICS_GTAG_ID);
+    });
   }
 
   function loadMarketingTags() {
     window.dispatchEvent(new CustomEvent('kind:cookies:marketing', { detail: readConsent() }));
     if (!hasConsent('marketing')) return;
 
-    const scriptId = 'kind-google-ads-gtag-js';
-    if (document.getElementById(scriptId)) return;
-
-    const gtag = ensureGtag();
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.async = true;
-    script.src =
-      'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GOOGLE_ADS_GTAG_ID);
-    script.onload = function () {
-      gtag('js', new Date());
-      gtag('config', GOOGLE_ADS_GTAG_ID);
-    };
-    document.head.appendChild(script);
+    loadGtagLibrary(GOOGLE_ADS_GTAG_ID, () => {
+      ensureGtag()('config', GOOGLE_ADS_GTAG_ID);
+    });
   }
 
   function applyConsent(consent) {
