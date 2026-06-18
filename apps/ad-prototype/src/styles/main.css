@@ -10,7 +10,7 @@
   --green: #22401f;
   --green-light: #e6ecd0;
   --green-mid: #8fa87e;
-  --orange: #f4a261;
+  --orange: #ff9f50;
   --orange-dark: #d4743e;
   --cream: #f7f8f2;
   --text: #1f2a1f;
@@ -35,7 +35,7 @@ body {
 #ad-viewport {
   position: relative;
   height: 844px;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 4px;
   box-shadow:
@@ -145,7 +145,8 @@ body {
 }
 
 /* Mask derived from mask0_1_22 in mockup.svg. Primarily for the hands cutoff.*/
-#screenshot {
+#screenshot,
+#screenshot-b {
   position: absolute;
   left: 17.94%;
   top: 8.1%;
