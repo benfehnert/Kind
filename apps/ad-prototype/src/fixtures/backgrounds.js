@@ -2,9 +2,9 @@
 // Swap for campaign assets; the quick-cut sequence needs exactly this many entries
 // to match the screenshots array in main.js.
 export const BACKGROUNDS = [
-  'https://images.unsplash.com/photo-1567880905822-56f8e06fe630?w=390&h=844&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1588714477688-cf28a50e94f7?w=390&h=844&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1620004071518-52531ff9162c?w=390&h=844&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1718220216044-006f43e3a9b1?w=390&h=844&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1728761390316-935ffeb3fbcc?w=390&h=844&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1474465847590-4d2b58fe9afb?w=390&h=844&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1553150220-3bf6ec44f056?w=390&h=844&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1720139290958-d8676702c3ed?w=390&h=844&fit=crop&q=80',
   'https://images.unsplash.com/photo-1586073305502-5c5cc4a594bd?w=390&h=844&fit=crop&q=80',
 ]
