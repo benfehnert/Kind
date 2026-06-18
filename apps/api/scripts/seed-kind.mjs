@@ -768,7 +768,12 @@ async function main() {
   // Verify connection
   const { error: pingErr } = await supabase.from("explorations").select("id").limit(1);
   if (pingErr && pingErr.code !== "PGRST116") {
-    console.error("Cannot connect to Supabase. Is `npx supabase start` running?");
+    if (pingErr.message?.includes("permission denied") || pingErr.code === "42501") {
+      console.error("Permission denied on 'explorations' — SUPABASE_SERVICE_ROLE_KEY is missing or wrong.");
+      console.error("Run `npx supabase status` and copy the service_role key into apps/api/.env");
+    } else {
+      console.error("Cannot connect to Supabase. Is `npx supabase start` running?");
+    }
     console.error(pingErr.message);
     process.exit(1);
   }
