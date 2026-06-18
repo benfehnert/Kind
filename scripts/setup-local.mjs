@@ -133,18 +133,12 @@ if (await isPortInUse(54321)) {
 step("Configuring API environment...");
 
 try {
-  const status = execSync("npx supabase status", { encoding: "utf8", cwd: ROOT });
+  // --output env gives stable KEY="value" pairs across all CLI versions
+  const status = execSync("npx supabase status --output env", { encoding: "utf8", cwd: ROOT });
 
-  // Support both old CLI format ("anon key:") and new table format ("Publishable")
-  const anonKey =
-    status.match(/anon key:\s*(\S+)/i)?.[1] ??
-    status.match(/│\s*Publishable\s*│\s*(\S+)/i)?.[1];
-  const serviceKey =
-    status.match(/service_role key:\s*(\S+)/i)?.[1] ??
-    status.match(/│\s*Secret\s*│\s*(\S+)/i)?.[1];
-  const apiUrl =
-    status.match(/API URL:\s*(\S+)/i)?.[1] ??
-    status.match(/│\s*Project URL\s*│\s*(\S+)/i)?.[1];
+  const anonKey = status.match(/^ANON_KEY="([^"]+)"/m)?.[1];
+  const serviceKey = status.match(/^SERVICE_ROLE_KEY="([^"]+)"/m)?.[1];
+  const apiUrl = status.match(/^API_URL="([^"]+)"/m)?.[1];
 
   const envPath = path.resolve(ROOT, "apps/api/.env");
   let env = fs.readFileSync(envPath, "utf8");
@@ -156,15 +150,10 @@ try {
   if (anonKey) {
     env = env.replace(/^SUPABASE_ANON_KEY=.*/m, `SUPABASE_ANON_KEY=${anonKey}`);
     ok(`SUPABASE_ANON_KEY  →  ${anonKey.slice(0, 24)}…`);
-  } else {
-    warn("Could not parse anon key from `supabase status` output");
   }
   if (serviceKey) {
     env = env.replace(/^SUPABASE_SERVICE_ROLE_KEY=.*/m, `SUPABASE_SERVICE_ROLE_KEY=${serviceKey}`);
     ok(`SUPABASE_SERVICE_ROLE_KEY  →  ${serviceKey.slice(0, 24)}…`);
-  } else {
-    warn("Could not parse service_role key from `supabase status` output");
-    warn("Run `npx supabase status` and set SUPABASE_SERVICE_ROLE_KEY in apps/api/.env manually");
   }
 
   fs.writeFileSync(envPath, env, "utf8");
