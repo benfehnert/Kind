@@ -147,13 +147,18 @@ try {
     env = env.replace(/^SUPABASE_URL=.*/m, `SUPABASE_URL=${apiUrl}`);
     ok(`SUPABASE_URL  →  ${apiUrl}`);
   }
-  if (anonKey) {
+  if (anonKey?.startsWith("eyJ")) {
     env = env.replace(/^SUPABASE_ANON_KEY=.*/m, `SUPABASE_ANON_KEY=${anonKey}`);
     ok(`SUPABASE_ANON_KEY  →  ${anonKey.slice(0, 24)}…`);
+  } else if (anonKey) {
+    warn(`Skipping ANON_KEY — expected JWT (eyJ…), got ${anonKey.slice(0, 12)}…`);
   }
-  if (serviceKey) {
+  if (serviceKey?.startsWith("eyJ")) {
     env = env.replace(/^SUPABASE_SERVICE_ROLE_KEY=.*/m, `SUPABASE_SERVICE_ROLE_KEY=${serviceKey}`);
     ok(`SUPABASE_SERVICE_ROLE_KEY  →  ${serviceKey.slice(0, 24)}…`);
+  } else if (serviceKey) {
+    warn(`Skipping SERVICE_ROLE_KEY — expected JWT (eyJ…), got ${serviceKey.slice(0, 12)}…`);
+    warn("Use SERVICE_ROLE_KEY from `npx supabase status --output env`, not SECRET_KEY (sb_secret_…)");
   }
 
   fs.writeFileSync(envPath, env, "utf8");

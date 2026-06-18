@@ -760,8 +760,17 @@ async function seedFeedItems() {
 async function main() {
   console.log("Kind seed script starting…\n");
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
     console.error("SUPABASE_SERVICE_ROLE_KEY is not set. Copy apps/api/.env.example → apps/api/.env and fill in values.");
+    process.exit(1);
+  }
+
+  const keyPrefix = serviceKey.slice(0, 20);
+  if (!serviceKey.startsWith("eyJ")) {
+    console.error(`SUPABASE_SERVICE_ROLE_KEY must be a JWT (starts with eyJ), got: ${keyPrefix}…`);
+    console.error("If the key starts with sb_secret_, your shell env is overriding apps/api/.env.");
+    console.error("Run `npx supabase status --output env` and use SERVICE_ROLE_KEY (not SECRET_KEY).");
     process.exit(1);
   }
 
@@ -769,8 +778,9 @@ async function main() {
   const { error: pingErr } = await supabase.from("explorations").select("id").limit(1);
   if (pingErr && pingErr.code !== "PGRST116") {
     if (pingErr.message?.includes("permission denied") || pingErr.code === "42501") {
-      console.error("Permission denied on 'explorations' — SUPABASE_SERVICE_ROLE_KEY is missing or wrong.");
-      console.error("Run `npx supabase status` and copy the service_role key into apps/api/.env");
+      console.error("Permission denied on 'explorations'.");
+      if (pingErr.hint) console.error(pingErr.hint);
+      console.error("This usually means API role GRANTs are missing — run `npm run reset:db` to apply migrations.");
     } else {
       console.error("Cannot connect to Supabase. Is `npx supabase start` running?");
     }
