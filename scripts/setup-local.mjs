@@ -133,11 +133,12 @@ if (await isPortInUse(54321)) {
 step("Configuring API environment...");
 
 try {
-  const status = execSync("npx supabase status", { encoding: "utf8", cwd: ROOT });
+  // --output env gives stable KEY="value" pairs across all CLI versions
+  const status = execSync("npx supabase status --output env", { encoding: "utf8", cwd: ROOT });
 
-  const anonKey = status.match(/anon key:\s*(\S+)/i)?.[1];
-  const serviceKey = status.match(/service_role key:\s*(\S+)/i)?.[1];
-  const apiUrl = status.match(/API URL:\s*(\S+)/i)?.[1];
+  const anonKey = status.match(/^ANON_KEY="([^"]+)"/m)?.[1];
+  const serviceKey = status.match(/^SERVICE_ROLE_KEY="([^"]+)"/m)?.[1];
+  const apiUrl = status.match(/^API_URL="([^"]+)"/m)?.[1];
 
   const envPath = path.resolve(ROOT, "apps/api/.env");
   let env = fs.readFileSync(envPath, "utf8");
@@ -146,19 +147,24 @@ try {
     env = env.replace(/^SUPABASE_URL=.*/m, `SUPABASE_URL=${apiUrl}`);
     ok(`SUPABASE_URL  →  ${apiUrl}`);
   }
-  if (anonKey) {
+  if (anonKey?.startsWith("eyJ")) {
     env = env.replace(/^SUPABASE_ANON_KEY=.*/m, `SUPABASE_ANON_KEY=${anonKey}`);
     ok(`SUPABASE_ANON_KEY  →  ${anonKey.slice(0, 24)}…`);
+  } else if (anonKey) {
+    warn(`Skipping ANON_KEY — expected JWT (eyJ…), got ${anonKey.slice(0, 12)}…`);
   }
-  if (serviceKey) {
+  if (serviceKey?.startsWith("eyJ")) {
     env = env.replace(/^SUPABASE_SERVICE_ROLE_KEY=.*/m, `SUPABASE_SERVICE_ROLE_KEY=${serviceKey}`);
     ok(`SUPABASE_SERVICE_ROLE_KEY  →  ${serviceKey.slice(0, 24)}…`);
+  } else if (serviceKey) {
+    warn(`Skipping SERVICE_ROLE_KEY — expected JWT (eyJ…), got ${serviceKey.slice(0, 12)}…`);
+    warn("Use SERVICE_ROLE_KEY from `npx supabase status --output env`, not SECRET_KEY (sb_secret_…)");
   }
 
   fs.writeFileSync(envPath, env, "utf8");
 } catch (e) {
   warn(`Could not auto-populate Supabase keys: ${e.message}`);
-  warn("Update apps/api/.env manually — run: npx supabase status");
+  warn("Run `npx supabase status` and set the keys in apps/api/.env manually before seeding");
 }
 
 // ── 6. Reset DB + seed ────────────────────────────────────────────────────────
