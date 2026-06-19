@@ -1,19 +1,22 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, fontSize, iconSize, letterSpacing, spacing } from "../../theme/colors";
-import { type } from "../../theme/typography";
+import { colors, iconSize, spacing } from "../../theme/colors";
 import { Avatar } from "./Avatar";
 import { BellIcon, SearchIcon } from "../icons/ProtoIcons";
+
+const kindLogo = require("../../../assets/images/kind-logo.png");
 
 export function KindNavBar({ profile, onSearch, onNotifications, onAvatar }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.nav, { paddingTop: Math.max(insets.top, spacing.navY) }]}>
-      <View>
-        <Text style={styles.logo}>kind</Text>
-        <Text style={styles.sub}>health exploration</Text>
-      </View>
+      <Image
+        source={kindLogo}
+        style={styles.logo}
+        resizeMode="contain"
+        accessibilityLabel="kind health exploration"
+      />
       <View style={styles.actions}>
         <TouchableOpacity style={styles.iconBtn} onPress={onSearch} accessibilityLabel="Search">
           <SearchIcon size={iconSize.nav} color={colors.navIcon} />
@@ -51,15 +54,8 @@ const styles = StyleSheet.create({
     minHeight: 56
   },
   logo: {
-    ...type.logo,
-    color: "#fff",
-    letterSpacing: letterSpacing.logo
-  },
-  sub: {
-    ...type.navSub,
-    color: colors.orange,
-    letterSpacing: letterSpacing.navSub,
-    marginTop: 1
+    width: 120,
+    height: 40
   },
   actions: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   iconBtn: {
