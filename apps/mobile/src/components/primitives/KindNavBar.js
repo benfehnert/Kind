@@ -7,10 +7,8 @@ import { BellIcon, SearchIcon } from "../icons/ProtoIcons";
 
 const kindLogo = require("../../../assets/images/kind-logo.png");
 
-const LOGO_SOURCE = { width: 960, height: 540, contentLeft: 79 };
-const LOGO_WIDTH = 144;
 const LOGO_HEIGHT = 48;
-const LOGO_LEFT_TRIM = Math.round((LOGO_SOURCE.contentLeft / LOGO_SOURCE.width) * LOGO_WIDTH);
+const LOGO_WIDTH = 84;
 
 export function KindNavBar({ profile, onSearch, onNotifications, onAvatar }) {
   const insets = useSafeAreaInsets();
@@ -61,8 +59,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: LOGO_WIDTH,
-    height: LOGO_HEIGHT,
-    marginLeft: -LOGO_LEFT_TRIM
+    height: LOGO_HEIGHT
   },
   actions: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   iconBtn: {
