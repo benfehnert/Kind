@@ -7,6 +7,7 @@ import consentMock from "../mocks/consent.json" with { type: "json" };
 import feedMock from "../mocks/feed.json" with { type: "json" };
 import insightMock from "../mocks/insight.json" with { type: "json" };
 import profileMock from "../mocks/profile.json" with { type: "json" };
+import explorationEvidence from "../mocks/explorationEvidence.json" with { type: "json" };
 import {
   buildConsentPayload,
   fetchConsentChoices,
@@ -121,7 +122,7 @@ router.get("/explorations", async (c) => {
 });
 
 router.get("/explorations/evidence", (c) => {
-  return c.json({});
+  return c.json(explorationEvidence);
 });
 
 router.get("/explorations/:id", async (c) => {
@@ -131,7 +132,9 @@ router.get("/explorations/:id", async (c) => {
 });
 
 router.get("/explorations/:id/evidence", (c) => {
-  return c.json({});
+  const data = explorationEvidence[c.req.param("id")];
+  if (!data) return c.json({ error: "Evidence not found" }, 404);
+  return c.json(data);
 });
 
 // ---------------------------------------------------------------------------
