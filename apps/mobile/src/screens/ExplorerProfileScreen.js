@@ -18,7 +18,7 @@ export default function ExplorerProfileScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const userId = params?.userId;
-  const { followerIdSet, isFollowing, toggleFollow } = useFollow();
+  const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
   const u = userId ? getUserProfile(userId, community, followerIdSet) : null;
   const [expanded, setExpanded] = useState({});
   const [niced, setNiced] = useState({});
@@ -68,9 +68,11 @@ export default function ExplorerProfileScreen() {
               <Text style={styles.loc}>📍 {u.loc}</Text>
               <Text style={styles.bio}>{u.bio}</Text>
               <View style={styles.followRow}>
-                <Pressable style={[styles.followBtn, following && styles.followBtnOn]} onPress={() => toggleFollow(userId)}>
-                  <Text style={[styles.followTxt, following && styles.followTxtOn]}>{following ? "Following" : "Follow"}</Text>
-                </Pressable>
+                {!isSelf(userId) ? (
+                  <Pressable style={[styles.followBtn, following && styles.followBtnOn]} onPress={() => toggleFollow(userId)}>
+                    <Text style={[styles.followTxt, following && styles.followTxtOn]}>{following ? "Following" : "Follow"}</Text>
+                  </Pressable>
+                ) : null}
                 {mutualText ? <Text style={styles.mutualTxt}>· {mutualText}</Text> : null}
               </View>
             </View>

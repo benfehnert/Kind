@@ -114,6 +114,7 @@ async function buildSummaryRows(individualId) {
 export async function buildProfilePayload(individualId) {
   const { rows } = await query(
     `SELECT
+       i.slug,
        i.display_name,
        i.location,
        i.avatar_initials AS "avatarInitials",
@@ -175,6 +176,7 @@ export async function buildProfilePayload(individualId) {
   }
 
   return {
+    viewerSlug: row.slug,
     navProfile: {
       initials,
       avatarKey

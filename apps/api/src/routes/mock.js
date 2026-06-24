@@ -330,6 +330,9 @@ router.get("/social/follows", (c) => {
 
 router.patch("/social/follows", async (c) => {
   const body = await c.req.json().catch(() => ({}));
+  if (body.followSlug === profile.viewerSlug) {
+    return c.json({ error: "Cannot follow yourself" }, 400);
+  }
   return c.json({ ok: true, ...body });
 });
 

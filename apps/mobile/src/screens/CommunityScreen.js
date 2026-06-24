@@ -24,7 +24,7 @@ export default function CommunityScreen() {
   const { community, explorationEvidence, exploreCopy, explorePage, refetchExplore } = useData();
   const explorations = useUserExplorations();
   const navigation = useNavigation();
-  const { isFollowing, toggleFollow, followerIdSet } = useFollow();
+  const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
   const [tab, setTab] = useState("individuals");
   const [q, setQ] = useState("");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
@@ -216,15 +216,17 @@ export default function CommunityScreen() {
                     </View>
                   ) : null}
                 </View>
-                <Pressable
-                  style={[styles.fb, following && styles.fbon]}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    toggleFollow(uid);
-                  }}
-                >
-                  <Text style={[styles.ft, following && styles.fton]}>{following ? "Following" : "Follow"}</Text>
-                </Pressable>
+                {uid && !isSelf(uid) ? (
+                  <Pressable
+                    style={[styles.fb, following && styles.fbon]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleFollow(uid);
+                    }}
+                  >
+                    <Text style={[styles.ft, following && styles.fton]}>{following ? "Following" : "Follow"}</Text>
+                  </Pressable>
+                ) : null}
               </Pressable>
             );
               })}

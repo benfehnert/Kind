@@ -22,6 +22,7 @@ export function Avatar({
   initials = "",
   sceneKey,
   avatarUrl,
+  photoUri,
   backgroundColor,
   textColor,
   borderColor,
@@ -29,7 +30,7 @@ export function Avatar({
 }) {
   const resolvedScene = sceneKey || getSceneKeyFromAvatarUrl(avatarUrl);
   const key = img != null ? `pravatar-${img}` : resolvedScene ? `scene-${resolvedScene}` : null;
-  const src = key ? resolveImageSource(key) : null;
+  const src = photoUri ? { uri: photoUri } : key ? resolveImageSource(key) : null;
   const [failed, setFailed] = useState(false);
   const bg = backgroundColor ?? AV_BG[Math.abs((img ?? 0) % AV_BG.length)];
   const tc = textColor ?? AV_TC[Math.abs((img ?? 0) % AV_TC.length)];

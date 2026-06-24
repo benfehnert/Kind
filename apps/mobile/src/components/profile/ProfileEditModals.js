@@ -8,13 +8,13 @@ import {
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { colors, fontFamily, radius, spacing } from "../../theme/colors";
 import { Avatar } from "../primitives/Avatar";
-import { SCENE_AVATARS } from "../../assets/sceneAvatars";
-
-const PRAVATAR_OPTIONS = [28, 1, 5, 12, 18, 32, 44, 52, 64, 68];
+import { PRESET_SCENE_KEYS } from "../../assets/sceneAvatars";
 
 export function EditNameModal({ visible, initialName, onSave, onClose }) {
   const [name, setName] = useState(initialName);
@@ -58,8 +58,26 @@ export function EditNameModal({ visible, initialName, onSave, onClose }) {
 }
 
 export function EditAvatarModal({ visible, currentAvatar, onSave, onClose }) {
-  const selectPravatar = (id) => onSave({ type: "pravatar", id });
   const selectScene = (key) => onSave({ type: "scene", key });
+
+  const pickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission needed", "Allow photo library access to choose a profile image.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      onSave({ type: "photo", uri: result.assets[0].uri });
+    }
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -68,26 +86,16 @@ export function EditAvatarModal({ visible, currentAvatar, onSave, onClose }) {
         <View style={[styles.sheet, styles.sheetTall]}>
           <Text style={styles.sheetTitle}>Choose a profile image</Text>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.groupLabel}>People</Text>
+            <Pressable
+              style={[styles.photoBtn, currentAvatar?.type === "photo" && styles.avatarCellOn]}
+              onPress={pickPhoto}
+            >
+              <Text style={styles.photoBtnTxt}>Choose photo from library</Text>
+            </Pressable>
+
+            <Text style={styles.groupLabel}>Presets</Text>
             <View style={styles.grid}>
-              {PRAVATAR_OPTIONS.map((id) => (
-                <Pressable
-                  key={`p-${id}`}
-                  style={[
-                    styles.avatarCell,
-                    currentAvatar?.type === "pravatar" &&
-                      currentAvatar.id === id &&
-                      styles.avatarCellOn
-                  ]}
-                  onPress={() => selectPravatar(id)}
-                >
-                  <Avatar size={52} img={id} initials="" borderColor={colors.orange} borderWidth={2} />
-                </Pressable>
-              ))}
-            </View>
-            <Text style={styles.groupLabel}>Scenes</Text>
-            <View style={styles.grid}>
-              {Object.keys(SCENE_AVATARS).map((key) => (
+              {PRESET_SCENE_KEYS.map((key) => (
                 <Pressable
                   key={`s-${key}`}
                   style={[
@@ -152,6 +160,20 @@ const styles = StyleSheet.create({
   btnGhost: { borderWidth: 1, borderColor: colors.borderMed },
   btnGhostTxt: { color: colors.text, fontFamily: fontFamily.semibold, fontSize: 14 },
   btnDisabled: { opacity: 0.45 },
+  photoBtn: {
+    borderWidth: 1,
+    borderColor: colors.borderMed,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xl,
+    alignItems: "center",
+    marginBottom: spacing.lg,
+    backgroundColor: colors.greenLight
+  },
+  photoBtnTxt: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 14,
+    color: colors.greenDark
+  },
   groupLabel: {
     fontFamily: fontFamily.semibold,
     fontSize: 12,

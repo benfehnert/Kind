@@ -545,6 +545,10 @@ router.patch("/social/follows", async (c) => {
   const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = await c.req.json();
 
   if (followSlug) {
+    const { rows: selfRows } = await query("SELECT slug FROM individuals WHERE id = $1", [individualId]);
+    if (selfRows[0]?.slug === followSlug) {
+      return c.json({ error: "Cannot follow yourself" }, 400);
+    }
     const { rows } = await query("SELECT id FROM individuals WHERE slug = $1", [followSlug]);
     if (rows[0]) {
       await query(

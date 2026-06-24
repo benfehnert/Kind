@@ -36,6 +36,7 @@ export function avatarFromProfile(profile) {
 export function avatarToProps(avatar) {
   if (!avatar) return {};
   if (avatar.type === "scene") return { sceneKey: avatar.key };
+  if (avatar.type === "photo" && avatar.uri) return { photoUri: avatar.uri };
   if (avatar.id != null) return { img: avatar.id };
   return {};
 }
@@ -66,7 +67,12 @@ export function ProfileProvider({ children }) {
 
         if (isAuthenticated) {
           setDisplayName(apiName || parsed?.displayName || "");
-          setAvatar(apiAvatar);
+          const localAvatar = parsed?.avatar;
+          if (localAvatar?.type === "scene" || localAvatar?.type === "photo") {
+            setAvatar(localAvatar);
+          } else {
+            setAvatar(apiAvatar ?? localAvatar);
+          }
         } else if (parsed) {
           setDisplayName(parsed.displayName || apiName);
           setAvatar(parsed.avatar ?? apiAvatar);
@@ -119,9 +125,11 @@ export function ProfileProvider({ children }) {
       persist({ displayName, avatar: nextAvatar });
       if (isAuthenticated) {
         try {
-          const avatarImageId =
-            nextAvatar?.type === "pravatar" && nextAvatar.id != null ? nextAvatar.id : null;
-          await patch("/profile", { avatarImageId });
+          const body =
+            nextAvatar?.type === "pravatar" && nextAvatar.id != null
+              ? { avatarImageId: nextAvatar.id }
+              : { avatarImageId: null };
+          await patch("/profile", body);
           await refetchProfile?.();
         } catch {
           // local state kept
