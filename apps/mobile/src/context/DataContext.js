@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { get } from "../lib/api";
 
@@ -7,8 +7,22 @@ const DataContext = createContext(null);
 export function DataProvider({ children }) {
   const [data, setData] = useState(null);
 
-  useEffect(() => {
-    Promise.all([
+  const loadAll = useCallback(async () => {
+    const [
+      home,
+      feed,
+      explorationsRes,
+      explorationEvidence,
+      communityIndividuals,
+      communityResearchers,
+      insight,
+      profile,
+      consent,
+      socialFollows,
+      explorePage,
+      notificationsRes,
+      search
+    ] = await Promise.all([
       get("/home"),
       get("/feed"),
       get("/explorations"),
@@ -19,71 +33,95 @@ export function DataProvider({ children }) {
       get("/profile"),
       get("/consent"),
       get("/social/follows"),
-      get("/explore/copy"),
+      get("/explore"),
       get("/notifications"),
-      get("/search"),
-    ])
-      .then(
-        ([
-          home,
-          feed,
-          explorationsRes,
-          explorationEvidence,
-          communityIndividuals,
-          communityResearchers,
-          insight,
-          profile,
-          consent,
-          socialFollows,
-          exploreCopy,
-          notificationsRes,
-          search,
-        ]) => {
-          // Restore explorations as object keyed by id (same shape as mock JSON)
-          const explorations = {};
-          for (const e of explorationsRes.items || []) {
-            const { id, ...rest } = e;
-            explorations[id] = rest;
-          }
+      get("/search")
+    ]);
 
-          // Rebuild community object from the two individual endpoints
-          const commUsers = {};
-          const basicUsers = [];
-          const followerOnly = [];
-          for (const u of communityIndividuals.items || []) {
-            const { tier, id, ...rest } = u;
-            if (tier === "comm") commUsers[id] = { ...rest };
-            else if (tier === "basic") basicUsers.push({ id, ...rest });
-            else followerOnly.push({ id, ...rest });
-          }
-          const community = {
-            commUsers,
-            basicUsers,
-            followerOnly,
-            researchers: communityResearchers.items || [],
-            socialMeta: socialFollows,
-            explorationFollowers: communityIndividuals.explorationFollowers || {},
-          };
+    const explorations = {};
+    for (const e of explorationsRes.items || []) {
+      const { id, ...rest } = e;
+      explorations[id] = rest;
+    }
 
-          setData({
-            home,
-            feed,
-            explorations,
-            explorationEvidence,
-            community,
-            insight,
-            profile,
-            consent,
-            exploreCopy,
-            notifications: notificationsRes.items || notificationsRes,
-            search,
-          });
-        }
-      )
-      .catch((err) => console.error("[DataContext] failed to load:", err));
+    const commUsers = {};
+    const basicUsers = [];
+    const followerOnly = [];
+    for (const u of communityIndividuals.items || []) {
+      const { tier, id, ...rest } = u;
+      if (tier === "comm") commUsers[id] = { ...rest };
+      else if (tier === "basic") basicUsers.push({ id, ...rest });
+      else followerOnly.push({ id, ...rest });
+    }
+    const community = {
+      commUsers,
+      basicUsers,
+      followerOnly,
+      researchers: communityResearchers.items || [],
+      socialMeta: socialFollows,
+      explorationFollowers: communityIndividuals.explorationFollowers || {}
+    };
+
+    return {
+      home,
+      feed,
+      explorations,
+      explorationEvidence,
+      community,
+      insight,
+      profile,
+      consent,
+      exploreCopy: explorePage.copy,
+      explorePage,
+      notifications: notificationsRes.items || notificationsRes,
+      search
+    };
   }, []);
 
-  if (!data) {
+  useEffect(() => {
+    loadAll()
+      .then(setData)
+      .catch((err) => console.error("[DataContext] failed to load:", err));
+  }, [loadAll]);
+
+  const refetchHome = useCallback(async () => {
+    const home = await get("/home");
+    setData((prev) => (prev ? { ...prev, home } : prev));
+    return home;
+  }, []);
+
+  const refetchExplore = useCallback(async () => {
+    const explorePage = await get("/explore");
+    setData((prev) =>
+      prev
+        ? { ...prev, explorePage, exploreCopy: explorePage.copy }
+        : prev
+    );
+    return explorePage;
+  }, []);
+
+  const refetchInsight = useCallback(async (explorationId) => {
+    const query = explorationId ? `?explorationId=${encodeURIComponent(explorationId)}` : "";
+    const insight = await get(`/insights${query}`);
+    setData((prev) => (prev ? { ...prev, insight } : prev));
+    return insight;
+  }, []);
+
+  const refetchProfile = useCallback(async () => {
+    const profile = await get("/profile");
+    setData((prev) => (prev ? { ...prev, profile } : prev));
+    return profile;
+  }, []);
+
+  const value = useMemo(
+    () =>
+      data
+        ? { ...data, refetchHome, refetchExplore, refetchInsight, refetchProfile }
+        : null,
+    [data, refetchHome, refetchExplore, refetchInsight, refetchProfile]
+  );
+
+  if (!value) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F7F8F2" }}>
         <ActivityIndicator size="large" />
@@ -91,7 +129,7 @@ export function DataProvider({ children }) {
     );
   }
 
-  return <DataContext.Provider value={data}>{children}</DataContext.Provider>;
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
 
 export function useData() {

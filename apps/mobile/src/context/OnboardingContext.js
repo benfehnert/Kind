@@ -13,7 +13,8 @@ export const defaultAnswers = {
   healthGoals: [],
   kindHelp: [],
   longevityImportance: null,
-  remindersEnabled: null
+  remindersEnabled: null,
+  notificationsSetup: null
 };
 
 const OnboardingContext = createContext(null);

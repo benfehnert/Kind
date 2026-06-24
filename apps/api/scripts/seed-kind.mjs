@@ -216,8 +216,10 @@ async function seedExplorations() {
   const fields = [];
   for (const id of EXPLORATION_ORDER) {
     const e = explorations[id];
+    const homeKeys = HOME_METRIC_FIELDS[id] ?? [];
     (e?.fields ?? []).forEach((f, i) => {
       const typeMap = { range: "range", select: "select", checks: "checks", number: "number" };
+      const homeIdx = homeKeys.indexOf(f.id);
       fields.push({
         exploration_id: id,
         field_key: f.id,
@@ -229,7 +231,9 @@ async function seedExplorations() {
         default_value: f.val != null ? f.val : (f.sel != null ? f.sel : null),
         hints: f.hints ?? [],
         options: f.opts ?? [],
-        allows_multiple: f.multi ?? false
+        allows_multiple: f.multi ?? false,
+        show_on_home: homeIdx >= 0,
+        home_sort_order: homeIdx >= 0 ? homeIdx : null
       });
     });
   }
@@ -366,6 +370,17 @@ const EXPLORATION_WEEKS = {
   relaxation: 6,
   "upf-mood": 6
 };
+
+/** field_key → home_sort_order per exploration (show_on_home metrics) */
+const HOME_METRIC_FIELDS = {
+  "morning-rules": ["mr_pm_energy", "mr_rules", "mr_crash"],
+  eating: ["te_energy", "te_hunger"],
+  "screen-sleep": ["ss_sleep", "ss_windup"],
+  relaxation: ["rp_stress", "rp_composure"],
+  "upf-mood": ["upf_mood", "upf_energy"]
+};
+
+const USER_EXPLORATION_IDS = {};
 
 async function seedDemoUser() {
   console.log("Seeding demo user (Anna Ross)…");
@@ -533,6 +548,14 @@ async function seedUserExplorations() {
     await upsert("user_explorations", row, { onConflict: "individual_id,exploration_id" });
   }
 
+  const { data: ueRows } = await supabase
+    .from("user_explorations")
+    .select("id, exploration_id")
+    .eq("individual_id", annaId);
+  for (const ue of ueRows ?? []) {
+    USER_EXPLORATION_IDS[ue.exploration_id] = ue.id;
+  }
+
   console.log("  ✓ Anna explorations (1 active, 4 complete)");
 }
 
@@ -694,19 +717,7 @@ async function seedFeedItems() {
   const items = [];
   let order = 0;
 
-  // Static feed items from feed.staticItems
-  for (const item of feed.staticItems ?? []) {
-    items.push({
-      feed_type: item.type ?? "activity",
-      headline: item.headline ?? item.body ?? "",
-      body: item.body ?? null,
-      highlight: item.highlight ?? null,
-      published_at: new Date(Date.now() - order * 3600000).toISOString(),
-      sort_order: order++
-    });
-  }
-
-  // Tips
+  // Tips and science content only — activity/milestones come from activity_posts + daily_logs
   for (const expId of feed.feedExpIds ?? []) {
     for (const tip of feed.feedTips?.[expId] ?? []) {
       items.push({
@@ -735,22 +746,60 @@ async function seedFeedItems() {
     }
   }
 
-  // Milestone from Anna's activity
+  await insert("feed_items", items);
+  console.log(`  ✓ ${items.length} feed items (tips & science)`);
+}
+
+// ---------------------------------------------------------------------------
+// 10. Anna daily logs (morning-rules history for home metrics)
+// ---------------------------------------------------------------------------
+
+async function seedDailyLogs() {
+  console.log("Seeding Anna daily logs…");
   const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
-  if (annaId) {
-    items.push({
-      feed_type: "milestone",
-      actor_individual_id: annaId,
+  const ueId = USER_EXPLORATION_IDS["morning-rules"];
+  if (!annaId || !ueId) return;
+
+  const rulesFull = [
+    "Early sunlight exposure",
+    "Morning stretching",
+    "Caffeine offset (delayed first cup)",
+    "Morning meditation"
+  ];
+  const rulesPartial = [
+    "Early sunlight exposure",
+    "Morning stretching",
+    "Morning meditation"
+  ];
+  const crashOptions = ["None", "Mild dip", "Noticeable crash", "Severe crash"];
+
+  const pmEnergySeries = [5.4, 5.6, 5.8, 6.0, 6.2, 6.4, 6.5, 6.6, 6.7, 6.7, 6.8, 6.8];
+  const logs = [];
+
+  for (let i = 0; i < pmEnergySeries.length; i++) {
+    const daysAgo = pmEnergySeries.length - i;
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    const logDate = d.toISOString().slice(0, 10);
+    const crashIdx = i < 4 ? 2 : i < 8 ? 1 : 1;
+
+    logs.push({
+      individual_id: annaId,
       exploration_id: "morning-rules",
-      headline: "Anna completed week 3 of morning rules",
-      body: "9-day streak and afternoon energy averaging 6.8/10.",
-      published_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-      sort_order: 0
+      user_exploration_id: ueId,
+      log_date: logDate,
+      field_values: {
+        mr_rules: i % 3 === 0 ? rulesFull : rulesPartial,
+        mr_am_energy: 6 + (i % 3),
+        mr_pm_energy: pmEnergySeries[i],
+        mr_crash: crashOptions[crashIdx],
+        mr_focus: 5 + (i % 4)
+      }
     });
   }
 
-  await insert("feed_items", items);
-  console.log(`  ✓ ${items.length} feed items`);
+  await insert("daily_logs", logs);
+  console.log(`  ✓ ${logs.length} daily logs for morning-rules`);
 }
 
 // ---------------------------------------------------------------------------
@@ -795,6 +844,7 @@ async function main() {
   const annaId = await seedDemoUser();
   await seedBadges();
   await seedUserExplorations();
+  await seedDailyLogs();
   await seedOnboardingAndConsents();
   await seedTrialReports();
   await seedFollows();

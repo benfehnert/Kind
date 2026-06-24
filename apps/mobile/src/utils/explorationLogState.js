@@ -29,6 +29,9 @@ export function listConsentedExplorationForms(explorations, explorationConsents)
       return {
         id,
         title: ex.feedLabel || ex.title || id,
+        fullTitle: ex.title,
+        feedLabel: ex.feedLabel || ex.title || id,
+        category: ex.category,
         icon: ex.icon,
         bg: ex.bg,
         text: ex.text,
@@ -36,4 +39,58 @@ export function listConsentedExplorationForms(explorations, explorationConsents)
       };
     })
     .filter(Boolean);
+}
+
+export function formatLogFieldValues(fields, values) {
+  const fieldValues = {};
+  for (const field of fields || []) {
+    const raw = values[field.id];
+    if (field.type === "checks") {
+      const checked = raw || [];
+      fieldValues[field.id] = (field.opts || []).filter((_, idx) => checked[idx]);
+    } else if (field.type === "range") {
+      fieldValues[field.id] = Number(raw ?? field.val ?? field.min ?? 0);
+    } else if (field.type === "select") {
+      const idx = Number(raw ?? field.sel ?? 0);
+      fieldValues[field.id] = field.opts?.[idx] ?? "";
+    }
+  }
+  return fieldValues;
+}
+
+export function parseLogFieldValues(fields, fieldValuesFromApi = {}) {
+  const values = buildInitialFieldValues(fields);
+  for (const field of fields || []) {
+    const raw = fieldValuesFromApi[field.id];
+    if (raw === undefined || raw === null) continue;
+
+    if (field.type === "checks") {
+      const selected = Array.isArray(raw) ? raw : [];
+      values[field.id] = (field.opts || []).map((opt) => selected.includes(opt));
+    } else if (field.type === "range") {
+      values[field.id] = Number(raw);
+    } else if (field.type === "select") {
+      const idx = (field.opts || []).indexOf(raw);
+      values[field.id] = idx >= 0 ? idx : Number(field.sel ?? 0);
+    }
+  }
+  return values;
+}
+
+export function mergeLogValues(existing, patch) {
+  return { ...existing, ...patch };
+}
+
+export function getPendingLogExplorations(logExplorations, loggedExplorationIds = [], locallySavedIds = []) {
+  const logged = new Set([...loggedExplorationIds, ...locallySavedIds]);
+  return (logExplorations || []).filter((ex) => !logged.has(ex.id));
+}
+
+export function allExplorationsLogged(logExplorations, loggedExplorationIds = [], locallySavedIds = []) {
+  if (!logExplorations?.length) return false;
+  return getPendingLogExplorations(logExplorations, loggedExplorationIds, locallySavedIds).length === 0;
+}
+
+export function isExplorationLoggedToday(explorationId, loggedExplorationIds = [], locallySavedIds = []) {
+  return loggedExplorationIds.includes(explorationId) || locallySavedIds.includes(explorationId);
 }

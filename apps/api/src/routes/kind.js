@@ -5,8 +5,6 @@ import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
 import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
 import consentMock from "../mocks/consent.json" with { type: "json" };
 import feedMock from "../mocks/feed.json" with { type: "json" };
-import insightMock from "../mocks/insight.json" with { type: "json" };
-import profileMock from "../mocks/profile.json" with { type: "json" };
 import explorationEvidence from "../mocks/explorationEvidence.json" with { type: "json" };
 import {
   buildConsentPayload,
@@ -16,6 +14,11 @@ import {
   fetchPrivacyPrefs,
   upsertIndividualConsents
 } from "../lib/meData.js";
+import { buildHomePayload, fetchHomeFeedExtras } from "../lib/homeData.js";
+import { buildExplorePayload } from "../lib/exploreData.js";
+import { buildInsightPayload } from "../lib/insightData.js";
+import { buildCommunityPayload } from "../lib/communityData.js";
+import { buildProfilePayload, updateProfile } from "../lib/profileData.js";
 import meRouter from "./me.js";
 
 const router = new Hono();
@@ -63,13 +66,14 @@ async function fetchExploration(id) {
        e.theme_text      AS text,
        e.duration_label  AS duration,
        e.description     AS desc,
-       e.participant_count AS participants,
        e.is_new          AS "isNew",
-       e.catalog_active  AS active,
+       e.catalog_active  AS "catalogActive",
        e.status_badge    AS "statusBadge",
-       e.progress_percent AS progress,
-       e.streak_days     AS streak,
        e.chart_label     AS "chartLabel",
+       (SELECT COUNT(DISTINCT ue.individual_id)::int
+        FROM user_explorations ue WHERE ue.exploration_id = e.id) AS participants,
+       (SELECT re.researcher_id FROM researcher_explorations re
+        WHERE re.exploration_id = e.id LIMIT 1) AS "researcherId",
        (SELECT COALESCE(json_agg(
           json_build_object('name', ep.name, 'desc', ep.description, 'status', ep.status)
           ORDER BY ep.sort_order
@@ -359,113 +363,24 @@ router.get("/home", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const { rows: indRows } = await query(
-    "SELECT display_name FROM individuals WHERE id = $1",
-    [individualId]
-  );
-  const displayName = indRows[0]?.display_name ?? "there";
-  const firstName = displayName.split(" ")[0];
+  const payload = await buildHomePayload(individualId);
+  return c.json(payload);
+});
 
-  const { rows: ueRows } = await query(
-    `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days,
-            e.title, e.icon, e.theme_bg AS bg, e.theme_text AS text
-     FROM user_explorations ue
-     JOIN explorations e ON e.id = ue.exploration_id
-     WHERE ue.individual_id = $1 AND ue.is_active = TRUE
-     LIMIT 1`,
-    [individualId]
-  );
-  const activeRun = ueRows[0] ?? null;
+router.get("/home/feed", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const explorationId = activeRun?.exploration_id ?? "morning-rules";
-  const { rows: dbFields } = await query(
-    `SELECT field_key AS id, field_type::text AS type, label,
-            min_value AS min, max_value AS max, default_value AS val,
-            hints, options AS opts, allows_multiple AS multi, sort_order
-     FROM log_field_defs
-     WHERE exploration_id = $1
-     ORDER BY sort_order`,
-    [explorationId]
-  );
+  const type = c.req.query("type");
+  if (type !== "tip" && type !== "science") {
+    return c.json({ error: "type must be tip or science" }, 400);
+  }
 
-  const checksField = dbFields.find((f) => f.type === "checks");
-  const rangeFields = dbFields.filter((f) => f.type === "range");
-  const selectField = dbFields.find((f) => f.type === "select");
+  const explorationId = c.req.query("explorationId") || undefined;
+  const offset = parseInt(c.req.query("offset") ?? "1", 10);
 
-  const morningRules = {
-    label: checksField?.label ?? "Morning rules followed today",
-    options: (checksField?.opts ?? []).map((label, i) => ({
-      key: `opt_${i}`,
-      label,
-      defaultChecked: false
-    }))
-  };
-
-  const ranges = rangeFields.map((f) => ({
-    id: f.id,
-    label: f.label,
-    min: Number(f.min ?? 1),
-    max: Number(f.max ?? 10),
-    default: Number(f.val ?? 5),
-    hints: Array.isArray(f.hints) ? f.hints : []
-  }));
-
-  const crashSelect = {
-    label: selectField?.label ?? "How do you feel today?",
-    options: Array.isArray(selectField?.opts) ? selectField.opts : [],
-    defaultIndex: Number(selectField?.val ?? 0)
-  };
-
-  const streak = activeRun?.streak_days ?? 0;
-  const week = activeRun?.week_current ?? 1;
-  const weeksTotal = activeRun?.weeks_total ?? 8;
-
-  const metrics = [
-    {
-      label: "Afternoon energy",
-      value: "6.8",
-      unit: "/10",
-      sub: "+1.4 from baseline",
-      subTone: "green"
-    },
-    {
-      label: "Morning rules today",
-      value: "3",
-      unit: "/4",
-      sub: "sunlight · stretch · meditation",
-      subTone: "green"
-    },
-    {
-      label: "Afternoon crash",
-      value: "Mild",
-      unit: "",
-      sub: "down from noticeable",
-      subTone: "amber"
-    },
-    {
-      label: "Active streak",
-      value: String(streak),
-      unit: "days",
-      sub: streak >= 7 ? "personal best!" : `week ${week} of ${weeksTotal}`,
-      subTone: "green"
-    }
-  ];
-
-  return c.json({
-    greeting: `Good morning, ${firstName}`,
-    sub: activeRun
-      ? `Day ${(week - 1) * 7 + 1} of your morning rules exploration. You're doing great.`
-      : "Welcome to Kind.",
-    metrics,
-    logFormTitle: "Today's log",
-    morningRules,
-    ranges,
-    crashSelect,
-    confirm: {
-      title: "Logged!",
-      body: "Your data has been saved. Keep it up — consistent logs make your personalised analysis much stronger."
-    }
-  });
+  const items = await fetchHomeFeedExtras(individualId, { type, explorationId, offset });
+  return c.json({ items });
 });
 
 // ---------------------------------------------------------------------------
@@ -476,49 +391,26 @@ router.get("/profile", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const { rows } = await query(
-    `SELECT
-       i.display_name,
-       i.location,
-       i.avatar_initials AS "avatarInitials",
-       i.joined_at,
-       (SELECT COUNT(*) FROM individual_follows WHERE follower_id = i.id) AS following,
-       (SELECT COUNT(*) FROM individual_follows WHERE followee_id = i.id) AS followers,
-       (SELECT COALESCE(json_agg(json_build_object('variant', ib.style::text, 'label', ib.label)
-                                 ORDER BY ib.sort_order), '[]'::json)
-        FROM individual_badges ib WHERE ib.individual_id = i.id) AS badges,
-       ps.contribute_to_citizen_science AS "science",
-       ps.visible_in_community          AS "visible",
-       ps.daily_reminders               AS "reminders"
-     FROM individuals i
-     LEFT JOIN privacy_settings ps ON ps.individual_id = i.id
-     WHERE i.id = $1`,
-    [individualId]
-  );
-  if (!rows.length) return c.json({ error: "Profile not found" }, 404);
+  const payload = await buildProfilePayload(individualId);
+  if (!payload) return c.json({ error: "Profile not found" }, 404);
+  return c.json(payload);
+});
 
-  const { following, followers, badges, science, visible, reminders, ...rest } = rows[0];
-  const initials = rest.avatarInitials || rest.display_name?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-  const joinedDate = new Date(rest.joined_at).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  return c.json({
-    ...profileMock,
-    navProfile: { initials, avatarKey: profileMock.navProfile.avatarKey },
-    hero: {
-      name: rest.display_name,
-      locationLine: `${rest.location ?? ""}${rest.location ? " · " : ""}Joined ${joinedDate}`,
-      badges,
-      avatarKey: profileMock.hero.avatarKey
-    },
-    followStats: { following: Number(following), followers: Number(followers) },
-    privacy: {
-      ...profileMock.privacy,
-      toggles: [
-        { ...profileMock.privacy.toggles[0], defaultOn: science ?? true },
-        { ...profileMock.privacy.toggles[1], defaultOn: visible ?? true },
-        { ...profileMock.privacy.toggles[2], defaultOn: reminders ?? true }
-      ]
-    }
-  });
+router.patch("/profile", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const body = await c.req.json().catch(() => ({}));
+  try {
+    const payload = await updateProfile(individualId, {
+      displayName: body.displayName,
+      avatarImageId: body.avatarImageId
+    });
+    if (!payload) return c.json({ error: "Nothing to update" }, 400);
+    return c.json(payload);
+  } catch (err) {
+    return c.json({ error: err.message || "Update failed" }, 400);
+  }
 });
 
 router.patch("/profile/privacy", async (c) => {
@@ -691,19 +583,12 @@ router.patch("/social/follows", async (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/insights", async (c) => {
-  const { rows: feedInsights } = await query(
-    `SELECT id, headline AS title, body, published_at AS time
-     FROM feed_items
-     WHERE feed_type = 'science'
-     ORDER BY published_at DESC
-     LIMIT 10`
-  );
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const communityInsights = feedInsights.length > 0
-    ? feedInsights.map((r) => ({ iconTone: "blue", title: r.title, body: r.body, pillText: "" }))
-    : insightMock.communityInsights;
-
-  return c.json({ ...insightMock, communityInsights });
+  const communityExplorationId = c.req.query("explorationId") || undefined;
+  const payload = await buildInsightPayload(individualId, { communityExplorationId });
+  return c.json(payload);
 });
 
 // ---------------------------------------------------------------------------
@@ -745,6 +630,27 @@ router.get("/search", async (c) => {
 
 router.get("/explore/copy", (c) => {
   return c.json(exploreCopyMock);
+});
+
+router.get("/explore", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const payload = await buildExplorePayload(individualId);
+  return c.json(payload);
+});
+
+router.get("/community", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const explore = await buildExplorePayload(individualId);
+  const payload = await buildCommunityPayload(
+    individualId,
+    explore.activeExploration,
+    explore.activeExplorationId
+  );
+  return c.json(payload);
 });
 
 router.post("/explore/chat", async (c) => {

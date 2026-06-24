@@ -1,6 +1,8 @@
 {
   "greeting": "Good morning, Anna",
   "sub": "Day 12 of your morning rules exploration. You're doing great.",
+  "loggedToday": false,
+  "loggedExplorationIds": [],
   "metrics": [
     {
       "label": "Afternoon energy",

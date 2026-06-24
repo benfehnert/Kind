@@ -36,9 +36,9 @@ const styles = StyleSheet.create({
   ghost: {
     borderWidth: 1,
     borderColor: colors.borderMed,
-    paddingVertical: 11,
-    minHeight: 42,
-    borderRadius: radius.md,
+    paddingVertical: spacing.xxl,
+    minHeight: heights.logBtn,
+    borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
     flex: 1

@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useFocusEffect } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { colors, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -35,9 +35,16 @@ function InsightIcon({ variant }) {
 }
 
 export default function InsightScreen() {
-  const { insight } = useData();
+  const { insight, refetchInsight } = useData();
   const route = useRoute();
   const [tab, setTab] = useState(route.params?.community ? 1 : 0);
+  const highlightFeedItemId = route.params?.feedItemId;
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetchInsight?.(route.params?.explorationId);
+    }, [refetchInsight, route.params?.explorationId])
+  );
 
   useEffect(() => {
     if (route.params?.community != null) setTab(route.params.community ? 1 : 0);
@@ -45,6 +52,7 @@ export default function InsightScreen() {
 
   const your = insight.energyTrend;
   const mr = insight.rulesChart;
+  const showCharts = insight.hasPersonalData && your?.bars?.length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -63,69 +71,81 @@ export default function InsightScreen() {
 
         {tab === 0 ? (
           <>
-            <Card>
-              <Text style={styles.cardEyebrow}>{your.cardTitle}</Text>
-              <Text style={styles.chartHint}>{your.chartHint}</Text>
-              <View style={styles.chartRow}>
-                {your.bars.map((b, i) => (
-                  <View key={i} style={styles.barCol}>
-                    <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
-                      <View
-                        style={[
-                          styles.barBase,
-                          {
-                            height: Math.max(4, (90 * b.h) / 100),
-                            backgroundColor: colors.greenDark
-                          }
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.labSmall}>
-                      {your.labels[i]}
-                      {"\n"}
-                      {b.v}
-                    </Text>
+            {showCharts ? (
+              <>
+                <Card>
+                  <Text style={styles.cardEyebrow}>{your.cardTitle}</Text>
+                  <Text style={styles.chartHint}>{your.chartHint}</Text>
+                  <View style={styles.chartRow}>
+                    {your.bars.map((b, i) => (
+                      <View key={i} style={styles.barCol}>
+                        <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
+                          <View
+                            style={[
+                              styles.barBase,
+                              {
+                                height: Math.max(4, (90 * b.h) / 100),
+                                backgroundColor: colors.greenDark
+                              }
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.labSmall}>
+                          {your.labels[i]}
+                          {"\n"}
+                          {b.v}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            </Card>
+                </Card>
 
-            <Card>
-              <Text style={styles.cardEyebrow}>{mr.cardTitle}</Text>
-              <Text style={styles.chartHint}>{mr.chartHint}</Text>
-              <View style={styles.chartRow}>
-                {mr.bars.map((b, i) => (
-                  <View key={i} style={styles.barCol}>
-                    <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
-                      <View
-                        style={[
-                          styles.barBase,
-                          {
-                            height: Math.max(4, (90 * b.h) / 100),
-                            backgroundColor: b.crash ? colors.orange : colors.greenDark
-                          }
-                        ]}
-                      />
-                    </View>
+                <Card>
+                  <Text style={styles.cardEyebrow}>{mr.cardTitle}</Text>
+                  <Text style={styles.chartHint}>{mr.chartHint}</Text>
+                  <View style={styles.chartRow}>
+                    {mr.bars.map((b, i) => (
+                      <View key={i} style={styles.barCol}>
+                        <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
+                          <View
+                            style={[
+                              styles.barBase,
+                              {
+                                height: Math.max(4, (90 * b.h) / 100),
+                                backgroundColor: b.crash ? colors.orange : colors.greenDark
+                              }
+                            ]}
+                          />
+                        </View>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-              <View style={{ flexDirection: "row", gap: 16, marginTop: 8 }}>
-                {mr.legend.map((lg, i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <View
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 2,
-                        backgroundColor: lg.crash ? colors.orange : colors.greenDark
-                      }}
-                    />
-                    <Text style={{ fontSize: 11, color: colors.textMuted }}>{lg.label}</Text>
+                  <View style={{ flexDirection: "row", gap: 16, marginTop: 8 }}>
+                    {(mr.legend || []).map((lg, i) => (
+                      <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <View
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 2,
+                            backgroundColor: lg.crash ? colors.orange : colors.greenDark
+                          }}
+                        />
+                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{lg.label}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            </Card>
+                </Card>
+              </>
+            ) : (
+              <Card>
+                <Text style={styles.cardEyebrow}>Your insights</Text>
+                <Text style={styles.emptyBody}>
+                  {insight.emptyMessage ||
+                    "Join an exploration and log daily check-ins to unlock personal charts."}
+                </Text>
+              </Card>
+            )}
 
             <Card>
               <Text style={styles.cardEyebrow}>{insight.observations.cardTitle}</Text>
@@ -182,8 +202,12 @@ export default function InsightScreen() {
               <Text style={styles.cardEyebrow}>{insight.communityFindingsTitle}</Text>
               {(insight.communityInsights || []).map((c, i) => (
                 <View
-                  key={i}
-                  style={[styles.cRow, i === insight.communityInsights.length - 1 && { borderBottomWidth: 0 }]}
+                  key={c.id ?? i}
+                  style={[
+                    styles.cRow,
+                    highlightFeedItemId && c.id === highlightFeedItemId && styles.cRowHighlight,
+                    i === insight.communityInsights.length - 1 && { borderBottomWidth: 0 }
+                  ]}
                 >
                   <View style={[styles.cIco, { backgroundColor: colors.amberBg }]}>
                     <InsightIcon variant={c.iconTone === "green" ? "green" : c.iconTone === "purple" ? "purple" : "amber"} />
@@ -254,6 +278,7 @@ const styles = StyleSheet.create({
   stTxt: { ...type.tab, color: colors.textMuted },
   stTxtOn: { ...type.tabActive, color: "#fff" },
   cardEyebrow: { ...text.uppercaseLabel, marginBottom: spacing.sm + 2 },
+  emptyBody: { ...text.exploreDesc, lineHeight: 20 },
   chartHint: { ...text.caption, marginBottom: spacing.md },
   chartRow: { flexDirection: "row", height: heights.chart, gap: spacing.sm, alignItems: "flex-end", marginBottom: spacing.md },
   barCol: { flex: 1, alignItems: "center", height: "100%" },
@@ -296,6 +321,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: colors.border
+  },
+  cRowHighlight: {
+    backgroundColor: colors.greenLight,
+    marginHorizontal: -spacing.lg,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.md
   },
   cIco: {
     width: 36,
