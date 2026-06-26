@@ -20,6 +20,7 @@ import { OnboardingProvider, useOnboarding } from "./src/context/OnboardingConte
 import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import AuthNavigator from "./src/navigation/AuthNavigator";
+import { PostHogRoot } from "./src/components/PostHogRoot";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
 import { ProtoToast } from "./src/components/ProtoToast";
 
@@ -99,7 +100,9 @@ export default function App() {
       <SafeAreaProvider>
         <ProtoAppFrame>
           <NavigationContainer>
-            <RootNavigator />
+            <PostHogRoot>
+              <RootNavigator />
+            </PostHogRoot>
           </NavigationContainer>
         </ProtoAppFrame>
       </SafeAreaProvider>
