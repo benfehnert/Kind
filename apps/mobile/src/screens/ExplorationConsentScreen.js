@@ -1,13 +1,21 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
-import { SelectionCard } from "../components/onboarding/SelectionCard";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
+import { Card } from "../components/primitives/Card";
 import { colors, fontFamily, spacing } from "../theme/colors";
+import { text } from "../theme/textStyles";
+
+const OPT_IN_LABEL =
+  "I want to join this exploration and consent to the use of my data for my personalised (N-of-1) analysis.";
+const OPT_IN_SUB =
+  "Your exploration-specific consent will be saved to your profile.";
+const OPT_IN_SUB_ON =
+  "Thank you — your exploration-specific consent will be saved to your profile.";
 
 function buildAtAGlance(exploration) {
   return [
@@ -26,12 +34,13 @@ export default function ExplorationConsentScreen() {
   const { params } = useRoute();
   const explorationId = params?.id;
   const exploration = explorationId ? explorations[explorationId] : null;
-  const { privacyPrefs, grantExplorationConsent, setActiveExploration } = useConsent();
+  const { privacyPrefs, enrollInExploration } = useConsent();
   const { showToast } = useUiShell();
-  const [optIn, setOptIn] = useState(null);
+  const [optIn, setOptIn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const globalConsent = Boolean(privacyPrefs.globalConsent);
-  const canContinue = globalConsent && optIn === true;
+  const canContinue = globalConsent && optIn;
 
   if (!exploration) {
     return (
@@ -46,12 +55,16 @@ export default function ExplorationConsentScreen() {
 
   const atAGlance = buildAtAGlance(exploration);
 
-  const handleStart = () => {
-    if (!canContinue) return;
-    grantExplorationConsent(explorationId);
-    setActiveExploration(explorationId);
-    showToast(`You've joined ${exploration.feedLabel || exploration.title}.`);
-    navigation.goBack();
+  const handleStart = async () => {
+    if (!canContinue || submitting) return;
+    setSubmitting(true);
+    try {
+      await enrollInExploration(explorationId, { setActive: true });
+      navigation.replace("ExplorationStarted", { id: explorationId });
+    } catch {
+      showToast("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -105,27 +118,32 @@ export default function ExplorationConsentScreen() {
         </Text>
 
         {globalConsent ? (
-          <View style={styles.optInBlock}>
-            <SelectionCard
-              label="I want to join this exploration and consent to the use of my data for my personalised (N-of-1) analysis."
-              selected={optIn === true}
-              onPress={() => setOptIn(true)}
-              sub={
-                optIn === true
-                  ? "Thank you — your exploration-specific consent will be saved to your profile."
-                  : undefined
-              }
-            />
-          </View>
+          <Card style={styles.optInCard}>
+            <View style={styles.setRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sl}>{OPT_IN_LABEL}</Text>
+                <Text style={styles.ss}>{optIn ? OPT_IN_SUB_ON : OPT_IN_SUB}</Text>
+              </View>
+              <Pressable
+                style={[styles.toggle, !optIn && styles.toggleOff]}
+                onPress={() => setOptIn((prev) => !prev)}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: optIn }}
+              >
+                <View style={[styles.toggleKnob, !optIn && styles.toggleKnobOff]} />
+              </Pressable>
+            </View>
+          </Card>
         ) : null}
       </ScrollView>
 
       <View style={styles.footer}>
         <OnboardingContinueButton
-          label="Agree & start exploration"
+          label={submitting ? "Starting…" : "Agree & start exploration"}
           onPress={handleStart}
-          disabled={!canContinue}
+          disabled={!canContinue || submitting}
         />
+        {submitting ? <ActivityIndicator color={colors.greenDark} style={{ marginTop: 12 }} /> : null}
       </View>
     </SafeAreaView>
   );
@@ -216,7 +234,35 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     fontStyle: "italic"
   },
-  optInBlock: { marginBottom: 8 },
+  optInCard: {
+    marginBottom: 8
+  },
+  setRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: spacing.lg
+  },
+  sl: text.label,
+  ss: { ...text.profileMeta, marginTop: spacing.xs },
+  toggle: {
+    width: 42,
+    height: 24,
+    borderRadius: 999,
+    backgroundColor: colors.greenDark,
+    justifyContent: "center",
+    paddingHorizontal: 3
+  },
+  toggleOff: { backgroundColor: colors.border },
+  toggleKnob: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "#fff",
+    alignSelf: "flex-end"
+  },
+  toggleKnobOff: {
+    alignSelf: "flex-start"
+  },
   footer: {
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.lg,

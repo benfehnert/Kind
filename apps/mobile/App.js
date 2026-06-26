@@ -15,13 +15,16 @@ import { DataProvider } from "./src/context/DataContext";
 import { FollowProvider } from "./src/context/FollowContext";
 import { ConsentProvider } from "./src/context/ConsentContext";
 import { ProfileProvider } from "./src/context/ProfileContext";
+import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { OnboardingProvider, useOnboarding } from "./src/context/OnboardingContext";
 import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
+import AuthNavigator from "./src/navigation/AuthNavigator";
+import { PostHogRoot } from "./src/components/PostHogRoot";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
 import { ProtoToast } from "./src/components/ProtoToast";
 
-function Shell() {
+function AppShell() {
   const { toast } = useUiShell();
   const { completed, hydrating } = useOnboarding();
   const inOnboarding = !hydrating && !completed;
@@ -33,6 +36,47 @@ function Shell() {
       <ProtoToast message={toast} visible={!!toast} />
     </>
   );
+}
+
+function AuthenticatedApp() {
+  return (
+    <DataProvider>
+      <FollowProvider>
+        <OnboardingProvider>
+          <ConsentProvider>
+            <ProfileProvider>
+              <UiProvider>
+                <AppShell />
+              </UiProvider>
+            </ProfileProvider>
+          </ConsentProvider>
+        </OnboardingProvider>
+      </FollowProvider>
+    </DataProvider>
+  );
+}
+
+function RootNavigator() {
+  const { isAuthenticated, hydrating } = useAuth();
+
+  if (hydrating) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F7F8F2" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <StatusBar style="dark" />
+        <AuthNavigator />
+      </>
+    );
+  }
+
+  return <AuthenticatedApp />;
 }
 
 export default function App() {
@@ -52,24 +96,16 @@ export default function App() {
   }
 
   return (
-    <DataProvider>
-    <FollowProvider>
-      <OnboardingProvider>
-      <ConsentProvider>
-        <ProfileProvider>
-        <UiProvider>
-          <SafeAreaProvider>
-            <ProtoAppFrame>
-              <NavigationContainer>
-                <Shell />
-              </NavigationContainer>
-            </ProtoAppFrame>
-          </SafeAreaProvider>
-        </UiProvider>
-        </ProfileProvider>
-      </ConsentProvider>
-      </OnboardingProvider>
-    </FollowProvider>
-    </DataProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <ProtoAppFrame>
+          <NavigationContainer>
+            <PostHogRoot>
+              <RootNavigator />
+            </PostHogRoot>
+          </NavigationContainer>
+        </ProtoAppFrame>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }

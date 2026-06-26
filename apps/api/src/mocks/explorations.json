@@ -15,6 +15,10 @@
     "evidenceId": "morning-rules",
     "researcherId": "dr-elena-marsh",
     "desc": "8-week exploration to see if early sunlight exposure, morning stretching, caffeine offsetting, or morning meditation help your afternoon energy.",
+    "startInstructions": [
+      "Log your usual morning routine for the next few days to establish a baseline.",
+      "Each evening, record your afternoon energy level and any crash you notice."
+    ],
     "outcomes": [
       {
         "icon": "☀️",
@@ -187,6 +191,10 @@
     "evidenceId": "eating",
     "researcherId": null,
     "desc": "6-week exploration to see if a restriction in the time window in which you consume food helps to support higher energy levels through the day. No calorie restriction — just timing.",
+    "startInstructions": [
+      "Log your natural eating times with no changes for the first two weeks.",
+      "Note your energy levels and hunger at key points through the day."
+    ],
     "outcomes": [
       {
         "icon": "🕐",
@@ -305,6 +313,10 @@
     "evidenceId": "screen-sleep",
     "researcherId": "dr-sarah-williams",
     "desc": "6-week exploration to see if a reduction in screen exposure both before and at bedtime can increase sleep quality.",
+    "startInstructions": [
+      "Log your normal evening screen habits and sleep quality for the baseline phase.",
+      "Each morning, rate how well you slept and note time to fall asleep."
+    ],
     "outcomes": [
       {
         "icon": "💡",
@@ -433,6 +445,10 @@
     "evidenceId": "relaxation",
     "researcherId": null,
     "desc": "6-week exploration to see if vagal breathing, progressive muscle relaxation, short (nature) walks, or meditation / visualisation help reduce stress and anxiety.",
+    "startInstructions": [
+      "Log your stress levels and any relaxation practices you already use.",
+      "Note how composed you feel through the afternoon each day."
+    ],
     "outcomes": [
       {
         "icon": "🌬️",
@@ -532,6 +548,10 @@
     "evidenceId": "upf-mood",
     "researcherId": "dr-priya-nair",
     "desc": "6-week exploration to see if a reduction in the daily intake of Ultra Processed Foods and their replacement with unprocessed foods can improve mood. Assess the percentage of your diet that day that contained UPF and track your daily mood and energy levels.",
+    "startInstructions": [
+      "Log what you eat and how your mood feels through the day.",
+      "Track ultra-processed food intake alongside mood scores."
+    ],
     "outcomes": [
       {
         "icon": "🦠",

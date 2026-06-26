@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { get, patch, post } from "../lib/api";
 import { useData } from "./DataContext";
 import { useOnboarding } from "./OnboardingContext";
+import { useAuth } from "./AuthContext";
 
 const PREFS_STORAGE_KEY = "@kind/profile_privacy_prefs";
 const EXPLORATION_CONSENTS_KEY = "@kind/exploration_consents";
@@ -44,6 +46,7 @@ function choicesFromPrefs(prefs) {
 
 export function ConsentProvider({ children }) {
   const data = useData();
+  const { isAuthenticated } = useAuth();
   const { answers: onboardingAnswers, completed: onboardingCompleted, hydrating } = useOnboarding();
   const [choices, setChoices] = useState({});
   const [completed, setCompleted] = useState(false);
@@ -51,6 +54,7 @@ export function ConsentProvider({ children }) {
   const [prefsHydrating, setPrefsHydrating] = useState(true);
   const [explorationConsents, setExplorationConsents] = useState({});
   const [activeExplorationId, setActiveExplorationId] = useState(null);
+  const [explorationRuns, setExplorationRuns] = useState({});
   const [explorationHydrating, setExplorationHydrating] = useState(true);
 
   useEffect(() => {
@@ -100,9 +104,10 @@ export function ConsentProvider({ children }) {
         const activeRaw = await AsyncStorage.getItem(ACTIVE_EXPLORATION_KEY);
         if (cancelled) return;
 
-        if (consentsRaw) {
+        if (consentsRaw && !isAuthenticated) {
           setExplorationConsents(JSON.parse(consentsRaw));
         } else if (
+          !isAuthenticated &&
           !onboardingCompleted &&
           data?.consent?.annaDefaults?.exploration_participation
         ) {
@@ -113,9 +118,10 @@ export function ConsentProvider({ children }) {
           await AsyncStorage.setItem(EXPLORATION_CONSENTS_KEY, JSON.stringify(seeded));
         }
 
-        if (activeRaw) {
+        if (activeRaw && !isAuthenticated) {
           setActiveExplorationId(activeRaw);
         } else if (
+          !isAuthenticated &&
           !onboardingCompleted &&
           data?.consent?.annaDefaults?.exploration_participation
         ) {
@@ -132,7 +138,7 @@ export function ConsentProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [hydrating, onboardingCompleted, data]);
+  }, [hydrating, onboardingCompleted, data, isAuthenticated]);
 
   const persistPrefs = useCallback(async (next) => {
     try {
@@ -158,6 +164,68 @@ export function ConsentProvider({ children }) {
       // ignore
     }
   }, []);
+
+  const applyServerExplorations = useCallback(
+    (payload) => {
+      if (!payload) return;
+
+      const nextConsents = {};
+      const nextRuns = {};
+      for (const item of payload.items || []) {
+        if (item.consented) {
+          nextConsents[item.explorationId] = {
+            granted: true,
+            consentedAt: item.consentedAt
+          };
+        }
+        nextRuns[item.explorationId] = {
+          weekCurrent: item.weekCurrent,
+          weeksTotal: item.weeksTotal,
+          streakDays: item.streakDays,
+          status: item.status,
+          startedAt: item.startedAt,
+          isActive: item.isActive
+        };
+      }
+
+      setExplorationConsents(nextConsents);
+      persistExplorationConsents(nextConsents);
+      setExplorationRuns(nextRuns);
+
+      if (payload.activeExplorationId) {
+        setActiveExplorationId(payload.activeExplorationId);
+        persistActiveExploration(payload.activeExplorationId);
+      } else {
+        setActiveExplorationId(null);
+        persistActiveExploration(null);
+      }
+    },
+    [persistExplorationConsents, persistActiveExploration]
+  );
+
+  const refreshExplorationRuns = useCallback(async () => {
+    const payload = await get("/me/explorations");
+    applyServerExplorations(payload);
+    return payload;
+  }, [applyServerExplorations]);
+
+  useEffect(() => {
+    if (hydrating || explorationHydrating || !data) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const payload = await get("/me/explorations");
+        if (!cancelled) applyServerExplorations(payload);
+      } catch {
+        // keep local AsyncStorage state when API unavailable
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrating, explorationHydrating, data, applyServerExplorations]);
 
   const saveConsent = useCallback((next) => {
     setChoices((prev) => ({ ...prev, ...next }));
@@ -237,6 +305,45 @@ export function ConsentProvider({ children }) {
     [persistActiveExploration]
   );
 
+  const enrollInExploration = useCallback(
+    async (explorationId, { setActive = true } = {}) => {
+      const entry = { granted: true, consentedAt: new Date().toISOString() };
+      setExplorationConsents((prev) => {
+        const next = { ...prev, [explorationId]: entry };
+        persistExplorationConsents(next);
+        return next;
+      });
+      if (setActive) {
+        setActiveExplorationId(explorationId);
+        persistActiveExploration(explorationId);
+      }
+      setChoices((prev) => ({ ...prev, exploration_participation: true }));
+
+      try {
+        await post(`/me/explorations/${explorationId}/consent`, { setActive });
+        await refreshExplorationRuns();
+      } catch {
+        // local state remains for offline resilience
+      }
+
+      return entry;
+    },
+    [persistExplorationConsents, persistActiveExploration, refreshExplorationRuns]
+  );
+
+  const activateExploration = useCallback(
+    async (explorationId) => {
+      setActiveExploration(explorationId);
+      try {
+        await patch(`/me/explorations/${explorationId}/active`, {});
+        await refreshExplorationRuns();
+      } catch {
+        // local active state kept
+      }
+    },
+    [setActiveExploration, refreshExplorationRuns]
+  );
+
   const value = useMemo(
     () => ({
       choices,
@@ -245,6 +352,7 @@ export function ConsentProvider({ children }) {
       prefsHydrating,
       explorationConsents,
       activeExplorationId,
+      explorationRuns,
       explorationHydrating,
       saveConsent,
       syncFromOnboarding,
@@ -253,6 +361,9 @@ export function ConsentProvider({ children }) {
       grantExplorationConsent,
       revokeExplorationConsent,
       setActiveExploration,
+      enrollInExploration,
+      activateExploration,
+      refreshExplorationRuns,
       isGranted: (key) => Boolean(choices[key])
     }),
     [
@@ -262,6 +373,7 @@ export function ConsentProvider({ children }) {
       prefsHydrating,
       explorationConsents,
       activeExplorationId,
+      explorationRuns,
       explorationHydrating,
       saveConsent,
       syncFromOnboarding,
@@ -269,7 +381,10 @@ export function ConsentProvider({ children }) {
       hasExplorationConsent,
       grantExplorationConsent,
       revokeExplorationConsent,
-      setActiveExploration
+      setActiveExploration,
+      enrollInExploration,
+      activateExploration,
+      refreshExplorationRuns
     ]
   );
 

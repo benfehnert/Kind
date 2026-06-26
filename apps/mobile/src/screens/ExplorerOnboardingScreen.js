@@ -1,14 +1,12 @@
-import React, { useCallback, useState } from "react";
-import { Platform } from "react-native";
-import * as Notifications from "expo-notifications";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import {
-  ONBOARDING_STEPS,
-  PROGRESS_STEP_COUNT,
   getProgressIndex,
+  getProgressStepCount,
+  getVisibleSteps,
   validateStep
 } from "../data/explorerOnboarding";
 import { OnboardingShell } from "../components/onboarding/OnboardingShell";
@@ -21,16 +19,9 @@ import {
   renderSingleSelectStep,
   renderMultiSelectStep,
   renderRemindersStep,
+  renderNotificationsStep,
   renderCreateAccountStep
 } from "../components/onboarding/stepRenderers";
-
-async function requestReminderPermission() {
-  if (Platform.OS === "web") return false;
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  if (existing === "granted") return true;
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === "granted";
-}
 
 function mapAnswersToConsent(answers) {
   return {
@@ -47,31 +38,32 @@ export default function ExplorerOnboardingScreen() {
   const { showToast } = useUiShell();
   const [stage, setStage] = useState(0);
 
-  const step = ONBOARDING_STEPS[stage];
+  const visibleSteps = useMemo(() => getVisibleSteps(answers), [answers]);
+  const step = visibleSteps[stage];
   const isCreateAccount = step?.type === "createAccount";
   const canContinue = validateStep(step, answers);
+  const progressTotal = getProgressStepCount(visibleSteps);
+
+  useEffect(() => {
+    setStage((s) => Math.min(s, Math.max(visibleSteps.length - 1, 0)));
+  }, [visibleSteps.length]);
 
   const handleChange = useCallback(
     (key, value) => {
+      if (key === "remindersEnabled" && value !== true) {
+        updateAnswers({ [key]: value, notificationsSetup: null });
+        return;
+      }
       updateAnswers({ [key]: value });
     },
     [updateAnswers]
   );
 
-  const goNext = useCallback(async () => {
+  const goNext = useCallback(() => {
     if (!canContinue) return;
-
-    if (step.type === "reminders" && answers.remindersEnabled === true) {
-      if (Platform.OS === "web") {
-        showToast("Daily reminders are available in the iOS and Android apps.");
-      } else {
-        await requestReminderPermission();
-      }
-    }
-
-    if (stage >= ONBOARDING_STEPS.length - 1) return;
+    if (stage >= visibleSteps.length - 1) return;
     setStage((s) => s + 1);
-  }, [canContinue, step, answers.remindersEnabled, stage, showToast]);
+  }, [canContinue, stage, visibleSteps.length]);
 
   const goBack = useCallback(() => {
     if (stage <= 0) return;
@@ -106,6 +98,8 @@ export default function ExplorerOnboardingScreen() {
         return renderMultiSelectStep(step, answers, handleChange);
       case "reminders":
         return renderRemindersStep(step, answers, handleChange);
+      case "notifications":
+        return renderNotificationsStep(step, answers, handleChange);
       case "createAccount":
         return renderCreateAccountStep(step, answers, handleGoogleSignUp);
       default:
@@ -118,8 +112,8 @@ export default function ExplorerOnboardingScreen() {
       showBack={stage > 0}
       onBack={goBack}
       showProgress={step?.showProgress}
-      progressCurrent={getProgressIndex(stage)}
-      progressTotal={PROGRESS_STEP_COUNT}
+      progressCurrent={getProgressIndex(visibleSteps, stage)}
+      progressTotal={progressTotal}
       continueLabel={step?.continueLabel}
       continueDisabled={!canContinue}
       onContinue={goNext}

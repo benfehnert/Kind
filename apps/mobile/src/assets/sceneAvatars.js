@@ -1,6 +1,20 @@
 // Static mapping of scene keys to Unsplash photo URLs.
 // Mirrors community.json sceneAvatars — kept here as a client-side constant
 // so Avatar.js doesn't need to import community data.
+/** Preset scene avatars offered in profile image picker (~10). */
+export const PRESET_SCENE_KEYS = [
+  "pet",
+  "cat",
+  "landscape",
+  "mountains",
+  "plants",
+  "coffee",
+  "books",
+  "sunset",
+  "ocean",
+  "flowers"
+];
+
 export const SCENE_AVATARS = {
   pet: "https://images.unsplash.com/photo-1583511655857-d19b40a7a2f8",
   cat: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131",

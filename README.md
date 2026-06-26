@@ -75,3 +75,23 @@ Supabase Studio runs at `http://localhost:54323`.
 |---|---|---|
 | `USE_MOCK_DATA` | `true` / `false` | Serve static JSON mocks instead of DB |
 | `MOCK_AUTH` | `true` / `false` | Skip JWT, resolve all requests as Anna Ross |
+
+## Mobile analytics (PostHog)
+
+Local dev: copy PostHog vars from `apps/mobile/.env.example` into `apps/mobile/.env`.
+
+GitHub Actions (staging/production web builds) reads these repository secrets:
+
+| Secret | Used on |
+|---|---|
+| `EXPO_PUBLIC_POSTHOG_API_KEY_STAGING` | `staging` branch deploy |
+| `EXPO_PUBLIC_POSTHOG_API_KEY_PRODUCTION` | `main` branch deploy |
+
+Use your PostHog **project API key** (`phc_…`) from [EU project settings](https://eu.posthog.com/project/settings). You can use the same key for both secrets if you have one project. Host is fixed to `https://eu.i.posthog.com` in CI.
+
+Set secrets (replace with your key):
+
+```sh
+gh secret set EXPO_PUBLIC_POSTHOG_API_KEY_STAGING --body "phc_your_key"
+gh secret set EXPO_PUBLIC_POSTHOG_API_KEY_PRODUCTION --body "phc_your_key"
+```

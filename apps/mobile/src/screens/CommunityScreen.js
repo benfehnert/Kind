@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, TextInput, Pressable } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
-import { explorationOrderUi, getUserProfile, getResearcher } from "../data/mock";
+import { getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { useFollow } from "../context/FollowContext";
@@ -21,16 +21,22 @@ const INITIAL_PANEL_HEIGHT = 420;
 const PANEL_HEIGHT_STEP = 220;
 
 export default function CommunityScreen() {
-  const { community, explorationEvidence, exploreCopy } = useData();
+  const { community, explorationEvidence, exploreCopy, explorePage, refetchExplore } = useData();
   const explorations = useUserExplorations();
   const navigation = useNavigation();
-  const { isFollowing, toggleFollow, followerIdSet } = useFollow();
+  const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
   const [tab, setTab] = useState("individuals");
   const [q, setQ] = useState("");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const [panelHeight, setPanelHeight] = useState(INITIAL_PANEL_HEIGHT);
-  const c = exploreCopy.community;
+  const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
   const query = q.trim().toLowerCase();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchExplore?.();
+    }, [refetchExplore])
+  );
 
   const allPeople = useMemo(() => {
     const base = [...(community.basicUsers || []), ...(community.followerOnly || [])];
@@ -57,7 +63,10 @@ export default function CommunityScreen() {
     });
   }, [allPeople, query, isFollowing]);
 
-  const evIds = useMemo(() => explorationOrderUi(explorations), [explorations]);
+  const evIds = useMemo(
+    () => explorePage?.explorationOrder ?? Object.keys(explorations || {}),
+    [explorePage?.explorationOrder, explorations]
+  );
 
   const filteredExplorationIds = useMemo(() => {
     const ids = evIds.filter((id) => {
@@ -207,15 +216,17 @@ export default function CommunityScreen() {
                     </View>
                   ) : null}
                 </View>
-                <Pressable
-                  style={[styles.fb, following && styles.fbon]}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    toggleFollow(uid);
-                  }}
-                >
-                  <Text style={[styles.ft, following && styles.fton]}>{following ? "Following" : "Follow"}</Text>
-                </Pressable>
+                {uid && !isSelf(uid) ? (
+                  <Pressable
+                    style={[styles.fb, following && styles.fbon]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleFollow(uid);
+                    }}
+                  >
+                    <Text style={[styles.ft, following && styles.fton]}>{following ? "Following" : "Follow"}</Text>
+                  </Pressable>
+                ) : null}
               </Pressable>
             );
               })}
@@ -241,7 +252,9 @@ export default function CommunityScreen() {
                     </Pressable>
                   ) : null}
                 </View>
-                <Badge variant={e.active ? "amber" : "teal"}>{e.active ? "Active" : "View"}</Badge>
+                <Badge variant={e.active ? "amber" : e.userConsented ? "blue" : "teal"}>
+                  {e.active ? "Active" : e.userConsented ? "Joined" : "View"}
+                </Badge>
               </Pressable>
             );
               })}

@@ -178,7 +178,16 @@ export const ONBOARDING_STEPS = [
     showProgress: true,
     answerKey: "remindersEnabled",
     title: "Set reminders",
-    body: "Would you like daily reminders to help you stay on track with your explorations?",
+    body: "Would you like daily reminders to help you stay on track with your explorations? If yes, we'll help you turn on notifications on your device next.",
+    continueLabel: "Continue"
+  },
+  {
+    id: "notifications",
+    type: "notifications",
+    showProgress: true,
+    answerKey: "notificationsSetup",
+    title: "Turn on notifications",
+    body: "Kind sends a gentle daily reminder to log your exploration data and keep your streak going. Allow notifications on your device to receive them.",
     continueLabel: "Continue"
   },
   {
@@ -191,10 +200,23 @@ export const ONBOARDING_STEPS = [
 
 export const PROGRESS_STEP_COUNT = ONBOARDING_STEPS.filter((s) => s.showProgress).length;
 
-export function getProgressIndex(stepIndex) {
+export function getVisibleSteps(answers) {
+  return ONBOARDING_STEPS.filter((step) => {
+    if (step.id === "notifications") {
+      return answers.remindersEnabled === true;
+    }
+    return true;
+  });
+}
+
+export function getProgressStepCount(visibleSteps) {
+  return visibleSteps.filter((s) => s.showProgress).length;
+}
+
+export function getProgressIndex(visibleSteps, stepIndex) {
   let count = 0;
   for (let i = 0; i <= stepIndex; i++) {
-    if (ONBOARDING_STEPS[i]?.showProgress) count++;
+    if (visibleSteps[i]?.showProgress) count++;
   }
   return count;
 }
@@ -236,6 +258,9 @@ export function validateStep(step, answers) {
 
     case "reminders":
       return answers[step.answerKey] !== null && answers[step.answerKey] !== undefined;
+
+    case "notifications":
+      return answers[step.answerKey] != null;
 
     default:
       return true;

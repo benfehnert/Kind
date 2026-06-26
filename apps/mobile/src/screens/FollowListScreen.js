@@ -13,7 +13,7 @@ export default function FollowListScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const mode = params?.mode === "followers" ? "followers" : "following";
-  const { following, followerIdSet, isFollowing, toggleFollow } = useFollow();
+  const { following, followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
 
   const userIds = useMemo(() => {
     if (mode === "following") return [...following];
@@ -53,7 +53,7 @@ export default function FollowListScreen() {
                 <Text style={styles.meta}>{item.meta || item.loc}</Text>
               </View>
             </Pressable>
-            {mode === "following" ? (
+            {mode === "following" && !isSelf(item.uid) ? (
               <Pressable style={[styles.fo, isFollowing(item.uid) && styles.fon]} onPress={() => toggleFollow(item.uid)}>
                 <Text style={[styles.ft, isFollowing(item.uid) && styles.fton]}>{isFollowing(item.uid) ? "Following" : "Follow"}</Text>
               </Pressable>

@@ -13,7 +13,7 @@ export default function ExplorersListScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const explorationId = params?.explorationId;
-  const { followerIdSet, isFollowing, toggleFollow } = useFollow();
+  const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
   const ids = explorationId ? community.explorationFollowers?.[explorationId] || [] : [];
   const exp = explorationId ? explorations[explorationId] : null;
 
@@ -51,9 +51,11 @@ export default function ExplorersListScreen() {
                 <Text style={styles.meta}>{item.meta || item.loc}</Text>
               </View>
             </Pressable>
-            <Pressable style={[styles.fo, isFollowing(item.uid) && styles.fon]} onPress={() => toggleFollow(item.uid)}>
-              <Text style={[styles.ft, isFollowing(item.uid) && styles.fton]}>{isFollowing(item.uid) ? "Following" : "Follow"}</Text>
-            </Pressable>
+            {!isSelf(item.uid) ? (
+              <Pressable style={[styles.fo, isFollowing(item.uid) && styles.fon]} onPress={() => toggleFollow(item.uid)}>
+                <Text style={[styles.ft, isFollowing(item.uid) && styles.fton]}>{isFollowing(item.uid) ? "Following" : "Follow"}</Text>
+              </Pressable>
+            ) : null}
           </View>
         )}
       />

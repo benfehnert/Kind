@@ -4,6 +4,7 @@ import explorations from "../mocks/explorations.json" with { type: "json" };
 import explorationEvidence from "../mocks/explorationEvidence.json" with { type: "json" };
 import feed from "../mocks/feed.json" with { type: "json" };
 import home from "../mocks/home.json" with { type: "json" };
+import homeStarter from "../mocks/homeStarter.json" with { type: "json" };
 import insight from "../mocks/insight.json" with { type: "json" };
 import profile from "../mocks/profile.json" with { type: "json" };
 import search from "../mocks/search.json" with { type: "json" };
@@ -15,6 +16,46 @@ import trialReports from "../data/explorationTrialReports.json" with { type: "js
 import { ANNA_DEMO_ONBOARDING } from "../lib/meData.js";
 
 const router = new Hono();
+
+const EXPLORATION_FEED_LABELS = {
+  "morning-rules": "morning rules",
+  eating: "time-restricted eating",
+  "screen-sleep": "screen time before bed",
+  relaxation: "relaxation practices",
+  "upf-mood": "ultra-processed food"
+};
+
+function mapMockFeedExtra(type, expId, row, index) {
+  const exp = explorations[expId];
+  const feedLabel = EXPLORATION_FEED_LABELS[expId] || exp?.title || expId;
+  const base = {
+    id: `mock-${type}-${expId}-${index}`,
+    type,
+    explorationId: expId,
+    badge: "teal",
+    badgeLabel: type === "tip" ? "Tip" : "Science",
+    time: `Yesterday · ${feedLabel}`,
+    body: row.body ?? "",
+    highlight: row.highlight ?? "",
+    avatarKind: "glyph",
+    glyph: type === "tip" ? "✓" : "⬡",
+    avatarBg: type === "tip" ? exp?.bg || "#FDF0E4" : "#E6ECD0",
+    glyphColor: type === "tip" ? exp?.text || "#8A4A1A" : "#22401F"
+  };
+  base.displayName = type === "tip" ? "Wellbeing tip" : "kind science";
+  return base;
+}
+
+function buildMockHomeFeedExtras(type, offset = 1) {
+  const items = [];
+  for (const expId of feed.feedExpIds ?? []) {
+    const rows = type === "tip" ? feed.feedTips?.[expId] ?? [] : feed.feedScience?.[expId] ?? [];
+    for (const [i, row] of rows.slice(offset).entries()) {
+      items.push(mapMockFeedExtra(type, expId, row, i + offset));
+    }
+  }
+  return items;
+}
 
 // ---------------------------------------------------------------------------
 // Explorations
@@ -134,7 +175,17 @@ router.get("/insights", (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/home", (c) => {
+  if (c.req.query("starter") === "1") return c.json(homeStarter);
   return c.json(home);
+});
+
+router.get("/home/feed", (c) => {
+  const type = c.req.query("type");
+  if (type !== "tip" && type !== "science") {
+    return c.json({ error: "type must be tip or science" }, 400);
+  }
+  const offset = parseInt(c.req.query("offset") ?? "1", 10);
+  return c.json({ items: buildMockHomeFeedExtras(type, offset) });
 });
 
 // ---------------------------------------------------------------------------
@@ -279,6 +330,9 @@ router.get("/social/follows", (c) => {
 
 router.patch("/social/follows", async (c) => {
   const body = await c.req.json().catch(() => ({}));
+  if (body.followSlug === profile.viewerSlug) {
+    return c.json({ error: "Cannot follow yourself" }, 400);
+  }
   return c.json({ ok: true, ...body });
 });
 

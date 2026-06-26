@@ -18,6 +18,7 @@ import {
   upsertIndividualConsents,
   upsertPrivacyFromOnboarding
 } from "../lib/meData.js";
+import { recordActivityFromLog } from "../lib/homeData.js";
 
 const router = new Hono();
 
@@ -393,6 +394,8 @@ router.post("/me/logs", async (c) => {
      WHERE id = $1`,
     [userExplorationId]
   );
+
+  await recordActivityFromLog(individualId, explorationId, rows[0].field_values, userExplorationId);
 
   return c.json({
     ok: true,
