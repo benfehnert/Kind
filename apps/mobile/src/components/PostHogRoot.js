@@ -24,6 +24,14 @@ function PostHogIdentity() {
 }
 
 export function PostHogRoot({ children }) {
+  useEffect(() => {
+    if (__DEV__ && !POSTHOG_ENABLED) {
+      console.warn(
+        "[PostHog] Disabled — set EXPO_PUBLIC_POSTHOG_API_KEY in apps/mobile/.env and restart the dev server."
+      );
+    }
+  }, []);
+
   if (!POSTHOG_ENABLED) {
     return children;
   }
