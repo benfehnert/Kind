@@ -8,3 +8,7 @@ export const BACKGROUNDS = [
   'https://images.unsplash.com/photo-1720139290958-d8676702c3ed?w=390&h=844&fit=crop&q=80',
   'https://images.unsplash.com/photo-1586073305502-5c5cc4a594bd?w=390&h=844&fit=crop&q=80',
 ]
+
+export const BACKGROUND_ALTS = [
+  'https://images.unsplash.com/photo-1684698747055-301a18c746c3?w=390&h=844&fit=i&q=100'
+]

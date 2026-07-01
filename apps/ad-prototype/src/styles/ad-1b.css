@@ -1,0 +1,135 @@
+/* Concept B — message-first.
+   Rule: NO CSS transforms on any element that anime.js will animate.
+   Centering is done via flex or left/margin arithmetic so transforms are
+   free for anime to own completely. */
+@import "./main.css";
+
+/* scrim: gradient darkens top + bottom so text stays legible */
+#bg::after {
+  background: none;
+}
+
+/* ── Logo — fixed at top, always above mockup and message ── */
+#logo-block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+#logo {
+  font-size: 98px;
+}
+
+#logo-sub {
+  font-size: 16px;
+  color: white;
+  font-weight: 600;
+}
+
+
+/* ── Lead message ──
+   Fills the full content area as a flex container so text is centred without
+   any transform. Anime animates translateY + scale from their natural 0/1 baseline. */
+#message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 28px;
+  text-align: center;
+  transform-origin: center center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+#hero-line {
+  font-family: "Onest", sans-serif;
+  font-weight: 700;
+  font-size: 60px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+#hero-sub {
+  margin-top: 14px;
+  font-family: "Albert Sans", sans-serif;
+  font-weight: 600;
+  font-size: 60px;
+  letter-spacing: -0.01em;
+  color: var(--orange);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+}
+
+/* ── Phone ──
+   Centred with left/margin-left arithmetic (no transform), so anime can freely
+   own translateY. Override main.css's `translate: 9% 0` with `none`.
+   Width 85% so the phone fits the 4:5 frame with the screen fully visible. */
+#mockup {
+  position: absolute;
+  width: 110%;
+  left: 45%;
+  margin-left: -40.5%;  /* = -85%/2 — centres without transform */
+  bottom: 0;
+  aspect-ratio: 559 / 960;
+  translate: none;      /* kill main.css's translate: 9% 0 */
+  z-index: 1;
+}
+
+#mockup-frame {
+  filter: brightness(0.8);
+}
+
+/* ── CTA wrapper ──
+   Position + layout handled here; anime owns opacity + translateY on the
+   wrapper. The button itself is centred by text-align. */
+#cta-wrap {
+  position: absolute;
+  bottom: 48px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 3;
+  opacity: 0;
+}
+
+#cta {
+  display: inline-block;
+  background: var(--orange-dark);
+  color: #fff;
+  font-family: "Albert Sans", sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 28px 38px;
+  border-radius: 999px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+/* ── One-tap audio unlock ── */
+#audio-unlock {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-family: "Albert Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2a1f;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
