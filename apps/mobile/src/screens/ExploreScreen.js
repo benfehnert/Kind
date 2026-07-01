@@ -9,28 +9,39 @@ import {
   ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { explorationOrderUi } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
-import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
+import { useExplorationStart } from "../hooks/useUserExplorations";
 import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
+import { Avatar } from "../components/primitives/Avatar";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
+import { RichTextParts } from "../utils/RichText";
 
 export default function ExploreScreen() {
-  const { exploreCopy } = useData();
-  const explorations = useUserExplorations();
+  const { explorePage, refetchExplore } = useData();
+  const exploreCopy = explorePage?.copy ?? {};
+  const active = explorePage?.activeExploration ?? null;
+  const available = explorePage?.availableExplorations ?? [];
+  const activity = explorePage?.activity ?? [];
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
   const navigation = useNavigation();
   const [q, setQ] = useState("");
   const [chat, setChat] = useState(null);
   const timer = useRef(null);
+
+  const explorationsForChat = useMemo(() => {
+    const map = {};
+    if (active) map[active.id] = active;
+    for (const e of available) map[e.id] = e;
+    return map;
+  }, [active, available]);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -40,17 +51,60 @@ export default function ExploreScreen() {
     setChat({ loading: true });
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      post("/explore/chat", { query: q, explorers: explorations })
+      post("/explore/chat", { query: q, explorers: explorationsForChat })
         .then((r) => setChat({ loading: false, ...r }))
         .catch(() => setChat({ loading: false, msg: "", explorationIds: [] }));
     }, 700);
     return () => clearTimeout(timer.current);
-  }, [q, explorations]);
+  }, [q, explorationsForChat]);
 
-  const ordered = useMemo(() => explorationOrderUi(explorations), [explorations]);
+  function handleActivityPress(item) {
+    if (item.route) navigation.navigate(item.route, item.routeParams ?? {});
+    else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
+    else if (item.explorationId) navigation.navigate("ExplorationDetail", { id: item.explorationId });
+  }
 
-  const activeId = useMemo(() => ordered.find((id) => explorations[id]?.active), [ordered, explorations]);
-  const active = activeId ? explorations[activeId] : null;
+  function renderActivityItem(item) {
+    return (
+      <Pressable key={item.id} style={styles.activityItem} onPress={() => handleActivityPress(item)}>
+        <View style={styles.activityHead}>
+          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
+            <View
+              style={[
+                styles.activityAv,
+                {
+                  backgroundColor: item.avatarBg || item.avatarBgStyle,
+                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
+                }
+              ]}
+            >
+              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
+                {item.icon || item.glyph}
+              </Text>
+            </View>
+          ) : (
+            <Avatar
+              size={34}
+              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
+              initials={item.initials}
+            />
+          )}
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+              <Text style={styles.activityName}>{item.displayName}</Text>
+              {item.badge ? <Badge variant={item.badge}>{item.badgeLabel}</Badge> : null}
+            </View>
+            <Text style={styles.activityTime}>{item.time}</Text>
+          </View>
+        </View>
+        <RichTextParts
+          html={item.body}
+          style={[text.feedBody, { marginTop: spacing.xs }]}
+          strongStyle={{ color: colors.text, ...type.bodyStrong }}
+        />
+      </Pressable>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -80,7 +134,7 @@ export default function ExploreScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.aitxt}>{chat.msg}</Text>
                 {chat.explorationIds.map((id) => {
-                  const e = explorations[id];
+                  const e = explorationsForChat[id];
                   if (!e) return null;
                   return (
                     <Pressable
@@ -112,104 +166,115 @@ export default function ExploreScreen() {
         ) : null}
 
         <Text style={styles.secLabel}>{exploreCopy.activeSectionLabel}</Text>
-        {active && (
-          <Pressable
-            style={[styles.area, styles.areaActive]}
-            onPress={() => navigation.navigate("ExplorationDetail", { id: activeId })}
-          >
-            <View style={[styles.ico, { backgroundColor: colors.amberBg }]}>
-              <Text style={styles.icoGlyph}>{active.icon}</Text>
-            </View>
-            <View style={styles.areaBody}>
-              <Text style={styles.cat}>{active.category}</Text>
-              <Text style={styles.tit}>{active.title}</Text>
-              <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
-                {active.duration} · {active.statusBadge}
-              </Text>
-              <View style={styles.areaMeta}>
-                <Badge variant="amber">Active</Badge>
-                <Badge variant="teal">{active.streak}-day streak</Badge>
+        {active ? (
+          <>
+            <Pressable
+              style={[styles.area, styles.areaActive]}
+              onPress={() => navigation.navigate("ExplorationDetail", { id: active.id })}
+            >
+              <View style={[styles.ico, { backgroundColor: colors.amberBg }]}>
+                <Text style={styles.icoGlyph}>{active.icon}</Text>
               </View>
-            </View>
-            <View style={styles.areaStatus}>
-              <Text style={styles.progressVal}>{active.progress}%</Text>
-              <Text style={styles.progressLbl}>complete</Text>
-            </View>
-          </Pressable>
-        )}
-
-        {active && (
-          <View style={styles.timelineCard}>
-            <Text style={styles.cardEyebrow}>{exploreCopy.timelineCardTitle}</Text>
-            {(active.phases || []).map((ph, i) => (
-              <View key={i} style={styles.tlRow}>
-                <View
-                  style={[
-                    styles.dot,
-                    ph.status === "active" && styles.dotOn,
-                    ph.status === "complete" && { backgroundColor: colors.borderMed }
-                  ]}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.tlName}>
-                    {ph.name}{" "}
-                    {ph.status === "complete" ? (
-                      <Badge variant="teal">Complete</Badge>
-                    ) : ph.status === "active" ? (
-                      <Badge variant="amber">Active</Badge>
-                    ) : null}
-                  </Text>
-                  <Text style={styles.tlDesc}>{ph.desc}</Text>
+              <View style={styles.areaBody}>
+                <Text style={styles.cat}>{active.category}</Text>
+                <Text style={styles.tit}>{active.title}</Text>
+                <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
+                  {active.duration} · {active.statusBadge}
+                </Text>
+                <View style={styles.areaMeta}>
+                  <Badge variant="amber">Active</Badge>
+                  <Badge variant="teal">{active.streak}-day streak</Badge>
                 </View>
               </View>
-            ))}
+              <View style={styles.areaStatus}>
+                <Text style={styles.progressVal}>{active.progress}%</Text>
+                <Text style={styles.progressLbl}>complete</Text>
+              </View>
+            </Pressable>
+
+            <View style={styles.timelineCard}>
+              <Text style={styles.cardEyebrow}>{exploreCopy.timelineCardTitle}</Text>
+              {(active.phases || []).map((ph, i) => (
+                <View key={i} style={styles.tlRow}>
+                  <View
+                    style={[
+                      styles.dot,
+                      ph.status === "active" && styles.dotOn,
+                      ph.status === "complete" && { backgroundColor: colors.borderMed }
+                    ]}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.tlName}>
+                      {ph.name}{" "}
+                      {ph.status === "complete" ? (
+                        <Badge variant="teal">Complete</Badge>
+                      ) : ph.status === "active" ? (
+                        <Badge variant="amber">Active</Badge>
+                      ) : null}
+                    </Text>
+                    <Text style={styles.tlDesc}>{ph.desc}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : (
+          <View style={[styles.area, styles.areaEmpty]}>
+            <Text style={styles.emptyActiveText}>Currently no active explorations</Text>
           </View>
         )}
 
+        {activity.length > 0 ? (
+          <View style={styles.activitySection}>
+            <Text style={styles.secLabel}>Recent activity</Text>
+            {activity.map((item) => renderActivityItem(item))}
+          </View>
+        ) : null}
+
         <Text style={styles.secLabel}>{exploreCopy.availableSectionLabel}</Text>
-        {ordered
-          .filter((id) => !explorations[id]?.active)
-          .map((id) => {
-            const e = explorations[id];
-            return (
-              <Pressable key={id} style={styles.area} onPress={() => navigation.navigate("ExplorationDetail", { id })}>
-                <View style={[styles.ico, { backgroundColor: e.bg }]}>
-                  <Text style={styles.icoGlyph}>{e.icon}</Text>
-                </View>
-                <View style={styles.areaBody}>
-                  <Text style={styles.cat}>{e.category}</Text>
-                  <Text style={styles.tit}>{e.title}</Text>
-                  <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
-                    {e.desc}
-                  </Text>
-                  <View style={styles.areaMeta}>
-                    <Pressable
-                      onPress={(ev) => {
-                        ev.stopPropagation?.();
-                        navigation.navigate("ExplorersList", { explorationId: id });
-                      }}
-                    >
-                      <Badge variant="blue">{e.participants} explorers active</Badge>
-                    </Pressable>
-                    <Pressable onPress={() => navigation.navigate("Evidence", { id })}>
-                      <Text style={styles.evidenceLink}>See evidence</Text>
-                    </Pressable>
-                  </View>
-                </View>
-                <View style={styles.areaStatus}>
-                  <Pressable
-                    style={[styles.startPill, { backgroundColor: e.bg }]}
-                    onPress={(ev) => {
-                      ev.stopPropagation?.();
-                      startExploration(navigation, id, { showToast });
-                    }}
-                  >
-                    <Text style={[styles.startTxt, { color: e.text }]}>Start</Text>
-                  </Pressable>
-                </View>
+        {available.map((e) => (
+          <Pressable
+            key={e.id}
+            style={styles.area}
+            onPress={() => navigation.navigate("ExplorationDetail", { id: e.id })}
+          >
+            <View style={[styles.ico, { backgroundColor: e.bg }]}>
+              <Text style={styles.icoGlyph}>{e.icon}</Text>
+            </View>
+            <View style={styles.areaBody}>
+              <Text style={styles.cat}>{e.category}</Text>
+              <Text style={styles.tit}>{e.title}</Text>
+              <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
+                {e.desc}
+              </Text>
+              <View style={styles.areaMeta}>
+                <Pressable
+                  onPress={(ev) => {
+                    ev.stopPropagation?.();
+                    navigation.navigate("ExplorersList", { explorationId: e.id });
+                  }}
+                >
+                  <Badge variant="blue">{e.participants} explorers active</Badge>
+                </Pressable>
+                <Pressable onPress={() => navigation.navigate("Evidence", { id: e.id })}>
+                  <Text style={styles.evidenceLink}>See evidence</Text>
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.areaStatus}>
+              <Pressable
+                style={[styles.startPill, { backgroundColor: e.bg }]}
+                onPress={async (ev) => {
+                  ev.stopPropagation?.();
+                  const started = await startExploration(navigation, e.id, { showToast });
+                  if (started) await refetchExplore();
+                }}
+              >
+                <Text style={[styles.startTxt, { color: e.text }]}>Start</Text>
               </Pressable>
-            );
-          })}
+            </View>
+          </Pressable>
+        ))}
 
         <View style={styles.coming}>
           <View style={styles.comingLabel}>
@@ -250,6 +315,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     marginTop: spacing.xs
   },
+  activitySection: { marginBottom: spacing.blockMb },
+  activityItem: { ...layout.feedItem, marginBottom: spacing.md },
+  activityHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.feedGap,
+    marginBottom: spacing.md
+  },
+  activityAv: {
+    width: 34,
+    height: 34,
+    minHeight: 34,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  activityName: text.feedName,
+  activityTime: text.feedTime,
   area: {
     flexDirection: "row",
     alignItems: "stretch",
@@ -264,6 +346,15 @@ const styles = StyleSheet.create({
     minHeight: 104
   },
   areaActive: { borderColor: colors.greenDark, borderWidth: 1.5 },
+  areaEmpty: {
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  emptyActiveText: {
+    ...type.exploreDesc,
+    color: colors.textMuted,
+    textAlign: "center"
+  },
   areaBody: { flex: 1, justifyContent: "center", minHeight: 72 },
   areaMeta: {
     flexDirection: "row",

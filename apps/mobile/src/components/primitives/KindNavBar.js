@@ -35,8 +35,10 @@ export function KindNavBar({ profile, onSearch, onNotifications, onAvatar }) {
         <TouchableOpacity onPress={onAvatar} accessibilityLabel="Profile">
           <Avatar
             size={iconSize.avatarNav}
-            img={profile?.img ?? 28}
-            initials={profile?.initials || "AR"}
+            img={profile?.img}
+            sceneKey={profile?.sceneKey}
+            avatarUrl={profile?.avatarUrl}
+            initials={profile?.initials || "?"}
             borderColor={colors.orange}
             borderWidth={1.5}
           />

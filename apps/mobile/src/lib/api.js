@@ -1,27 +1,72 @@
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 
-export async function get(path) {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
-  return res.json();
+let getToken = () => null;
+let onRefresh = null;
+let onUnauthorized = null;
+
+export function configureApiAuth({ getToken: getTokenFn, onRefresh: refreshFn, onUnauthorized: unauthorizedFn }) {
+  getToken = getTokenFn ?? (() => null);
+  onRefresh = refreshFn ?? null;
+  onUnauthorized = unauthorizedFn ?? null;
 }
 
-export async function post(path, body) {
-  const res = await fetch(`${BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`POST ${path} → ${res.status}`);
-  return res.json();
+export class ApiError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
 }
 
-export async function patch(path, body) {
+async function parseResponse(res) {
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function request(method, path, body, { isPublic = false, retried = false } = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (!isPublic) {
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${BASE}${path}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined
   });
-  if (!res.ok) throw new Error(`PATCH ${path} → ${res.status}`);
-  return res.json();
+
+  if (res.status === 401 && !isPublic && !retried && onRefresh) {
+    const refreshed = await onRefresh();
+    if (refreshed) return request(method, path, body, { isPublic, retried: true });
+    onUnauthorized?.();
+  }
+
+  const data = await parseResponse(res);
+  if (!res.ok) {
+    throw new ApiError(res.status, data?.error || `${method} ${path} → ${res.status}`);
+  }
+
+  return data;
+}
+
+export function publicPost(path, body) {
+  return request("POST", path, body, { isPublic: true });
+}
+
+export function get(path) {
+  return request("GET", path);
+}
+
+export function post(path, body) {
+  return request("POST", path, body);
+}
+
+export function patch(path, body) {
+  return request("PATCH", path, body);
 }

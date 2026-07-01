@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { KindNavBar } from "../components/primitives/KindNavBar";
 import { KindTabBar } from "../components/primitives/KindTabBar";
 import { useData } from "../context/DataContext";
-import { useProfile } from "../context/ProfileContext";
+import { useProfile, avatarFromProfile, avatarToProps } from "../context/ProfileContext";
 import HomeScreen from "../screens/HomeScreen";
 import ExploreScreen from "../screens/ExploreScreen";
 import InsightScreen from "../screens/InsightScreen";
@@ -28,9 +28,11 @@ export default function MainTabShell() {
   const stackNav = useNavigation();
   const [tabChrome, setTabChrome] = useState(null);
 
+  const apiAvatarProps = avatarToProps(avatarFromProfile(profile));
   const navProfile = {
+    ...apiAvatarProps,
     ...avatarProps,
-    initials: initials || profile.navProfile?.initials || "AR"
+    initials: initials || profile?.navProfile?.initials || "?"
   };
 
   return (

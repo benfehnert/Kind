@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Platform } from "react-native";
-import * as Notifications from "expo-notifications";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { useConsent } from "../context/ConsentContext";
+import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { useUiShell } from "../context/UiContext";
+import { requestDailyReminderPermission } from "../lib/notifications";
 import { formatConsentDate } from "../hooks/useUserExplorations";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -18,14 +19,21 @@ import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 
 export default function ProfileScreen() {
-  const { profile, explorations } = useData();
+  const { profile, explorations, refetchProfile } = useData();
   const navigation = useNavigation();
   const { followingCount } = useFollow();
   const { privacyPrefs, updatePrivacyPref, explorationConsents, activeExplorationId } = useConsent();
   const { displayName, avatar, initials, avatarProps, updateDisplayName, updateAvatar } = useProfile();
+  const { logout } = useAuth();
   const { showToast } = useUiShell();
   const [nameModalOpen, setNameModalOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchProfile?.();
+    }, [refetchProfile])
+  );
 
   const toggles = profile.privacy?.toggles || [];
 
@@ -47,13 +55,10 @@ export default function ProfileScreen() {
         showToast("Daily reminders are available in the iOS and Android apps.");
         return;
       }
-      const { status: existing } = await Notifications.getPermissionsAsync();
-      if (existing !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        if (status !== "granted") {
-          showToast("Enable notifications in your device settings to receive daily reminders.");
-          return;
-        }
+      const { granted } = await requestDailyReminderPermission();
+      if (!granted) {
+        showToast("Enable notifications in your device settings to receive daily reminders.");
+        return;
       }
     }
     updatePrivacyPref(key, next);
@@ -119,7 +124,10 @@ export default function ProfileScreen() {
             >
               <Text style={styles.kl}>{row.label}</Text>
               <Text
-                style={[styles.kvTxt, row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }]}
+                style={[
+                  styles.kvTxt,
+                  row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                ]}
               >
                 {row.value}
               </Text>
@@ -186,6 +194,10 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </Card>
+
+        <Pressable style={styles.signOutBtn} onPress={logout}>
+          <Text style={styles.signOutTxt}>Sign out</Text>
+        </Pressable>
 
         <View style={styles.legalLinks}>
           <Pressable onPress={() => navigation.navigate("PrivacyPolicy")}>
@@ -309,6 +321,19 @@ const styles = StyleSheet.create({
   },
   exploreTitle: { ...text.label, marginBottom: 2 },
   exploreMeta: text.profileMeta,
+  signOutBtn: {
+    marginBottom: spacing.sectionGap,
+    borderWidth: 1.5,
+    borderColor: colors.borderMed,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xl,
+    alignItems: "center"
+  },
+  signOutTxt: {
+    ...text.link,
+    fontSize: 14,
+    color: colors.orangeDark
+  },
   legalLinks: {
     flexDirection: "row",
     alignItems: "center",

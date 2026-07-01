@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { patch } from "../lib/api";
 import { useData } from "./DataContext";
 import { useOnboarding } from "./OnboardingContext";
+import { useAuth } from "./AuthContext";
 
 const PROFILE_STORAGE_KEY = "@kind/user_profile";
 
@@ -16,24 +18,37 @@ function initialsFromName(name) {
 }
 
 function pravatarNum(key) {
-  if (!key || typeof key !== "string") return 28;
+  if (!key || typeof key !== "string") return null;
   const m = key.match(/pravatar-(\d+)/);
-  return m ? parseInt(m[1], 10) : 28;
+  return m ? parseInt(m[1], 10) : null;
+}
+
+export function avatarFromProfile(profile) {
+  const avatarKey = profile?.hero?.avatarKey ?? profile?.navProfile?.avatarKey ?? null;
+  if (!avatarKey) return null;
+  if (avatarKey.startsWith("scene-")) {
+    return { type: "scene", key: avatarKey.replace(/^scene-/, "") };
+  }
+  const id = pravatarNum(avatarKey);
+  return id != null ? { type: "pravatar", id } : null;
 }
 
 export function avatarToProps(avatar) {
-  if (!avatar) return { img: 28 };
+  if (!avatar) return {};
   if (avatar.type === "scene") return { sceneKey: avatar.key };
-  return { img: avatar.id ?? 28 };
+  if (avatar.type === "photo" && avatar.uri) return { photoUri: avatar.uri };
+  if (avatar.id != null) return { img: avatar.id };
+  return {};
 }
 
 const ProfileContext = createContext(null);
 
 export function ProfileProvider({ children }) {
-  const { profile } = useData();
+  const { profile, refetchProfile } = useData();
   const { answers, completed: onboardingCompleted } = useOnboarding();
+  const { isAuthenticated } = useAuth();
   const [displayName, setDisplayName] = useState("");
-  const [avatar, setAvatar] = useState({ type: "pravatar", id: 28 });
+  const [avatar, setAvatar] = useState(null);
   const [hydrating, setHydrating] = useState(true);
 
   useEffect(() => {
@@ -43,23 +58,31 @@ export function ProfileProvider({ children }) {
         const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
         if (cancelled) return;
 
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.displayName) setDisplayName(parsed.displayName);
-          if (parsed.avatar) setAvatar(parsed.avatar);
+        const apiName =
+          profile?.hero?.name ||
+          (onboardingCompleted && answers.name?.trim()) ||
+          "";
+        const apiAvatar = avatarFromProfile(profile);
+        const parsed = raw ? JSON.parse(raw) : null;
+
+        if (isAuthenticated) {
+          setDisplayName(apiName || parsed?.displayName || "");
+          const localAvatar = parsed?.avatar;
+          if (localAvatar?.type === "scene" || localAvatar?.type === "photo") {
+            setAvatar(localAvatar);
+          } else {
+            setAvatar(apiAvatar ?? localAvatar);
+          }
+        } else if (parsed) {
+          setDisplayName(parsed.displayName || apiName);
+          setAvatar(parsed.avatar ?? apiAvatar);
         } else {
-          const fallbackName =
-            (onboardingCompleted && answers.name?.trim()) || profile?.hero?.name || "Anna Ross";
-          const fallbackAvatar = {
-            type: "pravatar",
-            id: pravatarNum(profile?.hero?.avatarKey ?? profile?.navProfile?.avatarKey)
-          };
-          setDisplayName(fallbackName);
-          setAvatar(fallbackAvatar);
+          setDisplayName(apiName);
+          setAvatar(apiAvatar);
         }
       } catch {
-        setDisplayName(profile?.hero?.name || "Anna Ross");
-        setAvatar({ type: "pravatar", id: 28 });
+        setDisplayName(profile?.hero?.name || "");
+        setAvatar(avatarFromProfile(profile));
       } finally {
         if (!cancelled) setHydrating(false);
       }
@@ -68,7 +91,7 @@ export function ProfileProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [profile, onboardingCompleted, answers.name]);
+  }, [profile, onboardingCompleted, answers.name, isAuthenticated]);
 
   const persist = useCallback(async (next) => {
     try {
@@ -79,24 +102,47 @@ export function ProfileProvider({ children }) {
   }, []);
 
   const updateDisplayName = useCallback(
-    (name) => {
+    async (name) => {
       const trimmed = name.trim();
       if (!trimmed) return;
       setDisplayName(trimmed);
       persist({ displayName: trimmed, avatar });
+      if (isAuthenticated) {
+        try {
+          await patch("/profile", { displayName: trimmed });
+          await refetchProfile?.();
+        } catch {
+          // local state kept
+        }
+      }
     },
-    [avatar, persist]
+    [avatar, persist, isAuthenticated, refetchProfile]
   );
 
   const updateAvatar = useCallback(
-    (nextAvatar) => {
+    async (nextAvatar) => {
       setAvatar(nextAvatar);
       persist({ displayName, avatar: nextAvatar });
+      if (isAuthenticated) {
+        try {
+          const body =
+            nextAvatar?.type === "pravatar" && nextAvatar.id != null
+              ? { avatarImageId: nextAvatar.id }
+              : { avatarImageId: null };
+          await patch("/profile", body);
+          await refetchProfile?.();
+        } catch {
+          // local state kept
+        }
+      }
     },
-    [displayName, persist]
+    [displayName, persist, isAuthenticated, refetchProfile]
   );
 
-  const initials = useMemo(() => initialsFromName(displayName), [displayName]);
+  const initials = useMemo(
+    () => profile?.navProfile?.initials || initialsFromName(displayName) || "?",
+    [profile?.navProfile?.initials, displayName]
+  );
 
   const value = useMemo(
     () => ({

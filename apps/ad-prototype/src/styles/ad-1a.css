@@ -1,0 +1,65 @@
+/* Concept A — single Insights screen with an attention-grabbing landing pulse.
+   Inherits the base look from main.css; only the deltas live here. */
+@import "./main.css";
+
+
+#logo {
+  font-size: 98px;
+}
+
+#logo-sub {
+  font-size: 16px;
+  color: rgb(255, 240, 215);
+  font-weight: 600;
+}
+
+#hero-text {
+  font-size: 40px;
+}
+
+/* The detail panel in this concept is just tagline + CTA, so give it a little
+   more breathing room at the bottom. */
+#detail-text {
+  padding: 28px 32px 36px;
+}
+
+/* ── Landing pulse ──
+   A soft ring that expands out from the phone once, as if it just dropped into
+   place. Driven by anime.js in ad-1a.js; sits behind the frame. */
+#pulse-ring {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 60%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(0.2);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 159, 80, 0.45) 0%,
+    rgba(255, 159, 80, 0.18) 45%,
+    rgba(255, 159, 80, 0) 70%
+  );
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── One-tap audio unlock (shown only if autoplay is blocked) ── */
+#audio-unlock {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-family: "Albert Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2a1f;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}

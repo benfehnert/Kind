@@ -7,6 +7,11 @@ import { PRIVACY_POLICY_URL } from "../../data/explorerOnboarding";
 import { SelectionCard, YesNoCards } from "./SelectionCard";
 import { KindBlob, ShieldIcon } from "./KindBlob";
 import { ValuePropIcon } from "./ValuePropIcon";
+import {
+  notificationStatusMessage,
+  openNotificationSettings,
+  requestDailyReminderPermission
+} from "../../lib/notifications";
 
 function GoogleIcon() {
   return (
@@ -248,9 +253,71 @@ export function renderRemindersStep(step, answers, onChange) {
       <YesNoCards
         value={value}
         onChange={(v) => onChange(step.answerKey, v)}
-        yesSub={value === true ? "I'll send you a gentle nudge each day to help you stay on track." : undefined}
+        yesSub={
+          value === true
+            ? "Great — on the next step we'll help you turn on notifications on your device."
+            : undefined
+        }
         noSub={value === false ? "No worries — you can turn reminders on later in your profile." : undefined}
       />
+    </View>
+  );
+}
+
+export function renderNotificationsStep(step, answers, onChange) {
+  const status = answers[step.answerKey];
+  const statusMessage = notificationStatusMessage(status);
+
+  async function handleEnable() {
+    if (Platform.OS === "web") {
+      onChange(step.answerKey, "web_unavailable");
+      return;
+    }
+    const result = await requestDailyReminderPermission();
+    onChange(step.answerKey, result.granted ? "granted" : "denied");
+  }
+
+  return (
+    <View>
+      <Text style={styles.title}>{step.title}</Text>
+      {step.body ? <Text style={styles.body}>{step.body}</Text> : null}
+
+      <View style={styles.notificationCard}>
+        <Text style={styles.notificationCardTitle}>Daily check-in reminders</Text>
+        <Text style={styles.notificationCardBody}>
+          A short nudge each day to log your exploration data and stay on track.
+        </Text>
+      </View>
+
+      {statusMessage ? (
+        <View
+          style={[
+            styles.notificationStatus,
+            status === "granted" && styles.notificationStatusOk,
+            (status === "denied" || status === "web_unavailable") && styles.notificationStatusWarn
+          ]}
+        >
+          <Text style={styles.notificationStatusTxt}>{statusMessage}</Text>
+        </View>
+      ) : null}
+
+      <Pressable style={styles.enableBtn} onPress={handleEnable}>
+        <Text style={styles.enableBtnTxt}>
+          {Platform.OS === "web" ? "Continue on mobile app" : "Allow notifications"}
+        </Text>
+      </Pressable>
+
+      {status === "denied" ? (
+        <Pressable style={styles.settingsLink} onPress={openNotificationSettings}>
+          <Text style={styles.settingsLinkTxt}>Open device settings</Text>
+        </Pressable>
+      ) : null}
+
+      {!status ? (
+        <Pressable style={styles.skipLink} onPress={() => onChange(step.answerKey, "skipped")}>
+          <Text style={styles.skipLinkTxt}>Not now</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -422,5 +489,75 @@ const styles = StyleSheet.create({
   googleBtnTxt: {
     ...type.buttonMd,
     color: colors.text
+  },
+  notificationCard: {
+    backgroundColor: colors.greenLight,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.greenDark
+  },
+  notificationCardTitle: {
+    ...type.buttonMd,
+    color: colors.greenDark,
+    marginBottom: spacing.xs
+  },
+  notificationCardBody: {
+    ...type.exploreDesc,
+    color: colors.textMuted,
+    lineHeight: 22
+  },
+  notificationStatus: {
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  notificationStatusOk: {
+    backgroundColor: colors.greenLight,
+    borderColor: colors.greenDark
+  },
+  notificationStatusWarn: {
+    backgroundColor: colors.amberBg,
+    borderColor: colors.amberText
+  },
+  notificationStatusTxt: {
+    ...type.exploreDesc,
+    color: colors.text,
+    lineHeight: 22
+  },
+  enableBtn: {
+    backgroundColor: colors.greenDark,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.screen,
+    alignItems: "center",
+    marginBottom: spacing.md,
+    minHeight: 48,
+    justifyContent: "center"
+  },
+  enableBtnTxt: {
+    ...type.buttonMd,
+    color: "#fff"
+  },
+  settingsLink: {
+    alignItems: "center",
+    paddingVertical: spacing.md,
+    marginBottom: spacing.sm
+  },
+  settingsLinkTxt: {
+    ...type.buttonMd,
+    color: colors.greenDark
+  },
+  skipLink: {
+    alignItems: "center",
+    paddingVertical: spacing.md
+  },
+  skipLinkTxt: {
+    ...type.exploreDesc,
+    color: colors.textMuted
   }
 });
