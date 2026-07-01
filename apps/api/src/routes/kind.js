@@ -201,7 +201,7 @@ router.get("/community/individuals", async (c) => {
           ) ORDER BY ap.sort_order
         ), '[]'::json)
         FROM activity_posts ap
-        LEFT JOIN activity_nice_counts anc ON anc.id = ap.id
+        LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
         WHERE ap.individual_id = i.id) AS acts
      FROM individuals i
      ORDER BY i.display_name`

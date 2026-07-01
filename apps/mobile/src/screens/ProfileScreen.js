@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   );
 
   const toggles = profile.privacy?.toggles || [];
+  const reminderToggles = profile.reminders?.toggles || [];
 
   const consentedExplorations = Object.entries(explorationConsents || {})
     .filter(([, v]) => v?.granted)
@@ -203,6 +204,32 @@ export default function ProfileScreen() {
               <Text style={styles.poT}>{a.label}</Text>
             </Pressable>
           ))}
+        </Card>
+
+        <Card>
+          <CardTitle>{profile.reminders?.title || "Reminders"}</CardTitle>
+          {reminderToggles.map((t, i) => {
+            const on = Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            return (
+              <View
+                key={t.key}
+                style={[styles.setRow, i === reminderToggles.length - 1 && { borderBottomWidth: 0 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sl}>{t.label}</Text>
+                  <Text style={styles.ss}>{t.sub}</Text>
+                </View>
+                <Pressable
+                  style={[styles.toggle, !on && styles.toggleOff]}
+                  onPress={() => handleToggle(t.key, !on)}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: on }}
+                >
+                  <View style={[styles.toggleKnob, !on && styles.toggleKnobOff]} />
+                </Pressable>
+              </View>
+            );
+          })}
         </Card>
 
         <Pressable style={styles.signOutBtn} onPress={logout}>

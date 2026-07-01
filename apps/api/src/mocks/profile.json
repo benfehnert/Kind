@@ -44,12 +44,6 @@
         "label": "Visible in community",
         "sub": "Others can see your progress and follow you",
         "defaultOn": false
-      },
-      {
-        "key": "reminders",
-        "label": "Daily reminders",
-        "sub": "Support to keep on track",
-        "defaultOn": false
       }
     ],
     "actions": [
@@ -62,6 +56,17 @@
         "id": "export",
         "label": "Download my anonymised data",
         "toast": "Prototype: prepares a downloadable export of your anonymised exploration logs."
+      }
+    ]
+  },
+  "reminders": {
+    "title": "Reminders",
+    "toggles": [
+      {
+        "key": "reminders",
+        "label": "Daily reminders",
+        "sub": "Support to keep on track",
+        "defaultOn": false
       }
     ]
   },

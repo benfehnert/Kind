@@ -35,7 +35,7 @@ async function fetchNiceCount(activityPostId) {
   const { rows } = await query(
     `SELECT COALESCE(anc.nice_count, ap.nice_count_base, 0)::int AS nice_count
      FROM activity_posts ap
-     LEFT JOIN activity_nice_counts anc ON anc.id = ap.id
+     LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
      WHERE ap.id = $1`,
     [activityPostId]
   );
@@ -57,7 +57,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
     `SELECT ap.id, ap.summary, ap.detail_metrics, ap.exploration_label, ap.posted_at, ap.sort_order,
             COALESCE(anc.nice_count, ap.nice_count_base, 0)::int AS nice_count
      FROM activity_posts ap
-     LEFT JOIN activity_nice_counts anc ON anc.id = ap.id
+     LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
      WHERE ap.individual_id = $1
      ORDER BY ap.sort_order`,
     [individualId]

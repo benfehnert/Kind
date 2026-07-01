@@ -18,7 +18,11 @@
       { "variant": "teal", "label": "78 participants" },
       { "variant": "teal", "label": "1 paper pending" }
     ],
-    "subTabs": ["Individuals", "Explorations", "Researchers", "Evidence"],
+    "subTabs": ["All", "Individuals", "Explorations", "Researchers", "Evidence"],
+    "emptyIndividualsTitle": "No individuals yet",
+    "emptyIndividualsBody": "You'll be able to view and follow other individuals here once others join the service.",
+    "emptyResearchersTitle": "No researchers yet",
+    "emptyResearchersBody": "You'll be able to view and follow researchers here once researchers join the service.",
     "nearYouTitle": "Explorers near you",
     "insightCardTitle": "Community insight",
     "insightCardBody": "Across active participants this month, those logging <strong>3+ morning rules</strong> reported an average afternoon energy improvement of <strong>+1.6 points</strong> by week 4. You're on the same track."

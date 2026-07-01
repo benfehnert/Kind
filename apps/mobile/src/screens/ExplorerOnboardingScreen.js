@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
 import { useConsent } from "../context/ConsentContext";
@@ -11,6 +11,8 @@ import {
   validateStep
 } from "../data/explorerOnboarding";
 import { OnboardingShell } from "../components/onboarding/OnboardingShell";
+import { AuthChoiceStep } from "../components/onboarding/AuthChoiceStep";
+import { LoginOnboardingStep } from "../components/onboarding/LoginOnboardingStep";
 import {
   renderWelcomeStep,
   renderSignupStep,
@@ -35,13 +37,14 @@ function mapAnswersToConsent(answers) {
 
 export default function ExplorerOnboardingScreen() {
   const { answers, updateAnswers, completeOnboarding } = useOnboarding();
-  const { isAuthenticated, signup } = useAuth();
+  const { isAuthenticated, signup, login } = useAuth();
   const { saveConsent, syncFromOnboarding } = useConsent();
   const { showToast } = useUiShell();
   const [stage, setStage] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [signupError, setSignupError] = useState("");
+  const didAuthJumpRef = useRef(false);
 
   const visibleSteps = useMemo(
     () => getVisibleSteps(answers, { isAuthenticated }),
@@ -52,10 +55,33 @@ export default function ExplorerOnboardingScreen() {
   const canContinue = validateStep(step, answers);
   const progressTotal = getProgressStepCount(visibleSteps);
   const busy = finishing || advancing;
+  const footerHidden = step?.type === "authChoice" || step?.type === "login";
 
   useEffect(() => {
     setStage((s) => Math.min(s, Math.max(visibleSteps.length - 1, 0)));
   }, [visibleSteps.length]);
+
+  // Once the user authenticates (via create-account or login), skip the
+  // pre-account steps and resume the questionnaire at the value props.
+  useEffect(() => {
+    if (!isAuthenticated || didAuthJumpRef.current) return;
+    didAuthJumpRef.current = true;
+    const steps = getVisibleSteps(answers, { isAuthenticated: true });
+    const idx = steps.findIndex((s) => s.id === "value-trials");
+    if (idx >= 0) setStage(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  const goToStepId = useCallback(
+    (id) => {
+      const idx = visibleSteps.findIndex((s) => s.id === id);
+      if (idx >= 0) {
+        setSignupError("");
+        setStage(idx);
+      }
+    },
+    [visibleSteps]
+  );
 
   const handleChange = useCallback(
     (key, value) => {
@@ -86,7 +112,8 @@ export default function ExplorerOnboardingScreen() {
           signupEmail: email,
           signupPassword: answers.signupPassword
         });
-        setStage((s) => s + 1);
+        // Advancing past signup is handled by the auth effect once
+        // isAuthenticated flips true.
       } catch (err) {
         const message =
           err instanceof ApiError ? err.message : "Something went wrong. Please try again.";
@@ -111,11 +138,24 @@ export default function ExplorerOnboardingScreen() {
     visibleSteps.length
   ]);
 
+  const handleLogin = useCallback(
+    async (loginEmail, loginPassword) => {
+      await login(loginEmail, loginPassword);
+      // Navigation is handled by the auth effect / root navigator.
+    },
+    [login]
+  );
+
   const goBack = useCallback(() => {
     if (stage <= 0) return;
     setSignupError("");
+    if (step?.type === "signup" || step?.type === "login") {
+      const idx = visibleSteps.findIndex((s) => s.id === "auth-choice");
+      setStage(idx >= 0 ? idx : stage - 1);
+      return;
+    }
     setStage((s) => s - 1);
-  }, [stage]);
+  }, [stage, step?.type, visibleSteps]);
 
   const handleFinish = useCallback(async () => {
     if (finishing) return;
@@ -138,6 +178,20 @@ export default function ExplorerOnboardingScreen() {
     switch (step.type) {
       case "welcome":
         return renderWelcomeStep();
+      case "authChoice":
+        return (
+          <AuthChoiceStep
+            onCreateAccount={() => goToStepId("signup")}
+            onLogin={() => goToStepId("login")}
+          />
+        );
+      case "login":
+        return (
+          <LoginOnboardingStep
+            onSubmit={handleLogin}
+            onSwitchToCreate={() => goToStepId("signup")}
+          />
+        );
       case "signup":
         return renderSignupStep(step, answers, handleChange, signupError);
       case "message":
@@ -175,7 +229,7 @@ export default function ExplorerOnboardingScreen() {
       }
       continueDisabled={!canContinue || busy}
       onContinue={isFinish ? handleFinish : goNext}
-      hideFooter={false}
+      hideFooter={footerHidden}
     >
       {renderStep()}
     </OnboardingShell>

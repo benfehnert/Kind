@@ -8,6 +8,16 @@ export const ONBOARDING_STEPS = [
     continueLabel: "Continue"
   },
   {
+    id: "auth-choice",
+    type: "authChoice",
+    showProgress: false
+  },
+  {
+    id: "login",
+    type: "login",
+    showProgress: false
+  },
+  {
     id: "signup",
     type: "signup",
     showProgress: false,
@@ -212,7 +222,7 @@ export const PROGRESS_STEP_COUNT = ONBOARDING_STEPS.filter((s) => s.showProgress
 
 export function getVisibleSteps(answers, { isAuthenticated = false } = {}) {
   return ONBOARDING_STEPS.filter((step) => {
-    if (step.id === "signup") {
+    if (step.id === "signup" || step.id === "login" || step.id === "auth-choice") {
       return !isAuthenticated;
     }
     if (step.id === "notifications") {
@@ -241,6 +251,8 @@ export function validateStep(step, answers) {
     case "welcome":
     case "message":
     case "finish":
+    case "authChoice":
+    case "login":
       return true;
 
     case "signup": {
