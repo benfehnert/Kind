@@ -13,6 +13,6 @@
     },
     "android": {},
     "web": {},
-    "plugins": ["expo-localization"]
+    "plugins": ["expo-localization", "expo-notifications"]
   }
 }

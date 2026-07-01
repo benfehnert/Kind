@@ -1,0 +1,80 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-06-01",
+  "endDate": "2026-06-06",
+  "explorationId": "screen-sleep-short",
+  "derivedFrom": "anna-screen-sleep-completion.json",
+  "logs": [
+    {
+      "log_date": "2026-06-01",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-06-02",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.5,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-06-03",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 35,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 6.7,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-06-04",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 40,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-06-05",
+      "field_values": {
+        "ss_last": "15–30 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 40,
+        "ss_onset": "10–20 min",
+        "ss_sleep": 6.9,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-06-06",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 65,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    }
+  ]
+}

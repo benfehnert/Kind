@@ -1,0 +1,194 @@
+{
+  "generated_at": "2026-07-01T13:39:34.697Z",
+  "exploration_id": "screen-sleep-short",
+  "avg_improvement_points": 1.4,
+  "top_habit_by_sleep": "screen_free_60min",
+  "by_week": {
+    "1": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    },
+    "2": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    },
+    "3": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    },
+    "4": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    },
+    "5": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    },
+    "6": {
+      "participant_count": 51,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96
+      ]
+    }
+  },
+  "weekly_sleep": {
+    "1": {
+      "n": 42,
+      "mean": 5.48,
+      "p25": 4.68,
+      "p75": 6.220000000000001
+    },
+    "2": {
+      "n": 44,
+      "mean": 5.76,
+      "p25": 4.86,
+      "p75": 6.54
+    },
+    "3": {
+      "n": 46,
+      "mean": 6.04,
+      "p25": 5.04,
+      "p75": 6.86
+    },
+    "4": {
+      "n": 48,
+      "mean": 6.32,
+      "p25": 5.22,
+      "p75": 7.180000000000001
+    },
+    "5": {
+      "n": 50,
+      "mean": 6.6000000000000005,
+      "p25": 5.4,
+      "p75": 7.5
+    },
+    "6": {
+      "n": 52,
+      "mean": 6.880000000000001,
+      "p25": 5.58,
+      "p75": 7.82
+    }
+  },
+  "stacking_effect_at_week": {
+    "1": {
+      "mean_sleep_60min_free": 6.1,
+      "mean_sleep_less_buffer": 5.15
+    },
+    "2": {
+      "mean_sleep_60min_free": 6.3999999999999995,
+      "mean_sleep_less_buffer": 5.3
+    },
+    "3": {
+      "mean_sleep_60min_free": 6.699999999999999,
+      "mean_sleep_less_buffer": 5.45
+    },
+    "4": {
+      "mean_sleep_60min_free": 7,
+      "mean_sleep_less_buffer": 5.6
+    },
+    "5": {
+      "mean_sleep_60min_free": 7.3,
+      "mean_sleep_less_buffer": 5.75
+    },
+    "6": {
+      "mean_sleep_60min_free": 7.6,
+      "mean_sleep_less_buffer": 5.9
+    }
+  },
+  "derived_from": "screen-sleep",
+  "note": "Derived from the parent cohort snapshot. Short explorations map one logged day to one full-study week, so per-week cohort figures are used as per-day references."
+}

@@ -19,6 +19,18 @@ import { buildExplorePayload } from "../lib/exploreData.js";
 import { buildInsightPayload } from "../lib/insightData.js";
 import { buildCommunityPayload } from "../lib/communityData.js";
 import { buildProfilePayload, updateProfile } from "../lib/profileData.js";
+import { buildDataUsagePayload } from "../lib/dataUsageData.js";
+import {
+  buildActsForIndividual,
+  fetchActivityNiceSupporters,
+  toggleActivityNice
+} from "../lib/activityNiceData.js";
+import {
+  createActivityMessage,
+  fetchActivityMessages,
+  fetchActivityMessageSummary,
+  toggleActivityMessageReaction
+} from "../lib/activityMessageData.js";
 import meRouter from "./me.js";
 
 const router = new Hono();
@@ -115,9 +127,12 @@ router.get("/explorations", async (c) => {
   const { rows } = await query(
     `SELECT id FROM explorations ORDER BY
        CASE id
-         WHEN 'morning-rules' THEN 1 WHEN 'eating' THEN 2
-         WHEN 'screen-sleep' THEN 3  WHEN 'relaxation' THEN 4
-         WHEN 'upf-mood' THEN 5      ELSE 6
+         WHEN 'morning-rules' THEN 1  WHEN 'eating' THEN 2
+         WHEN 'screen-sleep' THEN 3   WHEN 'relaxation' THEN 4
+         WHEN 'upf-mood' THEN 5
+         WHEN 'morning-rules-short' THEN 6 WHEN 'eating-short' THEN 7
+         WHEN 'screen-sleep-short' THEN 8 WHEN 'relaxation-short' THEN 9
+         WHEN 'upf-mood-short' THEN 10    ELSE 11
        END`
   );
 
@@ -176,11 +191,18 @@ router.get("/community/individuals", async (c) => {
         JOIN explorations e ON e.id = ue.exploration_id
         WHERE ue.individual_id = i.id) AS exps,
        (SELECT COALESCE(json_agg(
-          json_build_object('t', ap.summary, 'time', ap.posted_at, 'exp', ap.exploration_label,
-                            'detail', ap.detail_metrics, 'nc', ap.nice_count_base)
-          ORDER BY ap.sort_order
+          json_build_object(
+            'id', ap.id,
+            't', ap.summary,
+            'time', ap.posted_at,
+            'exp', ap.exploration_label,
+            'detail', ap.detail_metrics,
+            'nc', COALESCE(anc.nice_count, ap.nice_count_base, 0)
+          ) ORDER BY ap.sort_order
         ), '[]'::json)
-        FROM activity_posts ap WHERE ap.individual_id = i.id) AS acts
+        FROM activity_posts ap
+        LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
+        WHERE ap.individual_id = i.id) AS acts
      FROM individuals i
      ORDER BY i.display_name`
   );
@@ -230,6 +252,7 @@ router.get("/community/researchers", async (c) => {
 });
 
 router.get("/community/individuals/:slug", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
   const { rows } = await query(
     `SELECT
        i.id,
@@ -258,19 +281,21 @@ router.get("/community/individuals/:slug", async (c) => {
         ), '[]'::json)
         FROM user_explorations ue
         JOIN explorations e ON e.id = ue.exploration_id
-        WHERE ue.individual_id = i.id) AS exps,
-       (SELECT COALESCE(json_agg(
-          json_build_object('t', ap.summary, 'time', ap.posted_at, 'exp', ap.exploration_label,
-                            'detail', ap.detail_metrics, 'nc', ap.nice_count_base)
-          ORDER BY ap.sort_order
-        ), '[]'::json)
-        FROM activity_posts ap WHERE ap.individual_id = i.id) AS acts
+        WHERE ue.individual_id = i.id) AS exps
      FROM individuals i
      WHERE i.slug = $1`,
     [c.req.param("slug")]
   );
   if (!rows.length) return c.json({ error: "Individual not found" }, 404);
-  return c.json(rows[0]);
+
+  const profile = rows[0];
+  const acts = await buildActsForIndividual(profile.id, viewerId);
+
+  return c.json({
+    ...profile,
+    id: profile.slug,
+    acts
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -393,6 +418,14 @@ router.get("/profile", async (c) => {
 
   const payload = await buildProfilePayload(individualId);
   if (!payload) return c.json({ error: "Profile not found" }, 404);
+  return c.json(payload);
+});
+
+router.get("/profile/data-usage", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const payload = await buildDataUsagePayload(individualId);
   return c.json(payload);
 });
 
@@ -579,7 +612,110 @@ router.patch("/social/follows", async (c) => {
     );
   }
 
-  return c.json({ ok: true });
+  const { rows: followingIndividuals } = await query(
+    `SELECT i.slug FROM individual_follows f
+     JOIN individuals i ON i.id = f.followee_id
+     WHERE f.follower_id = $1`,
+    [individualId]
+  );
+  const { rows: followingResearchers } = await query(
+    "SELECT researcher_id FROM researcher_follows WHERE individual_id = $1",
+    [individualId]
+  );
+
+  return c.json({
+    ok: true,
+    followingExplorerIds: followingIndividuals.map((r) => r.slug),
+    followingResearcherIds: followingResearchers.map((r) => r.researcher_id)
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Activity nices
+// ---------------------------------------------------------------------------
+
+router.patch("/activity-posts/:id/nice", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const result = await toggleActivityNice(postId, viewerId);
+  return c.json(result);
+});
+
+router.get("/activity-posts/:id/nices", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const supporters = await fetchActivityNiceSupporters(postId, viewerId);
+  return c.json(supporters);
+});
+
+router.get("/activity-posts/:id/messages", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const [messages, summary] = await Promise.all([
+    fetchActivityMessages(postId, viewerId),
+    fetchActivityMessageSummary(postId)
+  ]);
+
+  return c.json({ ...summary, messages });
+});
+
+router.post("/activity-posts/:id/messages", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const body = await c.req.json().catch(() => ({}));
+
+  try {
+    const result = await createActivityMessage(postId, viewerId, {
+      body: body.body,
+      parentMessageId: body.parentMessageId
+    });
+    return c.json(result, 201);
+  } catch (err) {
+    const status = err.status || 400;
+    return c.json({ error: err.message || "Could not send message" }, status);
+  }
+});
+
+router.patch("/activity-posts/:id/messages/:messageId/reactions", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const messageId = c.req.param("messageId");
+  const body = await c.req.json().catch(() => ({}));
+
+  try {
+    const reactions = await toggleActivityMessageReaction(
+      postId,
+      messageId,
+      viewerId,
+      body.reactionType
+    );
+    return c.json({ reactions });
+  } catch (err) {
+    const status = err.status || 400;
+    return c.json({ error: err.message || "Could not update reaction" }, status);
+  }
 });
 
 // ---------------------------------------------------------------------------

@@ -1,10 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable, TextInput } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { getUserProfile } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
+import { get, patch } from "../lib/api";
+import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
+import { ActivityMessageBlock } from "../components/activity/ActivityMessageBlock";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -20,13 +23,72 @@ export default function ExplorerProfileScreen() {
   const userId = params?.userId;
   const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
   const u = userId ? getUserProfile(userId, community, followerIdSet) : null;
+  const [acts, setActs] = useState([]);
   const [expanded, setExpanded] = useState({});
-  const [niced, setNiced] = useState({});
-  const [messageOpen, setMessageOpen] = useState({});
-  const [drafts, setDrafts] = useState({});
-  const [sent, setSent] = useState({});
+  const [togglingNice, setTogglingNice] = useState({});
 
-  const acts = useMemo(() => u?.acts || [], [u]);
+  const loadActs = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const profile = await get(`/community/individuals/${userId}`);
+      setActs(profile.acts || []);
+    } catch {
+      setActs(u?.acts || []);
+    }
+  }, [userId, u?.acts]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadActs();
+    }, [loadActs])
+  );
+
+  const toggleNice = useCallback(
+    async (act) => {
+      if (!act?.id || togglingNice[act.id]) return;
+      setTogglingNice((prev) => ({ ...prev, [act.id]: true }));
+      try {
+        const result = await patch(`/activity-posts/${act.id}/nice`, {});
+        setActs((prev) =>
+          prev.map((row) =>
+            row.id === act.id
+              ? {
+                  ...row,
+                  nc: result.nc,
+                  viewerNiced: result.viewerNiced,
+                  supporterPreview: result.supporterPreview || []
+                }
+              : row
+          )
+        );
+      } catch (err) {
+        console.error("[ExplorerProfile] toggle nice failed:", err);
+      } finally {
+        setTogglingNice((prev) => ({ ...prev, [act.id]: false }));
+      }
+    },
+    [togglingNice]
+  );
+
+  const openSupporters = useCallback(
+    (act) => {
+      if (!act?.id || !(act.nc > 0)) return;
+      navigation.navigate("NiceSupporters", { activityPostId: act.id });
+    },
+    [navigation]
+  );
+
+  const openMessages = useCallback(
+    (act) => {
+      if (!act?.id) return;
+      navigation.navigate("ActivityMessages", {
+        activityPostId: act.id,
+        activitySummary: act.t,
+        ownerName: u?.name
+      });
+    },
+    [navigation, u?.name]
+  );
 
   if (!u || !userId) {
     return (
@@ -106,13 +168,11 @@ export default function ExplorerProfileScreen() {
           <Text style={styles.sectionLabel}>Recent activity</Text>
           {acts.map((a, i) => {
             const isExpanded = !!expanded[i];
-            const isNiced = !!niced[i];
-            const isMsgOpen = !!messageOpen[i];
-            const count = (a.nc || 0) + (isNiced ? 1 : 0);
+            const actKey = a.id || String(i);
 
             return (
               <Pressable
-                key={i}
+                key={actKey}
                 style={[styles.actCard, isExpanded && styles.actCardExpanded]}
                 onPress={() => setExpanded((prev) => ({ ...prev, [i]: !prev[i] }))}
               >
@@ -132,77 +192,21 @@ export default function ExplorerProfileScreen() {
                 <View style={styles.actFoot} onStartShouldSetResponder={() => true}>
                   <Text style={styles.actTime}>{a.time}</Text>
                   <View style={styles.actions}>
-                    <Pressable
-                      style={[styles.smallBtn, isNiced && styles.smallBtnOn]}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        setNiced((prev) => ({ ...prev, [i]: !prev[i] }));
-                      }}
-                    >
-                      <Text style={[styles.smallBtnTxt, isNiced && styles.smallBtnTxtOn]}>👌 nice {count}</Text>
-                    </Pressable>
-                    <Pressable
-                      style={styles.smallBtn}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        setMessageOpen((prev) => ({ ...prev, [i]: !prev[i] }));
-                      }}
-                    >
-                      <Text style={styles.smallBtnTxt}>💬 message</Text>
-                    </Pressable>
+                    <ActivityNiceBlock
+                      count={a.nc || 0}
+                      viewerNiced={!!a.viewerNiced}
+                      supporterPreview={a.supporterPreview || []}
+                      onToggleNice={() => toggleNice(a)}
+                      onOpenSupporters={() => openSupporters(a)}
+                      disabled={!!togglingNice[a.id]}
+                    />
+                    <ActivityMessageBlock
+                      count={a.mc || 0}
+                      messagePreview={a.messagePreview || []}
+                      onOpenMessages={() => openMessages(a)}
+                    />
                   </View>
                 </View>
-
-                {isMsgOpen ? (
-                  <View
-                    style={styles.msgBox}
-                    onStartShouldSetResponder={() => true}
-                  >
-                    {sent[i] ? (
-                      <View style={styles.msgSent}>
-                        <Text style={styles.msgSentTxt}>Message sent! 🎉</Text>
-                      </View>
-                    ) : (
-                      <>
-                        <TextInput
-                          style={styles.msgInput}
-                          placeholder="Write an encouraging message..."
-                          placeholderTextColor={colors.textMuted}
-                          multiline
-                          numberOfLines={3}
-                          value={drafts[i] || ""}
-                          onChangeText={(v) => setDrafts((prev) => ({ ...prev, [i]: v }))}
-                        />
-                        <View style={styles.msgActions}>
-                          <Pressable
-                            style={styles.msgCancel}
-                            onPress={(e) => {
-                              e.stopPropagation();
-                              setMessageOpen((prev) => ({ ...prev, [i]: false }));
-                            }}
-                          >
-                            <Text style={styles.msgCancelTxt}>Cancel</Text>
-                          </Pressable>
-                          <Pressable
-                            style={styles.msgSend}
-                            onPress={(e) => {
-                              e.stopPropagation();
-                              if (!(drafts[i] || "").trim()) return;
-                              setSent((prev) => ({ ...prev, [i]: true }));
-                              setTimeout(() => {
-                                setMessageOpen((prev) => ({ ...prev, [i]: false }));
-                                setSent((prev) => ({ ...prev, [i]: false }));
-                                setDrafts((prev) => ({ ...prev, [i]: "" }));
-                              }, 1800);
-                            }}
-                          >
-                            <Text style={styles.msgSendTxt}>Send</Text>
-                          </Pressable>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                ) : null}
               </Pressable>
             );
           })}
@@ -311,55 +315,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm
   },
   actTime: { ...text.caption },
-  actions: { flexDirection: "row", gap: spacing.sm },
-  smallBtn: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 5
-  },
-  smallBtnOn: {
-    borderColor: colors.greenDark,
-    backgroundColor: colors.greenLight
-  },
-  smallBtnTxt: { ...type.chip, color: colors.textMuted },
-  smallBtnTxtOn: { color: colors.greenDark },
-  msgBox: { marginTop: spacing.md },
-  msgInput: {
-    borderWidth: 1.5,
-    borderColor: colors.borderMed,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    minHeight: 70,
-    textAlignVertical: "top",
-    ...text.body,
-    color: colors.text,
-    backgroundColor: colors.surface
-  },
-  msgActions: { flexDirection: "row", justifyContent: "flex-end", gap: spacing.sm, marginTop: spacing.sm },
-  msgCancel: {
-    borderWidth: 1,
-    borderColor: colors.borderMed,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: 7
-  },
-  msgCancelTxt: { ...type.chip, color: colors.text },
-  msgSend: {
-    backgroundColor: colors.orange,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: 7
-  },
-  msgSendTxt: { ...type.chip, color: "#fff" },
-  msgSent: {
-    backgroundColor: colors.greenLight,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg
-  },
-  msgSentTxt: { ...type.chip, color: colors.greenDark }
+  actions: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" }
 });

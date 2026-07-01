@@ -2,6 +2,7 @@ import React from "react";
 import { View, ScrollView, Pressable, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, fontFamily, spacing } from "../../theme/colors";
+import { KindLogo } from "../primitives/KindLogo";
 import { OnboardingProgressBar } from "./OnboardingProgressBar";
 import { OnboardingContinueButton } from "./OnboardingContinueButton";
 
@@ -25,7 +26,7 @@ export function OnboardingShell({
             <Text style={styles.backChevron}>‹</Text>
           </Pressable>
         ) : (
-          <View style={styles.backPlaceholder} />
+          <KindLogo variant="dark" />
         )}
         {showProgress ? (
           <OnboardingProgressBar current={progressCurrent} total={progressTotal} />

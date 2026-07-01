@@ -1,13 +1,43 @@
 import { query } from "../db.js";
 import trialReports from "../data/explorationTrialReports.json" with { type: "json" };
 import consentMock from "../mocks/consent.json" with { type: "json" };
+import { getCentModule } from "./cent/index.js";
+import { getCentShortModule, isShortExploration } from "./centShort/index.js";
+import cohortSnapshotMorningRules from "../data/fixtures/cohort-snapshot-morning-rules.json" with { type: "json" };
+import cohortSnapshotEating from "../data/fixtures/cohort-snapshot-eating.json" with { type: "json" };
+import cohortSnapshotScreenSleep from "../data/fixtures/cohort-snapshot-screen-sleep.json" with { type: "json" };
+import cohortSnapshotRelaxation from "../data/fixtures/cohort-snapshot-relaxation.json" with { type: "json" };
+import cohortSnapshotUpfMood from "../data/fixtures/cohort-snapshot-upf-mood.json" with { type: "json" };
+import cohortSnapshotMorningRulesShort from "../data/fixtures/cohort-snapshot-morning-rules-short.json" with { type: "json" };
+import cohortSnapshotEatingShort from "../data/fixtures/cohort-snapshot-eating-short.json" with { type: "json" };
+import cohortSnapshotScreenSleepShort from "../data/fixtures/cohort-snapshot-screen-sleep-short.json" with { type: "json" };
+import cohortSnapshotRelaxationShort from "../data/fixtures/cohort-snapshot-relaxation-short.json" with { type: "json" };
+import cohortSnapshotUpfMoodShort from "../data/fixtures/cohort-snapshot-upf-mood-short.json" with { type: "json" };
+
+const COHORT_BY_EXPLORATION = {
+  "morning-rules": cohortSnapshotMorningRules,
+  eating: cohortSnapshotEating,
+  "screen-sleep": cohortSnapshotScreenSleep,
+  relaxation: cohortSnapshotRelaxation,
+  "upf-mood": cohortSnapshotUpfMood,
+  "morning-rules-short": cohortSnapshotMorningRulesShort,
+  "eating-short": cohortSnapshotEatingShort,
+  "screen-sleep-short": cohortSnapshotScreenSleepShort,
+  "relaxation-short": cohortSnapshotRelaxationShort,
+  "upf-mood-short": cohortSnapshotUpfMoodShort
+};
 
 const EXPLORATION_WEEKS = {
   "morning-rules": 8,
   eating: 6,
   "screen-sleep": 6,
   relaxation: 6,
-  "upf-mood": 6
+  "upf-mood": 6,
+  "morning-rules-short": 8,
+  "eating-short": 6,
+  "screen-sleep-short": 6,
+  "relaxation-short": 6,
+  "upf-mood-short": 6
 };
 
 export async function getIndividualId(authUserId) {
@@ -187,7 +217,11 @@ export async function ensureUserExploration(individualId, explorationId) {
 }
 
 export function getTrialReportTemplate(explorationId) {
-  return trialReports[explorationId] ?? null;
+  if (trialReports[explorationId]) return trialReports[explorationId];
+  if (isShortExploration(explorationId)) {
+    return trialReports[explorationId.replace(/-short$/, "")] ?? null;
+  }
+  return null;
 }
 
 export async function fetchUserReport(individualId, explorationId) {
@@ -201,15 +235,51 @@ export async function fetchUserReport(individualId, explorationId) {
 }
 
 export async function generateUserReport(individualId, explorationId) {
-  const template = getTrialReportTemplate(explorationId);
-  if (!template) return null;
-
   const { rows: ueRows } = await query(
-    `SELECT id FROM user_explorations
+    `SELECT id, started_at FROM user_explorations
      WHERE individual_id = $1 AND exploration_id = $2`,
     [individualId, explorationId]
   );
   const userExplorationId = ueRows[0]?.id ?? null;
+  const startedAt = ueRows[0]?.started_at;
+
+  let content;
+  const short = isShortExploration(explorationId);
+  const centModule = short ? getCentShortModule(explorationId) : getCentModule(explorationId);
+  if (centModule && startedAt) {
+    const { rows: logRows } = await query(
+      `SELECT log_date, field_values FROM daily_logs
+       WHERE individual_id = $1 AND exploration_id = $2
+       ORDER BY log_date ASC`,
+      [individualId, explorationId]
+    );
+    if (logRows.length) {
+      const { rows: profileRows } = await query(
+        `SELECT display_name FROM individuals WHERE id = $1`,
+        [individualId]
+      );
+      const entries = centModule.loadDayEntries(logRows, startedAt);
+      const studyMeta = centModule.buildStudyMeta({
+        start_date: startedAt,
+        end_date: logRows.at(-1)?.log_date,
+        participant_name: profileRows[0]?.display_name ?? "You"
+      });
+      const cohort = COHORT_BY_EXPLORATION[explorationId] ?? null;
+      const { mobileReport } = centModule.generateFinalReport(entries, studyMeta, cohort);
+      if (mobileReport) {
+        const { _cent, ...publicReport } = mobileReport;
+        content = publicReport;
+      } else {
+        content = getTrialReportTemplate(explorationId);
+      }
+    } else {
+      content = getTrialReportTemplate(explorationId);
+    }
+  } else {
+    content = getTrialReportTemplate(explorationId);
+  }
+
+  if (!content) return null;
 
   const { rows } = await query(
     `INSERT INTO user_exploration_reports (individual_id, exploration_id, user_exploration_id, content)
@@ -219,7 +289,7 @@ export async function generateUserReport(individualId, explorationId) {
        user_exploration_id = EXCLUDED.user_exploration_id,
        generated_at = NOW()
      RETURNING content, generated_at`,
-    [individualId, explorationId, userExplorationId, JSON.stringify(template)]
+    [individualId, explorationId, userExplorationId, JSON.stringify(content)]
   );
   return rows[0];
 }

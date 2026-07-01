@@ -1,0 +1,74 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-06-01",
+  "endDate": "2026-06-06",
+  "explorationId": "upf-mood-short",
+  "derivedFrom": "anna-upf-mood-completion.json",
+  "logs": [
+    {
+      "log_date": "2026-06-01",
+      "field_values": {
+        "upf_pct": 52,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-06-02",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 5.6,
+        "upf_energy": 5.5,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-06-03",
+      "field_values": {
+        "upf_pct": 33,
+        "upf_mood": 6.4,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-06-04",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 6.4,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-06-05",
+      "field_values": {
+        "upf_pct": 25,
+        "upf_mood": 7.9,
+        "upf_energy": 6.8,
+        "upf_swaps": [
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-06-06",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 7.2,
+        "upf_energy": 6.9,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks",
+          "Dinner"
+        ]
+      }
+    }
+  ]
+}

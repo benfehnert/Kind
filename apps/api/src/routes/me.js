@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { query } from "../db.js";
 import {
-  ANNA_DEMO_ONBOARDING,
   buildConsentPayload,
   ensureUserExploration,
   fetchConsentChoices,
@@ -19,6 +18,9 @@ import {
   upsertPrivacyFromOnboarding
 } from "../lib/meData.js";
 import { recordActivityFromLog } from "../lib/homeData.js";
+import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
+import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
+import { isShortExploration } from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -87,7 +89,7 @@ router.post("/onboarding/complete", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const body = await c.req.json().catch(() => ({}));
-  const answers = { ...ANNA_DEMO_ONBOARDING, ...(body.answers ?? body) };
+  const answers = body.answers ?? body;
 
   const { rows } = await query(
     `INSERT INTO individual_onboarding (individual_id, answers, completed_at)
@@ -397,11 +399,16 @@ router.post("/me/logs", async (c) => {
 
   await recordActivityFromLog(individualId, explorationId, rows[0].field_values, userExplorationId);
 
+  const feedUpdates = isShortExploration(explorationId)
+    ? await syncShortExplorationUpdates(individualId, explorationId)
+    : await syncExplorationUpdates(individualId, explorationId);
+
   return c.json({
     ok: true,
     logDate: rows[0].log_date,
     fieldValues: rows[0].field_values,
-    createdAt: rows[0].created_at
+    createdAt: rows[0].created_at,
+    feedUpdates: feedUpdates.length
   });
 });
 

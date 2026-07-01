@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { KindNavBar } from "../components/primitives/KindNavBar";
 import { KindTabBar } from "../components/primitives/KindTabBar";
@@ -25,7 +24,6 @@ function TabChromeBridge({ onChrome, state, navigation, descriptors }) {
 export default function MainTabShell() {
   const { profile } = useData();
   const { initials, avatarProps } = useProfile();
-  const stackNav = useNavigation();
   const [tabChrome, setTabChrome] = useState(null);
 
   const apiAvatarProps = avatarToProps(avatarFromProfile(profile));
@@ -40,8 +38,8 @@ export default function MainTabShell() {
       <View style={styles.chrome}>
         <KindNavBar
           profile={navProfile}
-          onSearch={() => stackNav.navigate("SearchModal")}
-          onNotifications={() => stackNav.navigate("NotificationsModal")}
+          onLogo={() => tabChrome?.navigation.navigate("Home")}
+          onSearch={() => tabChrome?.navigation.navigate("Exploration")}
           onAvatar={() => tabChrome?.navigation.navigate("Profile")}
         />
         {tabChrome ? <KindTabBar {...tabChrome} /> : null}

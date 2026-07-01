@@ -108,6 +108,10 @@ export async function buildCommunityCopy(activeExploration, individualId) {
     bannerBody,
     bannerBadges,
     subTabs: exploreCopyMock.community.subTabs,
+    emptyIndividualsTitle: exploreCopyMock.community.emptyIndividualsTitle,
+    emptyIndividualsBody: exploreCopyMock.community.emptyIndividualsBody,
+    emptyResearchersTitle: exploreCopyMock.community.emptyResearchersTitle,
+    emptyResearchersBody: exploreCopyMock.community.emptyResearchersBody,
     nearYouTitle: exploreCopyMock.community.nearYouTitle,
     insightCardTitle: exploreCopyMock.community.insightCardTitle,
     insightCardBody

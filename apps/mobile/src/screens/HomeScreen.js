@@ -41,6 +41,11 @@ export default function HomeScreen() {
   const { home, refetchHome, refetchInsight, explorations } = useData();
   const homeFeed = home.feed || {};
   const starterMode = Boolean(home.starterMode);
+  const personalization = home.personalization ?? homeFeed.personalization ?? null;
+  const recommendedExplorationId = personalization?.primaryExplorationId ?? null;
+  const recommendedExploration = recommendedExplorationId
+    ? explorations[recommendedExplorationId]
+    : null;
   const {
     explorationConsents,
     explorationRuns,
@@ -257,7 +262,6 @@ export default function HomeScreen() {
   const showFeedFilterEmpty = chip !== "all" && visible.length === 0;
   const showLogLinkInFeedEmpty =
     logExplorations.length > 0 || (starterMode && logExplorations.length === 0);
-  const reportItems = homeFeed.reportItems || [];
 
   async function handleSaveLogs() {
     if (saving || logExplorations.length === 0) return;
@@ -367,6 +371,25 @@ export default function HomeScreen() {
           explorations={progressExplorations}
           starterMode={starterMode}
         />
+
+        {starterMode && recommendedExploration ? (
+          <Card style={styles.recommendedCard}>
+            <Text style={styles.recommendedEyebrow}>Recommended for you</Text>
+            <Text style={styles.recommendedTitle}>
+              Start with {recommendedExploration.title}
+            </Text>
+            {personalization?.primaryMatchReason ? (
+              <Text style={styles.recommendedBody}>{personalization.primaryMatchReason}</Text>
+            ) : null}
+            <PrimaryButton
+              title="View exploration"
+              onPress={() =>
+                navigation.navigate("ExplorationDetail", { id: recommendedExplorationId })
+              }
+              style={{ marginTop: 12 }}
+            />
+          </Card>
+        ) : null}
 
         {(home.metrics || []).length > 0 ? (
           <MetricGrid>
@@ -485,13 +508,6 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
         ) : null}
-
-        {reportItems.length > 0 ? (
-          <View style={styles.demoSection}>
-            <Text style={styles.demoSectionTitle}>Personalised trial final reports</Text>
-            {reportItems.map((item) => renderFeedItem(item))}
-          </View>
-        ) : null}
       </ScrollView>
     </View>
   );
@@ -522,6 +538,25 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     backgroundColor: colors.greenLight,
     borderColor: colors.greenDark
+  },
+  recommendedCard: {
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
+    borderColor: colors.border
+  },
+  recommendedEyebrow: {
+    ...text.uppercaseLabel,
+    color: colors.greenDark,
+    marginBottom: spacing.xs
+  },
+  recommendedTitle: {
+    ...type.buttonMd,
+    color: colors.text,
+    marginBottom: spacing.xs
+  },
+  recommendedBody: {
+    ...type.exploreDesc,
+    color: colors.textMuted
   },
   confirmTitle: { ...type.buttonMd, color: colors.greenDark, marginBottom: spacing.xs },
   confirmBody: { ...type.exploreDesc, color: colors.textMuted },

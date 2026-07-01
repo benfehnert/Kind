@@ -200,6 +200,13 @@ export async function buildProfilePayload(individualId) {
         defaultOn: Boolean(row[toggle.key] ?? toggle.defaultOn ?? false)
       }))
     },
+    reminders: {
+      ...profileMock.reminders,
+      toggles: (profileMock.reminders?.toggles ?? []).map((toggle) => ({
+        ...toggle,
+        defaultOn: Boolean(row[toggle.key] ?? toggle.defaultOn ?? false)
+      }))
+    },
     contributionBanner: profileMock.contributionBanner
   };
 }

@@ -113,12 +113,99 @@ export function DataProvider({ children }) {
     return profile;
   }, []);
 
+  const applySocialFollows = useCallback((socialFollows) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        community: {
+          ...prev.community,
+          socialMeta: socialFollows
+        }
+      };
+    });
+  }, []);
+
+  const refetchSocialFollows = useCallback(async () => {
+    const socialFollows = await get("/social/follows");
+    applySocialFollows(socialFollows);
+    return socialFollows;
+  }, [applySocialFollows]);
+
+  const updateSocialFollows = useCallback(
+    ({ followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = {}) => {
+      setData((prev) => {
+        if (!prev) return prev;
+
+        const meta = prev.community?.socialMeta || {};
+        let followingExplorerIds = [...(meta.followingExplorerIds || [])];
+        let followingResearcherIds = [...(meta.followingResearcherIds || [])];
+
+        if (followSlug && !followingExplorerIds.includes(followSlug)) {
+          followingExplorerIds.push(followSlug);
+        }
+        if (unfollowSlug) {
+          followingExplorerIds = followingExplorerIds.filter((id) => id !== unfollowSlug);
+        }
+        if (followResearcherId && !followingResearcherIds.includes(followResearcherId)) {
+          followingResearcherIds.push(followResearcherId);
+        }
+        if (unfollowResearcherId) {
+          followingResearcherIds = followingResearcherIds.filter((id) => id !== unfollowResearcherId);
+        }
+
+        const next = {
+          ...prev,
+          community: {
+            ...prev.community,
+            socialMeta: {
+              ...meta,
+              followingExplorerIds,
+              followingResearcherIds
+            }
+          }
+        };
+
+        if (prev.profile?.followStats && (followSlug || unfollowSlug)) {
+          next.profile = {
+            ...prev.profile,
+            followStats: {
+              ...prev.profile.followStats,
+              following: followingExplorerIds.length
+            }
+          };
+        }
+
+        return next;
+      });
+    },
+    []
+  );
+
   const value = useMemo(
     () =>
       data
-        ? { ...data, refetchHome, refetchExplore, refetchInsight, refetchProfile }
+        ? {
+            ...data,
+            refetchHome,
+            refetchExplore,
+            refetchInsight,
+            refetchProfile,
+            refetchSocialFollows,
+            updateSocialFollows,
+            applySocialFollows
+          }
         : null,
-    [data, refetchHome, refetchExplore, refetchInsight, refetchProfile]
+    [
+      data,
+      refetchHome,
+      refetchExplore,
+      refetchInsight,
+      refetchProfile,
+      refetchSocialFollows,
+      updateSocialFollows,
+      applySocialFollows
+    ]
   );
 
   if (!value) {

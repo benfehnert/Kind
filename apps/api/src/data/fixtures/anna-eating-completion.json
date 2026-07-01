@@ -1,0 +1,388 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-03-03",
+  "endDate": "2026-04-13",
+  "explorationId": "eating",
+  "logs": [
+    {
+      "log_date": "2026-03-03",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.5,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-04",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.7,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-05",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.2,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-06",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.5,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-08",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.2,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-09",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.5,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-10",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.7,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-11",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.2,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-12",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.5,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-13",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.7,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-15",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.5,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-16",
+      "field_values": {
+        "te_first": "Before 7am",
+        "te_last": "After 8pm",
+        "te_energy": 5.2,
+        "te_hunger": 4.7,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-17",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "4–6pm",
+        "te_energy": 6.3,
+        "te_hunger": 5.2,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-18",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "After 8pm",
+        "te_energy": 5.4,
+        "te_hunger": 4.3,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-19",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "6–7pm",
+        "te_energy": 6.5,
+        "te_hunger": 5.5,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-20",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "4–6pm",
+        "te_energy": 6.7,
+        "te_hunger": 5.6,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-21",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "6–7pm",
+        "te_energy": 6.7,
+        "te_hunger": 5.8,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-22",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "After 8pm",
+        "te_energy": 5.4,
+        "te_hunger": 4.3,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-23",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "4–6pm",
+        "te_energy": 7,
+        "te_hunger": 6,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-24",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.1,
+        "te_hunger": 6.2,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-03-26",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "After 8pm",
+        "te_energy": 5.4,
+        "te_hunger": 4.3,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-27",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "6–7pm",
+        "te_energy": 7.4,
+        "te_hunger": 6.6,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-03-28",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 6.7,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-03-29",
+      "field_values": {
+        "te_first": "7–8am",
+        "te_last": "4–6pm",
+        "te_energy": 7.6,
+        "te_hunger": 6.9,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-03-30",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "After 8pm",
+        "te_energy": 5.4,
+        "te_hunger": 4.3,
+        "te_mood": 5
+      }
+    },
+    {
+      "log_date": "2026-03-31",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.3,
+        "te_hunger": 6.5,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-01",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "4–6pm",
+        "te_energy": 6.6,
+        "te_hunger": 5.8,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-04-02",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.3,
+        "te_hunger": 6.5,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-03",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.3,
+        "te_hunger": 6.5,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-04",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.3,
+        "te_hunger": 6.5,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-05",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.3,
+        "te_hunger": 6.5,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-06",
+      "field_values": {
+        "te_first": "9–10am",
+        "te_last": "4–6pm",
+        "te_energy": 6.6,
+        "te_hunger": 5.8,
+        "te_mood": 6
+      }
+    },
+    {
+      "log_date": "2026-04-07",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 6.9,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-08",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 7.1,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-10",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 7.1,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-11",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 6.9,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-12",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 7.1,
+        "te_mood": 7
+      }
+    },
+    {
+      "log_date": "2026-04-13",
+      "field_values": {
+        "te_first": "8–9am",
+        "te_last": "6–7pm",
+        "te_energy": 7.6,
+        "te_hunger": 6.9,
+        "te_mood": 7
+      }
+    }
+  ]
+}
