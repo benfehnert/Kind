@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { MessageIcon } from "../icons/MessageIcon";
-import { AvatarStack } from "./AvatarStack";
+import { AvatarStack } from "../primitives/AvatarStack";
 import { colors, radius, spacing } from "../../theme/colors";
 import { type } from "../../theme/typography";
 
