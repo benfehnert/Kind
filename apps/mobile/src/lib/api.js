@@ -70,3 +70,7 @@ export function post(path, body) {
 export function patch(path, body) {
   return request("PATCH", path, body);
 }
+
+export function put(path, body) {
+  return request("PUT", path, body);
+}

@@ -1,0 +1,637 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-04-08",
+  "endDate": "2026-06-02",
+  "explorationId": "morning-rules",
+  "logs": [
+    {
+      "log_date": "2026-04-08",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.05,
+        "mr_crash": "Severe crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-09",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.1,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-10",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.15,
+        "mr_crash": "Mild dip",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-11",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-13",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.1,
+        "mr_crash": "Mild dip",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-14",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.15,
+        "mr_crash": "Severe crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-15",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-16",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.05,
+        "mr_crash": "Mild dip",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-17",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.1,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-18",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.15,
+        "mr_crash": "Severe crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-19",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5,
+        "mr_crash": "Mild dip",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-20",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.05,
+        "mr_crash": "Severe crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-21",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.1,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-04-22",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.6,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-04-23",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.5,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-04-24",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.1,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-04-25",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.1,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-04-27",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 5.6,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-04-28",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.1,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-04-29",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.2,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-04-30",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.9,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-01",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-02",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "None",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-03",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "None",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-04",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-05",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 5.8,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-06",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "None",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-07",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "None",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-08",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7.1,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-09",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7.1,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-11",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-12",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7.1,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-13",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-14",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-15",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-16",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-17",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-18",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-19",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-05-20",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-22",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-23",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-24",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-25",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning meditation"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-26",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.6,
+        "mr_crash": "Mild dip",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-27",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-28",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-30",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-05-31",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.7,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-06-01",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.75,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-06-02",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    }
+  ]
+}

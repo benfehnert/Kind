@@ -72,20 +72,20 @@ export const EXPLORATION_REPORTS = {
           label: "Morning sunlight",
           value: "+2.1",
           width: 100,
-          bar: "#1D9E75",
+          bar: "#8A4A1A",
           badge: "Strong evidence · 82% of days",
-          badgeBg: "#E1F5EE",
-          badgeText: "#085041"
+          badgeBg: "#FDF0E4",
+          badgeText: "#8A4A1A"
         },
         {
           icon: "🤸",
           label: "Morning movement",
           value: "+1.4",
           width: 67,
-          bar: "#1D9E75",
+          bar: "#8A4A1A",
           badge: "Moderate–strong · 68% of days",
-          badgeBg: "#E1F5EE",
-          badgeText: "#085041"
+          badgeBg: "#FDF0E4",
+          badgeText: "#8A4A1A"
         },
         {
           icon: "🧘",
@@ -179,20 +179,20 @@ export const EXPLORATION_REPORTS = {
           label: "Consistent 10-hour window",
           value: "+1.8",
           width: 100,
-          bar: "#1D9E75",
+          bar: "#8A4A1A",
           badge: "Strong signal · 88% of intervention days",
-          badgeBg: "#E1F5EE",
-          badgeText: "#085041"
+          badgeBg: "#FDF0E4",
+          badgeText: "#8A4A1A"
         },
         {
           icon: "🌅",
           label: "Fixed first meal (~8am)",
           value: "+1.2",
           width: 67,
-          bar: "#1D9E75",
+          bar: "#8A4A1A",
           badge: "Moderate–strong · 74% of days",
-          badgeBg: "#E1F5EE",
-          badgeText: "#085041"
+          badgeBg: "#FDF0E4",
+          badgeText: "#8A4A1A"
         },
         {
           icon: "🌙",
@@ -577,5 +577,11 @@ export const EXPLORATION_REPORTS = {
 };
 
 export function getExplorationReport(explorationId) {
-  return EXPLORATION_REPORTS[explorationId] ?? null;
+  if (EXPLORATION_REPORTS[explorationId]) return EXPLORATION_REPORTS[explorationId];
+  // Short (alpha) explorations reuse their parent's static report as a fallback
+  // until the API has generated their own personalised report.
+  if (typeof explorationId === "string" && explorationId.endsWith("-short")) {
+    return EXPLORATION_REPORTS[explorationId.replace(/-short$/, "")] ?? null;
+  }
+  return null;
 }

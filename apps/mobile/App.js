@@ -20,6 +20,7 @@ import { OnboardingProvider, useOnboarding } from "./src/context/OnboardingConte
 import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import AuthNavigator from "./src/navigation/AuthNavigator";
+import ExplorerOnboardingScreen from "./src/screens/ExplorerOnboardingScreen";
 import { PostHogRoot } from "./src/components/PostHogRoot";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
 import { ProtoToast } from "./src/components/ProtoToast";
@@ -38,32 +39,53 @@ function AppShell() {
   );
 }
 
+function OnboardingFlow() {
+  const { toast } = useUiShell();
+
+  return (
+    <>
+      <StatusBar style="dark" />
+      <ExplorerOnboardingScreen />
+      <ProtoToast message={toast} visible={!!toast} />
+    </>
+  );
+}
+
 function AuthenticatedApp() {
   return (
     <DataProvider>
       <FollowProvider>
-        <OnboardingProvider>
-          <ConsentProvider>
-            <ProfileProvider>
-              <UiProvider>
-                <AppShell />
-              </UiProvider>
-            </ProfileProvider>
-          </ConsentProvider>
-        </OnboardingProvider>
+        <ConsentProvider>
+          <ProfileProvider>
+            <UiProvider>
+              <AppShell />
+            </UiProvider>
+          </ProfileProvider>
+        </ConsentProvider>
       </FollowProvider>
     </DataProvider>
   );
 }
 
 function RootNavigator() {
-  const { isAuthenticated, hydrating } = useAuth();
+  const { isAuthenticated, hydrating: authHydrating } = useAuth();
+  const { completed, hydrating: onboardingHydrating } = useOnboarding();
 
-  if (hydrating) {
+  if (authHydrating || onboardingHydrating) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F7F8F2" }}>
         <ActivityIndicator size="large" />
       </View>
+    );
+  }
+
+  if (!completed) {
+    return (
+      <ConsentProvider>
+        <UiProvider>
+          <OnboardingFlow />
+        </UiProvider>
+      </ConsentProvider>
     );
   }
 
@@ -101,7 +123,9 @@ export default function App() {
         <ProtoAppFrame>
           <NavigationContainer>
             <PostHogRoot>
-              <RootNavigator />
+              <OnboardingProvider>
+                <RootNavigator />
+              </OnboardingProvider>
             </PostHogRoot>
           </NavigationContainer>
         </ProtoAppFrame>

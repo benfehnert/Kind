@@ -3,10 +3,13 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { colors, heights, radius, spacing } from "../../theme/colors";
 import { type } from "../../theme/typography";
 
-export function PrimaryButton({ title, onPress, style }) {
+export function PrimaryButton({ title, onPress, style, backgroundColor, textColor }) {
   return (
-    <TouchableOpacity style={[styles.btn, style]} onPress={onPress}>
-      <Text style={styles.txt}>{title}</Text>
+    <TouchableOpacity
+      style={[styles.btn, backgroundColor ? { backgroundColor } : null, style]}
+      onPress={onPress}
+    >
+      <Text style={[styles.txt, textColor ? { color: textColor } : null]}>{title}</Text>
     </TouchableOpacity>
   );
 }

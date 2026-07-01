@@ -158,7 +158,7 @@ export default function ProfileScreen() {
                     </Text>
                   ) : null}
                 </View>
-                {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Joined</Badge>}
+                <Badge variant="amber">Active</Badge>
               </View>
             ))
           )}
@@ -189,7 +189,17 @@ export default function ProfileScreen() {
             );
           })}
           {(profile.privacy.actions || []).map((a) => (
-            <Pressable key={a.id} style={styles.po} onPress={() => showToast(a.toast)}>
+            <Pressable
+              key={a.id}
+              style={styles.po}
+              onPress={() => {
+                if (a.id === "used") {
+                  navigation.navigate("DataUsage");
+                  return;
+                }
+                if (a.toast) showToast(a.toast);
+              }}
+            >
               <Text style={styles.poT}>{a.label}</Text>
             </Pressable>
           ))}

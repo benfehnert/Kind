@@ -2,16 +2,13 @@ import { query } from "../db.js";
 import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
 import { buildActivityFeedItems, EXPLORATION_FEED_LABELS } from "./homeData.js";
 import { buildCommunityCopy } from "./communityData.js";
-
-const EXPLORATION_CATEGORY = {
-  "morning-rules": "Energy & Focus",
-  eating: "Metabolic Health",
-  "screen-sleep": "Rest & Sleep",
-  relaxation: "Stress & Composure",
-  "upf-mood": "Mood & Nutrition"
-};
-
-const EXPLORATION_ORDER = ["morning-rules", "eating", "screen-sleep", "relaxation", "upf-mood"];
+import {
+  buildRecommendedExplorations,
+  DEFAULT_EXPLORATION_ORDER,
+  EXPLORATION_CATEGORY,
+  fetchOnboardingAnswers,
+  rankExplorations
+} from "./onboardingRecommendations.js";
 
 function applyUserPhaseStatus(phases, weekCurrent, weeksTotal) {
   if (!phases?.length || !weekCurrent || !weeksTotal) return phases ?? [];
@@ -140,7 +137,7 @@ export async function buildExplorePayload(individualId) {
     await fetchUserExplorationState(individualId);
 
   const catalogs = await Promise.all(
-    EXPLORATION_ORDER.map((id) => fetchCatalogExploration(id))
+    DEFAULT_EXPLORATION_ORDER.map((id) => fetchCatalogExploration(id))
   );
 
   const merged = catalogs.filter(Boolean).map((catalog) => {
@@ -150,8 +147,20 @@ export async function buildExplorePayload(individualId) {
     return mergeExploration(catalog, run, isActive, userConsented);
   });
 
+  const answers = await fetchOnboardingAnswers(individualId);
+  const ranked = rankExplorations(
+    answers,
+    merged.map((e) => e.id)
+  );
+  const rankOrder = Object.fromEntries(ranked.map((entry, index) => [entry.id, index]));
+  merged.sort((a, b) => (rankOrder[a.id] ?? 99) - (rankOrder[b.id] ?? 99));
+
   const activeExploration = merged.find((e) => e.active) ?? null;
   const availableExplorations = merged.filter((e) => !e.active);
+  const catalogsById = Object.fromEntries(merged.map((e) => [e.id, e]));
+  const recommendedExplorations = buildRecommendedExplorations(answers, catalogsById).filter(
+    (entry) => entry.id !== activeExplorationId
+  );
   const activity = await buildActivityFeedItems(individualId);
   const copy = await buildExploreCopy(activeExploration, individualId);
 
@@ -159,7 +168,8 @@ export async function buildExplorePayload(individualId) {
     copy,
     activeExploration,
     availableExplorations,
-    explorationOrder: merged.map((e) => e.id),
+    recommendedExplorations,
+    explorationOrder: ranked.map((entry) => entry.id),
     activeExplorationId,
     activity
   };

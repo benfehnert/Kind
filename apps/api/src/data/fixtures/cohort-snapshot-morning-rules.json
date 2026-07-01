@@ -1,0 +1,252 @@
+{
+  "generated_at": "2026-06-26T18:04:51.893Z",
+  "exploration_id": "morning-rules",
+  "avg_improvement_points": 1.1,
+  "top_rule_by_crash": "sunlight",
+  "by_week": {
+    "1": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "2": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "3": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "4": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "5": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "6": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "7": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    },
+    "8": {
+      "participant_count": 78,
+      "logging_pct_distribution": [
+        45,
+        52,
+        58,
+        62,
+        68,
+        72,
+        76,
+        78,
+        82,
+        85,
+        88,
+        91,
+        94,
+        96,
+        98
+      ]
+    }
+  },
+  "weekly_energy": {
+    "1": {
+      "n": 67,
+      "mean": 5.15,
+      "p25": 4.32,
+      "p75": 5.9799999999999995
+    },
+    "2": {
+      "n": 69,
+      "mean": 5.3,
+      "p25": 4.44,
+      "p75": 6.16
+    },
+    "3": {
+      "n": 71,
+      "mean": 5.45,
+      "p25": 4.5600000000000005,
+      "p75": 6.34
+    },
+    "4": {
+      "n": 73,
+      "mean": 5.6,
+      "p25": 4.68,
+      "p75": 6.52
+    },
+    "5": {
+      "n": 75,
+      "mean": 5.75,
+      "p25": 4.8,
+      "p75": 6.699999999999999
+    },
+    "6": {
+      "n": 77,
+      "mean": 5.9,
+      "p25": 4.92,
+      "p75": 6.88
+    },
+    "7": {
+      "n": 79,
+      "mean": 6.05,
+      "p25": 5.04,
+      "p75": 7.06
+    },
+    "8": {
+      "n": 81,
+      "mean": 6.2,
+      "p25": 5.16,
+      "p75": 7.24
+    }
+  },
+  "stacking_effect_at_week": {
+    "1": {
+      "mean_energy_3plus_rules": 6,
+      "mean_energy_0to2_rules": 5
+    },
+    "2": {
+      "mean_energy_3plus_rules": 6.2,
+      "mean_energy_0to2_rules": 5.1000000000000005
+    },
+    "3": {
+      "mean_energy_3plus_rules": 6.4,
+      "mean_energy_0to2_rules": 5.2
+    },
+    "4": {
+      "mean_energy_3plus_rules": 6.6,
+      "mean_energy_0to2_rules": 5.300000000000001
+    },
+    "5": {
+      "mean_energy_3plus_rules": 6.8,
+      "mean_energy_0to2_rules": 5.4
+    },
+    "6": {
+      "mean_energy_3plus_rules": 7,
+      "mean_energy_0to2_rules": 5.5
+    },
+    "7": {
+      "mean_energy_3plus_rules": 7.2,
+      "mean_energy_0to2_rules": 5.6000000000000005
+    },
+    "8": {
+      "mean_energy_3plus_rules": 7.4,
+      "mean_energy_0to2_rules": 5.7
+    }
+  }
+}

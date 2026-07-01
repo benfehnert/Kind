@@ -1,0 +1,195 @@
+{
+  "generated_at": "2026-07-01T13:39:34.698Z",
+  "exploration_id": "relaxation-short",
+  "avg_stress_reduction_points": 1.3,
+  "avg_composure_gain_points": 1.2,
+  "top_habit_by_stress": "vagal_breathing",
+  "by_week": {
+    "1": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    },
+    "2": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    },
+    "3": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    },
+    "4": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    },
+    "5": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    },
+    "6": {
+      "participant_count": 58,
+      "logging_pct_distribution": [
+        46,
+        52,
+        58,
+        63,
+        68,
+        72,
+        76,
+        80,
+        83,
+        86,
+        88,
+        90,
+        92,
+        94,
+        95
+      ]
+    }
+  },
+  "weekly_composure": {
+    "1": {
+      "n": 50,
+      "mean": 5.38,
+      "p25": 4.62,
+      "p75": 6.1000000000000005
+    },
+    "2": {
+      "n": 52,
+      "mean": 5.5600000000000005,
+      "p25": 4.74,
+      "p75": 6.300000000000001
+    },
+    "3": {
+      "n": 54,
+      "mean": 5.74,
+      "p25": 4.86,
+      "p75": 6.5
+    },
+    "4": {
+      "n": 56,
+      "mean": 5.92,
+      "p25": 4.98,
+      "p75": 6.7
+    },
+    "5": {
+      "n": 58,
+      "mean": 6.1,
+      "p25": 5.1,
+      "p75": 6.9
+    },
+    "6": {
+      "n": 60,
+      "mean": 6.28,
+      "p25": 5.22,
+      "p75": 7.1000000000000005
+    }
+  },
+  "stacking_effect_at_week": {
+    "1": {
+      "mean_composure_2plus_practices": 6.02,
+      "mean_composure_few_practices": 5.199999999999999
+    },
+    "2": {
+      "mean_composure_2plus_practices": 6.24,
+      "mean_composure_few_practices": 5.3
+    },
+    "3": {
+      "mean_composure_2plus_practices": 6.46,
+      "mean_composure_few_practices": 5.3999999999999995
+    },
+    "4": {
+      "mean_composure_2plus_practices": 6.68,
+      "mean_composure_few_practices": 5.5
+    },
+    "5": {
+      "mean_composure_2plus_practices": 6.9,
+      "mean_composure_few_practices": 5.6
+    },
+    "6": {
+      "mean_composure_2plus_practices": 7.12,
+      "mean_composure_few_practices": 5.699999999999999
+    }
+  },
+  "derived_from": "relaxation",
+  "note": "Derived from the parent cohort snapshot. Short explorations map one logged day to one full-study week, so per-week cohort figures are used as per-day references."
+}

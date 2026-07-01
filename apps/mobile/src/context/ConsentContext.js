@@ -233,13 +233,22 @@ export function ConsentProvider({ children }) {
   }, []);
 
   const syncFromOnboarding = useCallback(
-    (answers) => {
+    async (answers) => {
       const prefs = privacyFromAnswers(answers);
       setPrivacyPrefs(prefs);
-      setChoices((prev) => ({ ...prev, ...choicesFromPrefs(prefs) }));
-      persistPrefs(prefs);
+      const nextChoices = choicesFromPrefs(prefs);
+      setChoices((prev) => ({ ...prev, ...nextChoices }));
+      await persistPrefs(prefs);
+
+      if (isAuthenticated) {
+        try {
+          await post("/consent/choices", { choices: nextChoices });
+        } catch {
+          // local state remains when API unavailable
+        }
+      }
     },
-    [persistPrefs]
+    [isAuthenticated, persistPrefs]
   );
 
   const updatePrivacyPref = useCallback(

@@ -1,0 +1,194 @@
+{
+  "generated_at": "2026-07-01T13:39:34.699Z",
+  "exploration_id": "upf-mood-short",
+  "avg_improvement_points": 0.9,
+  "top_habit_by_mood": "breakfast_swap",
+  "by_week": {
+    "1": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    },
+    "2": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    },
+    "3": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    },
+    "4": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    },
+    "5": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    },
+    "6": {
+      "participant_count": 22,
+      "logging_pct_distribution": [
+        42,
+        48,
+        55,
+        62,
+        68,
+        74,
+        78,
+        82,
+        85,
+        88,
+        90,
+        92,
+        94,
+        96,
+        97
+      ]
+    }
+  },
+  "weekly_mood": {
+    "1": {
+      "n": 19,
+      "mean": 5.58,
+      "p25": 4.92,
+      "p75": 6.2
+    },
+    "2": {
+      "n": 20,
+      "mean": 5.760000000000001,
+      "p25": 5.04,
+      "p75": 6.4
+    },
+    "3": {
+      "n": 21,
+      "mean": 5.94,
+      "p25": 5.16,
+      "p75": 6.6
+    },
+    "4": {
+      "n": 22,
+      "mean": 6.12,
+      "p25": 5.279999999999999,
+      "p75": 6.8
+    },
+    "5": {
+      "n": 23,
+      "mean": 6.300000000000001,
+      "p25": 5.3999999999999995,
+      "p75": 7
+    },
+    "6": {
+      "n": 24,
+      "mean": 6.48,
+      "p25": 5.52,
+      "p75": 7.2
+    }
+  },
+  "stacking_effect_at_week": {
+    "1": {
+      "mean_mood_under_30_upf": 6.02,
+      "mean_mood_over_50_upf": 5.28
+    },
+    "2": {
+      "mean_mood_under_30_upf": 6.24,
+      "mean_mood_over_50_upf": 5.36
+    },
+    "3": {
+      "mean_mood_under_30_upf": 6.46,
+      "mean_mood_over_50_upf": 5.44
+    },
+    "4": {
+      "mean_mood_under_30_upf": 6.68,
+      "mean_mood_over_50_upf": 5.5200000000000005
+    },
+    "5": {
+      "mean_mood_under_30_upf": 6.9,
+      "mean_mood_over_50_upf": 5.6000000000000005
+    },
+    "6": {
+      "mean_mood_under_30_upf": 7.12,
+      "mean_mood_over_50_upf": 5.68
+    }
+  },
+  "derived_from": "upf-mood",
+  "note": "Derived from the parent cohort snapshot. Short explorations map one logged day to one full-study week, so per-week cohort figures are used as per-day references."
+}

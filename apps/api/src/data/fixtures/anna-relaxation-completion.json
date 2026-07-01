@@ -1,0 +1,387 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2025-11-05",
+  "endDate": "2025-12-16",
+  "explorationId": "relaxation",
+  "logs": [
+    {
+      "log_date": "2025-11-05",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 7.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-06",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 5.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-07",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 5.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-09",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 3.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-10",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 3.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-11",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 2,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-12",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 7,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-14",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 5.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-15",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 3.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-16",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 2,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-17",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 6.2,
+        "rp_anxiety": 5.5,
+        "rp_composure": 5.5
+      }
+    },
+    {
+      "log_date": "2025-11-19",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.8,
+        "rp_anxiety": 4.5,
+        "rp_composure": 6.3
+      }
+    },
+    {
+      "log_date": "2025-11-20",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Progressive muscle relaxation"
+        ],
+        "rp_stress": 4,
+        "rp_anxiety": 4.2,
+        "rp_composure": 6.5
+      }
+    },
+    {
+      "log_date": "2025-11-21",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk",
+          "Meditation / visualisation"
+        ],
+        "rp_stress": 3.7,
+        "rp_anxiety": 3.8,
+        "rp_composure": 6.4
+      }
+    },
+    {
+      "log_date": "2025-11-22",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 5.7,
+        "rp_anxiety": 5.8,
+        "rp_composure": 6.1
+      }
+    },
+    {
+      "log_date": "2025-11-23",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.9,
+        "rp_anxiety": 4,
+        "rp_composure": 6.6
+      }
+    },
+    {
+      "log_date": "2025-11-25",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing"
+        ],
+        "rp_stress": 4.1,
+        "rp_anxiety": 4.8,
+        "rp_composure": 6.3
+      }
+    },
+    {
+      "log_date": "2025-11-26",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Progressive muscle relaxation",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.6,
+        "rp_anxiety": 3.5,
+        "rp_composure": 6.7
+      }
+    },
+    {
+      "log_date": "2025-11-27",
+      "field_values": {
+        "rp_practices": [
+          "Short nature walk"
+        ],
+        "rp_stress": 5.4,
+        "rp_anxiety": 5.2,
+        "rp_composure": 6.2
+      }
+    },
+    {
+      "log_date": "2025-11-28",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.8,
+        "rp_anxiety": 3.9,
+        "rp_composure": 6.5
+      }
+    },
+    {
+      "log_date": "2025-11-30",
+      "field_values": {
+        "rp_practices": [
+          "Progressive muscle relaxation"
+        ],
+        "rp_stress": 5.6,
+        "rp_anxiety": 5.5,
+        "rp_composure": 6
+      }
+    },
+    {
+      "log_date": "2025-12-01",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk",
+          "Meditation / visualisation"
+        ],
+        "rp_stress": 3.7,
+        "rp_anxiety": 3.2,
+        "rp_composure": 6.8
+      }
+    },
+    {
+      "log_date": "2025-12-02",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 5.8,
+        "rp_anxiety": 5.6,
+        "rp_composure": 6
+      }
+    },
+    {
+      "log_date": "2025-12-03",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.7,
+        "rp_anxiety": 3,
+        "rp_composure": 7.2
+      }
+    },
+    {
+      "log_date": "2025-12-04",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Progressive muscle relaxation",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.6,
+        "rp_anxiety": 2.8,
+        "rp_composure": 7.3
+      }
+    },
+    {
+      "log_date": "2025-12-06",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.8,
+        "rp_anxiety": 2.5,
+        "rp_composure": 7.4
+      }
+    },
+    {
+      "log_date": "2025-12-07",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Meditation / visualisation"
+        ],
+        "rp_stress": 4,
+        "rp_anxiety": 2.2,
+        "rp_composure": 7.2
+      }
+    },
+    {
+      "log_date": "2025-12-08",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.7,
+        "rp_anxiety": 2,
+        "rp_composure": 7.5
+      }
+    },
+    {
+      "log_date": "2025-12-09",
+      "field_values": {
+        "rp_practices": [
+          "Short nature walk"
+        ],
+        "rp_stress": 5.3,
+        "rp_anxiety": 3.4,
+        "rp_composure": 7.1
+      }
+    },
+    {
+      "log_date": "2025-12-10",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.8,
+        "rp_anxiety": 2,
+        "rp_composure": 7.4
+      }
+    },
+    {
+      "log_date": "2025-12-11",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk",
+          "Meditation / visualisation"
+        ],
+        "rp_stress": 3.9,
+        "rp_anxiety": 2.3,
+        "rp_composure": 7.4
+      }
+    },
+    {
+      "log_date": "2025-12-13",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Progressive muscle relaxation",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.6,
+        "rp_anxiety": 2,
+        "rp_composure": 7.5
+      }
+    },
+    {
+      "log_date": "2025-12-14",
+      "field_values": {
+        "rp_practices": [],
+        "rp_stress": 5.5,
+        "rp_anxiety": 2.8,
+        "rp_composure": 7.3
+      }
+    },
+    {
+      "log_date": "2025-12-15",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing",
+          "Short nature walk"
+        ],
+        "rp_stress": 3.7,
+        "rp_anxiety": 1.9,
+        "rp_composure": 7.4
+      }
+    },
+    {
+      "log_date": "2025-12-16",
+      "field_values": {
+        "rp_practices": [
+          "Vagal breathing"
+        ],
+        "rp_stress": 4.1,
+        "rp_anxiety": 2.4,
+        "rp_composure": 7.4
+      }
+    }
+  ]
+}

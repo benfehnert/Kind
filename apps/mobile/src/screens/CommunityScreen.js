@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, TextInput, Pressable } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
@@ -7,6 +7,7 @@ import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontSize, heights, radius, spacing } from "../theme/colors";
+import { REM } from "../theme/tokens";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
@@ -15,10 +16,7 @@ import { Avatar } from "../components/primitives/Avatar";
 import { Card, CardTitle } from "../components/primitives/Card";
 import { RichTextParts } from "../utils/RichText";
 
-const INITIAL_VISIBLE = 8;
-const PAGE_SIZE = 8;
-const INITIAL_PANEL_HEIGHT = 420;
-const PANEL_HEIGHT_STEP = 220;
+const INITIAL_PANEL_HEIGHT = 500;
 
 export default function CommunityScreen() {
   const { community, explorationEvidence, exploreCopy, explorePage, refetchExplore } = useData();
@@ -27,8 +25,6 @@ export default function CommunityScreen() {
   const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
   const [tab, setTab] = useState("individuals");
   const [q, setQ] = useState("");
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
-  const [panelHeight, setPanelHeight] = useState(INITIAL_PANEL_HEIGHT);
   const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
   const query = q.trim().toLowerCase();
 
@@ -125,33 +121,6 @@ export default function CommunityScreen() {
     });
   }, [evidenceHits, query]);
 
-  useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE);
-    setPanelHeight(INITIAL_PANEL_HEIGHT);
-  }, [tab, query]);
-
-  const panelList = useMemo(() => {
-    if (tab === "individuals") return people;
-    if (tab === "explorations") return filteredExplorationIds;
-    if (tab === "researchers") return filteredResearchers;
-    return filteredEvidenceIds;
-  }, [tab, people, filteredExplorationIds, filteredResearchers, filteredEvidenceIds]);
-
-  const remaining = Math.max(0, panelList.length - visibleCount);
-  const nextBatch = Math.min(PAGE_SIZE, remaining);
-  const canShowMore = remaining > 0;
-  const isExpanded = visibleCount > INITIAL_VISIBLE;
-
-  const showMore = () => {
-    setVisibleCount((n) => Math.min(n + PAGE_SIZE, panelList.length));
-    setPanelHeight((h) => h + PANEL_HEIGHT_STEP);
-  };
-
-  const showLess = () => {
-    setVisibleCount(INITIAL_VISIBLE);
-    setPanelHeight(INITIAL_PANEL_HEIGHT);
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={layout.screenPad}>
@@ -185,15 +154,17 @@ export default function CommunityScreen() {
             })}
           </View>
 
-          <View
+          <ScrollView
             style={[
               styles.csPanel,
-              { maxHeight: panelHeight },
               tab === "explorations" ? styles.csPanelExplorations : styles.csPanelDefault
             ]}
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
           >
             {tab === "individuals" &&
-              people.slice(0, visibleCount).map((u) => {
+              people.map((u) => {
             const uid = u.id;
             const prof = uid ? getUserProfile(uid, community, new Set()) : u;
             const following = uid ? isFollowing(uid) : false;
@@ -232,7 +203,7 @@ export default function CommunityScreen() {
               })}
 
             {tab === "explorations" &&
-              filteredExplorationIds.slice(0, visibleCount).map((id) => {
+              filteredExplorationIds.map((id) => {
             const e = explorations[id];
             const rid = getResearcher(e.researcherId, community.researchers);
             return (
@@ -252,15 +223,15 @@ export default function CommunityScreen() {
                     </Pressable>
                   ) : null}
                 </View>
-                <Badge variant={e.active ? "amber" : e.userConsented ? "blue" : "teal"}>
-                  {e.active ? "Active" : e.userConsented ? "Joined" : "View"}
+                <Badge variant={e.active || e.userConsented ? "amber" : "teal"}>
+                  {e.active || e.userConsented ? "Active" : "View"}
                 </Badge>
               </Pressable>
             );
               })}
 
             {tab === "researchers" &&
-              filteredResearchers.slice(0, visibleCount).map((r) => (
+              filteredResearchers.map((r) => (
             <Pressable key={r.id} style={styles.resRow} onPress={() => navigation.navigate("ResearcherProfile", { researcherId: r.id })}>
               <Avatar size={44} img={r.img} initials={r.initials} />
               <View style={{ flex: 1 }}>
@@ -280,7 +251,7 @@ export default function CommunityScreen() {
               ))}
 
             {tab === "evidence" &&
-              filteredEvidenceIds.slice(0, visibleCount).map((expId) => {
+              filteredEvidenceIds.map((expId) => {
             const ev = explorationEvidence[expId];
             const exp = explorations[expId];
             return (
@@ -298,24 +269,7 @@ export default function CommunityScreen() {
               </Pressable>
             );
               })}
-            {canShowMore || isExpanded ? (
-              <View style={styles.panelFooter}>
-                {canShowMore ? (
-                  <Pressable style={styles.showMoreBtn} onPress={showMore}>
-                    <Text style={styles.showMoreTxt}>Show {nextBatch} more</Text>
-                  </Pressable>
-                ) : null}
-                {isExpanded ? (
-                  <Pressable
-                    style={[styles.showMoreBtn, canShowMore && styles.showLessBtn]}
-                    onPress={showLess}
-                  >
-                    <Text style={styles.showLessTxt}>Show less</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : null}
-          </View>
+          </ScrollView>
         </View>
 
         <Card>
@@ -343,7 +297,9 @@ const styles = StyleSheet.create({
     paddingLeft: 36,
     paddingRight: spacing.xxl,
     backgroundColor: colors.surface,
-    ...type.body,
+    fontFamily: type.body.fontFamily,
+    fontSize: REM,
+    lineHeight: Math.round(REM * 1.55),
     color: colors.text
   },
   commBrowse: {
@@ -372,7 +328,7 @@ const styles = StyleSheet.create({
   csTabOn: { borderBottomColor: colors.orange },
   csTabText: { ...type.tab, color: colors.textMuted },
   csTabTextOn: { ...type.tabActive, color: colors.greenDark },
-  csPanel: { minHeight: 260 },
+  csPanel: { minHeight: 260, maxHeight: INITIAL_PANEL_HEIGHT },
   csPanelDefault: { paddingHorizontal: 12 },
   csPanelExplorations: { paddingHorizontal: 8 },
   row: {
@@ -444,21 +400,5 @@ const styles = StyleSheet.create({
   },
   evT: text.feedName,
   evS: { ...text.feedTime, marginTop: spacing.xs },
-  snip: { ...text.exploreDesc, marginTop: spacing.sm },
-  panelFooter: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: spacing.sm
-  },
-  showMoreBtn: {
-    paddingVertical: spacing.lg,
-    alignItems: "center"
-  },
-  showLessBtn: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md
-  },
-  showMoreTxt: { ...text.link },
-  showLessTxt: { ...type.chip, color: colors.textMuted }
+  snip: { ...text.exploreDesc, marginTop: spacing.sm }
 });

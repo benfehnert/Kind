@@ -5,6 +5,9 @@ import {
   fetchFallbackExplorationId,
   EXPLORATION_FEED_LABELS
 } from "./homeData.js";
+import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js";
+import { buildEatingInsights } from "./cent/timeRestrictedEating/insightAdapter.js";
+import { loadDayEntries as loadEatingEntries } from "./cent/timeRestrictedEating/normalize.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
 
@@ -508,6 +511,13 @@ function buildPersonalInsights(explorationId, logs, run) {
   }
 
   if (explorationId === "morning-rules") {
+    const centViews = buildInsightViewsFromLogs(logs, run);
+    if (centViews) {
+      return {
+        hasPersonalData: true,
+        ...centViews
+      };
+    }
     return {
       hasPersonalData: true,
       energyTrend: buildMorningRulesEnergyTrend(logs, weekCurrent),
@@ -515,6 +525,20 @@ function buildPersonalInsights(explorationId, logs, run) {
       observations: buildMorningRulesObservations(logs, weekCurrent),
       adherence: buildAdherence(logs, run)
     };
+  }
+
+  if (explorationId === "eating" && run?.started_at) {
+    const entries = loadEatingEntries(logs, run.started_at);
+    const insights = buildEatingInsights(entries);
+    if (insights.length) {
+      return {
+        hasPersonalData: true,
+        energyTrend: buildGenericEnergyTrend(logs, "te_energy", "Daily energy over time"),
+        rulesChart: { title: "Timing habits", legend: [], bars: [] },
+        observations: insights.map((i) => ({ icon: "💡", text: i.body, title: i.title })),
+        adherence: buildAdherence(logs, run)
+      };
+    }
   }
 
   const rangeKey = Object.keys(logs[0]?.field_values ?? {}).find((k) =>

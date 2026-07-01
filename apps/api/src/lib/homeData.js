@@ -1,4 +1,13 @@
 import { query } from "../db.js";
+import {
+  buildPersonalizationContext,
+  fetchOnboardingAnswers
+} from "./onboardingRecommendations.js";
+import {
+  syncAllExplorationUpdates,
+  fetchUpdateFeedItems
+} from "./userExplorationUpdates.js";
+import { syncAllShortExplorationUpdates } from "./userExplorationUpdatesShort.js";
 
 export const FEED_CHIPS = [
   { key: "all", label: "All" },
@@ -14,7 +23,12 @@ export const EXPLORATION_FEED_LABELS = {
   eating: "time-restricted eating",
   "screen-sleep": "screen time before bed",
   relaxation: "relaxation practices",
-  "upf-mood": "ultra-processed food"
+  "upf-mood": "ultra-processed food",
+  "morning-rules-short": "morning rules (short)",
+  "eating-short": "time-restricted eating (short)",
+  "screen-sleep-short": "screen time before bed (short)",
+  "relaxation-short": "relaxation practices (short)",
+  "upf-mood-short": "ultra-processed food (short)"
 };
 
 function explorationShortLabel(explorationId, title) {
@@ -326,7 +340,7 @@ function mapFeedRow(row, explorationMeta = {}) {
   };
 }
 
-async function fetchExplorationMeta(explorationIds) {
+export async function fetchExplorationMeta(explorationIds) {
   if (!explorationIds.length) return {};
   const { rows } = await query(
     `SELECT id, title, theme_bg AS bg, theme_text AS text
@@ -686,14 +700,26 @@ export async function buildActivityFeedItems(individualId) {
 export async function buildHomeFeed(individualId) {
   const consentedIds = await fetchConsentedExplorationIds(individualId);
   const starterMode = consentedIds.length === 0;
-  const contentExplorationIds = starterMode
-    ? await fetchStarterExplorationIds()
-    : consentedIds;
-  const explorationMeta = await fetchExplorationMeta(contentExplorationIds);
+  const allStarterIds = await fetchStarterExplorationIds();
+  const answers = await fetchOnboardingAnswers(individualId);
+  const personalization = buildPersonalizationContext(answers, allStarterIds);
 
-  const [activityItems, contentRows] = await Promise.all([
+  const contentExplorationIds = starterMode
+    ? personalization.starterFeedExplorationIds
+    : consentedIds;
+  const explorationMeta = await fetchExplorationMeta(
+    starterMode ? allStarterIds : contentExplorationIds
+  );
+
+  if (!starterMode) {
+    await syncAllExplorationUpdates(individualId);
+    await syncAllShortExplorationUpdates(individualId);
+  }
+
+  const [activityItems, contentRows, algorithmUpdates] = await Promise.all([
     starterMode ? Promise.resolve([]) : buildActivityFeedItems(individualId),
-    fetchFeedRows(contentExplorationIds)
+    fetchFeedRows(starterMode ? allStarterIds : contentExplorationIds),
+    starterMode ? Promise.resolve([]) : fetchUpdateFeedItems(individualId, explorationMeta)
   ]);
 
   const tipsByExp = {};
@@ -726,20 +752,25 @@ export async function buildHomeFeed(individualId) {
     if (list.length > 1) hasMoreScience = true;
   }
 
+  const scienceFirst = personalization.feedEmphasis === "science-first";
   const contentItems = [];
   for (const expId of contentExplorationIds) {
     const meta = explorationMeta[expId] ?? {};
     meta.feedLabel = meta.feedLabel || meta.title;
     const tip = tipsByExp[expId]?.[0];
     const sci = scienceByExp[expId]?.[0];
-    if (tip) contentItems.push(mapFeedRow(tip, meta));
-    if (sci) contentItems.push(mapFeedRow(sci, meta));
+    const cards = scienceFirst ? [sci, tip] : [tip, sci];
+    for (const card of cards) {
+      if (card) contentItems.push(mapFeedRow(card, meta));
+    }
   }
 
-  const items = starterMode ? contentItems : [...activityItems, ...contentItems];
+  const items = starterMode
+    ? contentItems
+    : [...algorithmUpdates, ...activityItems, ...contentItems];
   const reportItems = starterMode
     ? []
-    : await buildReportFeedItems(individualId, explorationMeta);
+    : algorithmUpdates.filter((item) => item.route === "ExplorationReport");
 
   return {
     chips: FEED_CHIPS,
@@ -747,7 +778,8 @@ export async function buildHomeFeed(individualId) {
     hasMoreTips,
     hasMoreScience,
     reportItems,
-    starterMode
+    starterMode,
+    personalization
   };
 }
 
@@ -763,6 +795,7 @@ async function buildReportFeedItems(individualId, explorationMeta) {
 
   return rows.map((row) => {
     const title = row.title || row.exploration_id;
+    const meta = explorationMeta[row.exploration_id] ?? {};
     return {
       id: `report-${row.exploration_id}`,
       type: "insight",
@@ -771,8 +804,8 @@ async function buildReportFeedItems(individualId, explorationMeta) {
       routeParams: { explorationId: row.exploration_id },
       avatarKind: "icon",
       icon: "✦",
-      avatarBg: "#E6F1FB",
-      iconColor: "#185FA5",
+      avatarBg: meta.bg || "#FDF0E4",
+      iconColor: meta.text || "#8A4A1A",
       displayName: "Personalised trial final report",
       badge: "blue",
       badgeLabel: "Insight",
@@ -785,10 +818,14 @@ async function buildReportFeedItems(individualId, explorationMeta) {
 export async function fetchHomeFeedExtras(individualId, { type, explorationId, offset = 1 }) {
   const consentedIds = await fetchConsentedExplorationIds(individualId);
   const starterMode = consentedIds.length === 0;
-  const sourceIds = starterMode ? await fetchStarterExplorationIds() : consentedIds;
+  const allStarterIds = await fetchStarterExplorationIds();
+  const answers = await fetchOnboardingAnswers(individualId);
+  const personalization = buildPersonalizationContext(answers, allStarterIds);
+  const sourceIds = starterMode ? allStarterIds : consentedIds;
+  const visibleIds = starterMode ? personalization.starterFeedExplorationIds : sourceIds;
   const targetIds = explorationId
-    ? [explorationId].filter((id) => sourceIds.includes(id))
-    : sourceIds;
+    ? [explorationId].filter((id) => visibleIds.includes(id))
+    : visibleIds;
   const explorationMeta = await fetchExplorationMeta(targetIds);
   const rows = await fetchFeedRows(sourceIds);
 
@@ -905,6 +942,7 @@ export async function buildHomePayload(individualId) {
     metrics,
     logFormTitle: "Today's log",
     starterMode,
+    personalization: feed.personalization ?? null,
     confirm: {
       title: "Logged! Great work.",
       body: "Your data has been saved. Keep going — consistency is key to seeing results."

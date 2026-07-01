@@ -7,6 +7,14 @@ export async function getNotificationPermissionStatus() {
   return status;
 }
 
+export async function syncNotificationPermissionStatus() {
+  const status = await getNotificationPermissionStatus();
+  return {
+    granted: status === "granted",
+    status
+  };
+}
+
 export async function requestDailyReminderPermission() {
   if (Platform.OS === "web") {
     return { granted: false, status: "unavailable" };
@@ -19,6 +27,24 @@ export async function requestDailyReminderPermission() {
 
   const { status } = await Notifications.requestPermissionsAsync();
   return { granted: status === "granted", status };
+}
+
+export async function promptForDailyRemindersOnIos() {
+  const { granted, status } = await syncNotificationPermissionStatus();
+
+  if (granted) {
+    return { granted: true, status: "granted", openedSettings: false };
+  }
+
+  if (status === "undetermined") {
+    const { status: requestedStatus } = await Notifications.requestPermissionsAsync();
+    if (requestedStatus === "granted") {
+      return { granted: true, status: "granted", openedSettings: false };
+    }
+  }
+
+  openNotificationSettings();
+  return { granted: false, status: "denied", openedSettings: true };
 }
 
 export function openNotificationSettings() {

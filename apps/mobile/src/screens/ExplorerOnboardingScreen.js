@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { useOnboarding } from "../context/OnboardingContext";
+import { useAuth } from "../context/AuthContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
+import { ApiError } from "../lib/api";
 import {
   getProgressIndex,
   getProgressStepCount,
@@ -12,6 +13,7 @@ import {
 import { OnboardingShell } from "../components/onboarding/OnboardingShell";
 import {
   renderWelcomeStep,
+  renderSignupStep,
   renderMessageStep,
   renderYesNoStep,
   renderTextStep,
@@ -20,7 +22,7 @@ import {
   renderMultiSelectStep,
   renderRemindersStep,
   renderNotificationsStep,
-  renderCreateAccountStep
+  renderFinishStep
 } from "../components/onboarding/stepRenderers";
 
 function mapAnswersToConsent(answers) {
@@ -32,17 +34,24 @@ function mapAnswersToConsent(answers) {
 }
 
 export default function ExplorerOnboardingScreen() {
-  const navigation = useNavigation();
   const { answers, updateAnswers, completeOnboarding } = useOnboarding();
+  const { isAuthenticated, signup } = useAuth();
   const { saveConsent, syncFromOnboarding } = useConsent();
   const { showToast } = useUiShell();
   const [stage, setStage] = useState(0);
+  const [finishing, setFinishing] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const [signupError, setSignupError] = useState("");
 
-  const visibleSteps = useMemo(() => getVisibleSteps(answers), [answers]);
+  const visibleSteps = useMemo(
+    () => getVisibleSteps(answers, { isAuthenticated }),
+    [answers, isAuthenticated]
+  );
   const step = visibleSteps[stage];
-  const isCreateAccount = step?.type === "createAccount";
+  const isFinish = step?.type === "finish";
   const canContinue = validateStep(step, answers);
   const progressTotal = getProgressStepCount(visibleSteps);
+  const busy = finishing || advancing;
 
   useEffect(() => {
     setStage((s) => Math.min(s, Math.max(visibleSteps.length - 1, 0)));
@@ -50,6 +59,9 @@ export default function ExplorerOnboardingScreen() {
 
   const handleChange = useCallback(
     (key, value) => {
+      if (key === "signupEmail" || key === "signupPassword") {
+        setSignupError("");
+      }
       if (key === "remindersEnabled" && value !== true) {
         updateAnswers({ [key]: value, notificationsSetup: null });
         return;
@@ -59,24 +71,66 @@ export default function ExplorerOnboardingScreen() {
     [updateAnswers]
   );
 
-  const goNext = useCallback(() => {
-    if (!canContinue) return;
+  const goNext = useCallback(async () => {
+    if (!canContinue || busy) return;
     if (stage >= visibleSteps.length - 1) return;
+
+    if (step?.type === "signup") {
+      setAdvancing(true);
+      setSignupError("");
+      try {
+        const email = answers.signupEmail.trim();
+        const name = (answers.name || "").trim() || email.split("@")[0];
+        await signup(email, name, answers.signupPassword);
+        updateAnswers({
+          signupEmail: email,
+          signupPassword: answers.signupPassword
+        });
+        setStage((s) => s + 1);
+      } catch (err) {
+        const message =
+          err instanceof ApiError ? err.message : "Something went wrong. Please try again.";
+        setSignupError(message);
+      } finally {
+        setAdvancing(false);
+      }
+      return;
+    }
+
     setStage((s) => s + 1);
-  }, [canContinue, stage, visibleSteps.length]);
+  }, [
+    answers.name,
+    answers.signupEmail,
+    answers.signupPassword,
+    busy,
+    canContinue,
+    signup,
+    stage,
+    step?.type,
+    updateAnswers,
+    visibleSteps.length
+  ]);
 
   const goBack = useCallback(() => {
     if (stage <= 0) return;
+    setSignupError("");
     setStage((s) => s - 1);
   }, [stage]);
 
-  const handleGoogleSignUp = useCallback(() => {
-    saveConsent(mapAnswersToConsent(answers));
-    syncFromOnboarding(answers);
-    completeOnboarding(answers);
-    showToast("Account creation coming soon — your answers are saved locally.");
-    navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
-  }, [answers, completeOnboarding, navigation, saveConsent, syncFromOnboarding, showToast]);
+  const handleFinish = useCallback(async () => {
+    if (finishing) return;
+    setFinishing(true);
+    try {
+      saveConsent(mapAnswersToConsent(answers));
+      await syncFromOnboarding(answers);
+      await completeOnboarding(answers);
+      showToast("You're all set — welcome to Kind.");
+    } catch {
+      showToast("Something went wrong saving your answers. Please try again.");
+    } finally {
+      setFinishing(false);
+    }
+  }, [answers, completeOnboarding, finishing, saveConsent, showToast, syncFromOnboarding]);
 
   const renderStep = () => {
     if (!step) return null;
@@ -84,6 +138,8 @@ export default function ExplorerOnboardingScreen() {
     switch (step.type) {
       case "welcome":
         return renderWelcomeStep();
+      case "signup":
+        return renderSignupStep(step, answers, handleChange, signupError);
       case "message":
         return renderMessageStep(step);
       case "yesNo":
@@ -100,8 +156,8 @@ export default function ExplorerOnboardingScreen() {
         return renderRemindersStep(step, answers, handleChange);
       case "notifications":
         return renderNotificationsStep(step, answers, handleChange);
-      case "createAccount":
-        return renderCreateAccountStep(step, answers, handleGoogleSignUp);
+      case "finish":
+        return renderFinishStep(step, answers);
       default:
         return null;
     }
@@ -114,10 +170,12 @@ export default function ExplorerOnboardingScreen() {
       showProgress={step?.showProgress}
       progressCurrent={getProgressIndex(visibleSteps, stage)}
       progressTotal={progressTotal}
-      continueLabel={step?.continueLabel}
-      continueDisabled={!canContinue}
-      onContinue={goNext}
-      hideFooter={isCreateAccount}
+      continueLabel={
+        step?.type === "signup" && advancing ? "Creating account…" : step?.continueLabel
+      }
+      continueDisabled={!canContinue || busy}
+      onContinue={isFinish ? handleFinish : goNext}
+      hideFooter={false}
     >
       {renderStep()}
     </OnboardingShell>

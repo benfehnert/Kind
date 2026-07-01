@@ -122,6 +122,8 @@ export default function ExplorationDetailScreen() {
           <PrimaryButton
             title="Start this exploration"
             onPress={() => startExploration(navigation, id, { showToast })}
+            backgroundColor={e.text}
+            textColor="#fff"
             style={{ marginTop: 16 }}
           />
         ) : (

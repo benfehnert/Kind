@@ -1,0 +1,100 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-06-01",
+  "endDate": "2026-06-08",
+  "explorationId": "morning-rules-short",
+  "derivedFrom": "anna-morning-rules-completion.json",
+  "logs": [
+    {
+      "log_date": "2026-06-01",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.15,
+        "mr_crash": "Severe crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-06-02",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.8,
+        "mr_pm_energy": 5.1,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 4
+      }
+    },
+    {
+      "log_date": "2026-06-03",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.1,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-06-04",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 5.8,
+        "mr_crash": "Mild dip",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-06-05",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching",
+          "Caffeine offset (delayed first cup)"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 7.1,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-06-06",
+      "field_values": {
+        "mr_rules": [],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.4,
+        "mr_crash": "Noticeable crash",
+        "mr_focus": 5
+      }
+    },
+    {
+      "log_date": "2026-06-07",
+      "field_values": {
+        "mr_rules": [
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.6,
+        "mr_crash": "Mild dip",
+        "mr_focus": 6
+      }
+    },
+    {
+      "log_date": "2026-06-08",
+      "field_values": {
+        "mr_rules": [
+          "Early sunlight exposure",
+          "Morning stretching"
+        ],
+        "mr_am_energy": 6.5,
+        "mr_pm_energy": 6.8,
+        "mr_crash": "None",
+        "mr_focus": 6
+      }
+    }
+  ]
+}

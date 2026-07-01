@@ -1,40 +1,12 @@
 import React from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Platform, Linking } from "react-native";
-import Svg, { Path } from "react-native-svg";
-import { colors, fontFamily, radius, spacing } from "../../theme/colors";
-import { type } from "../../theme/typography";
+import { View, Text, TextInput, StyleSheet, Platform, Linking } from "react-native";
+import { colors, fontFamily, radius } from "../../theme/colors";
 import { PRIVACY_POLICY_URL } from "../../data/explorerOnboarding";
 import { SelectionCard, YesNoCards } from "./SelectionCard";
 import { KindBlob, ShieldIcon } from "./KindBlob";
 import { ValuePropIcon } from "./ValuePropIcon";
-import {
-  notificationStatusMessage,
-  openNotificationSettings,
-  requestDailyReminderPermission
-} from "../../lib/notifications";
-
-function GoogleIcon() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
-      <Path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-        fill="#4285F4"
-      />
-      <Path
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        fill="#34A853"
-      />
-      <Path
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-        fill="#FBBC05"
-      />
-      <Path
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        fill="#EA4335"
-      />
-    </Svg>
-  );
-}
+import { NotificationsOnboardingStep } from "./NotificationsOnboardingStep";
+import { AccountOnboardingStep } from "./AccountOnboardingStep";
 
 function openPrivacyPolicy() {
   Linking.openURL(PRIVACY_POLICY_URL);
@@ -43,10 +15,6 @@ function openPrivacyPolicy() {
 export function renderWelcomeStep() {
   return (
     <View style={styles.welcomeWrap}>
-      <View style={styles.logoBlock}>
-        <Text style={styles.logo}>kind</Text>
-        <Text style={styles.strapline}>health exploration</Text>
-      </View>
       <Text style={styles.welcomeHeadline}>
         Understand what actually{"\n"}works for <Text style={styles.accent}>you.</Text>
       </Text>
@@ -265,96 +233,33 @@ export function renderRemindersStep(step, answers, onChange) {
 }
 
 export function renderNotificationsStep(step, answers, onChange) {
-  const status = answers[step.answerKey];
-  const statusMessage = notificationStatusMessage(status);
-
-  async function handleEnable() {
-    if (Platform.OS === "web") {
-      onChange(step.answerKey, "web_unavailable");
-      return;
-    }
-    const result = await requestDailyReminderPermission();
-    onChange(step.answerKey, result.granted ? "granted" : "denied");
-  }
-
   return (
-    <View>
-      <Text style={styles.title}>{step.title}</Text>
-      {step.body ? <Text style={styles.body}>{step.body}</Text> : null}
-
-      <View style={styles.notificationCard}>
-        <Text style={styles.notificationCardTitle}>Daily check-in reminders</Text>
-        <Text style={styles.notificationCardBody}>
-          A short nudge each day to log your exploration data and stay on track.
-        </Text>
-      </View>
-
-      {statusMessage ? (
-        <View
-          style={[
-            styles.notificationStatus,
-            status === "granted" && styles.notificationStatusOk,
-            (status === "denied" || status === "web_unavailable") && styles.notificationStatusWarn
-          ]}
-        >
-          <Text style={styles.notificationStatusTxt}>{statusMessage}</Text>
-        </View>
-      ) : null}
-
-      <Pressable style={styles.enableBtn} onPress={handleEnable}>
-        <Text style={styles.enableBtnTxt}>
-          {Platform.OS === "web" ? "Continue on mobile app" : "Allow notifications"}
-        </Text>
-      </Pressable>
-
-      {status === "denied" ? (
-        <Pressable style={styles.settingsLink} onPress={openNotificationSettings}>
-          <Text style={styles.settingsLinkTxt}>Open device settings</Text>
-        </Pressable>
-      ) : null}
-
-      {!status ? (
-        <Pressable style={styles.skipLink} onPress={() => onChange(step.answerKey, "skipped")}>
-          <Text style={styles.skipLinkTxt}>Not now</Text>
-        </Pressable>
-      ) : null}
-    </View>
+    <NotificationsOnboardingStep
+      step={step}
+      status={answers[step.answerKey]}
+      onChange={onChange}
+    />
   );
 }
 
-export function renderCreateAccountStep(step, answers, onGooglePress) {
+export function renderSignupStep(step, answers, onChange, error) {
+  return (
+    <AccountOnboardingStep step={step} answers={answers} onChange={onChange} error={error} />
+  );
+}
+
+export function renderFinishStep(step, answers) {
   const name = (answers.name || "").trim() || "there";
   return (
     <View style={styles.accountWrap}>
-      <Text style={styles.accountTitle}>Now it's your turn, {name}</Text>
-      <Text style={styles.accountBody}>
-        Create an account to save your progress, access your scores, and get daily insights.
-      </Text>
-      <Pressable style={styles.googleBtn} onPress={onGooglePress}>
-        <GoogleIcon />
-        <Text style={styles.googleBtnTxt}>{step.continueLabel || "Continue with Google"}</Text>
-      </Pressable>
+      <Text style={styles.accountTitle}>{step.title || `You're all set, ${name}`}</Text>
+      <Text style={styles.accountBody}>{step.body}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  welcomeWrap: { flex: 1, paddingTop: 40 },
-  logoBlock: { marginBottom: 32 },
-  logo: {
-    fontFamily: fontFamily.logo,
-    fontSize: 48,
-    color: colors.greenDark,
-    letterSpacing: -1
-  },
-  strapline: {
-    fontFamily: fontFamily.medium,
-    fontSize: 14,
-    color: colors.orange,
-    letterSpacing: 1.2,
-    textTransform: "lowercase",
-    marginTop: 4
-  },
+  welcomeWrap: { flex: 1 },
   welcomeHeadline: {
     fontFamily: fontFamily.semibold,
     fontSize: 28,
@@ -473,91 +378,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 24,
     marginBottom: 32
-  },
-  googleBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderMed,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.screen,
-    minHeight: 48
-  },
-  googleBtnTxt: {
-    ...type.buttonMd,
-    color: colors.text
-  },
-  notificationCard: {
-    backgroundColor: colors.greenLight,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.greenDark
-  },
-  notificationCardTitle: {
-    ...type.buttonMd,
-    color: colors.greenDark,
-    marginBottom: spacing.xs
-  },
-  notificationCardBody: {
-    ...type.exploreDesc,
-    color: colors.textMuted,
-    lineHeight: 22
-  },
-  notificationStatus: {
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  notificationStatusOk: {
-    backgroundColor: colors.greenLight,
-    borderColor: colors.greenDark
-  },
-  notificationStatusWarn: {
-    backgroundColor: colors.amberBg,
-    borderColor: colors.amberText
-  },
-  notificationStatusTxt: {
-    ...type.exploreDesc,
-    color: colors.text,
-    lineHeight: 22
-  },
-  enableBtn: {
-    backgroundColor: colors.greenDark,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.screen,
-    alignItems: "center",
-    marginBottom: spacing.md,
-    minHeight: 48,
-    justifyContent: "center"
-  },
-  enableBtnTxt: {
-    ...type.buttonMd,
-    color: "#fff"
-  },
-  settingsLink: {
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    marginBottom: spacing.sm
-  },
-  settingsLinkTxt: {
-    ...type.buttonMd,
-    color: colors.greenDark
-  },
-  skipLink: {
-    alignItems: "center",
-    paddingVertical: spacing.md
-  },
-  skipLinkTxt: {
-    ...type.exploreDesc,
-    color: colors.textMuted
   }
 });
