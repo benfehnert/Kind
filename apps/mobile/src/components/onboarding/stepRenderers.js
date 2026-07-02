@@ -172,6 +172,7 @@ export function renderSingleSelectStep(step, answers, onChange) {
   return (
     <View>
       <Text style={styles.title}>{step.title}</Text>
+      {step.subtitle ? <Text style={styles.subtitle}>{step.subtitle}</Text> : null}
       <View style={styles.optionStack}>
         {step.options.map((opt) => (
           <SelectionCard
@@ -198,6 +199,7 @@ export function renderMultiSelectStep(step, answers, onChange) {
   return (
     <View>
       <Text style={styles.title}>{step.title}</Text>
+      {step.subtitle ? <Text style={styles.subtitle}>{step.subtitle}</Text> : null}
       <View style={styles.optionStack}>
         {step.options.map((opt) => (
           <SelectionCard
@@ -308,6 +310,13 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: 24,
     marginBottom: 20
+  },
+  subtitle: {
+    fontFamily: fontFamily.regular,
+    fontSize: 15,
+    color: colors.textMuted,
+    lineHeight: 22,
+    marginBottom: 16
   },
   noteCard: {
     backgroundColor: colors.amberBg,

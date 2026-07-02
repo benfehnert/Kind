@@ -9,6 +9,8 @@ import {
   fetchOnboardingAnswers,
   rankExplorations
 } from "./onboardingRecommendations.js";
+import { computeExplorationProgress } from "./explorationProgress.js";
+import { stripCatalogProgressFields } from "./explorationCatalog.js";
 
 function applyUserPhaseStatus(phases, weekCurrent, weeksTotal) {
   if (!phases?.length || !weekCurrent || !weeksTotal) return phases ?? [];
@@ -20,11 +22,6 @@ function applyUserPhaseStatus(phases, weekCurrent, weeksTotal) {
     ...p,
     status: i < activePhaseIdx ? "complete" : i === activePhaseIdx ? "active" : "upcoming"
   }));
-}
-
-function computeProgress(weekCurrent, weeksTotal) {
-  if (!weeksTotal) return 0;
-  return Math.round((weekCurrent / weeksTotal) * 100);
 }
 
 async function fetchCatalogExploration(id) {
@@ -70,7 +67,7 @@ async function fetchCatalogExploration(id) {
 async function fetchUserExplorationState(individualId) {
   const [{ rows: runs }, { rows: consents }] = await Promise.all([
     query(
-      `SELECT exploration_id, week_current, weeks_total, streak_days, status::text AS status, is_active
+      `SELECT exploration_id, week_current, weeks_total, streak_days, started_at, status::text AS status, is_active
        FROM user_explorations WHERE individual_id = $1`,
       [individualId]
     ),
@@ -92,11 +89,23 @@ async function fetchUserExplorationState(individualId) {
 }
 
 function mergeExploration(catalog, run, isActive, userConsented) {
-  const weekCurrent = run?.week_current ?? (userConsented ? 1 : null);
+  if (!userConsented) {
+    return {
+      ...stripCatalogProgressFields(catalog),
+      active: isActive,
+      userConsented: false
+    };
+  }
+
+  const weekCurrent = run?.week_current ?? 1;
   const weeksTotal =
     run?.weeks_total ?? Number(catalog.duration?.match(/\d+/)?.[0]) ?? null;
-  const streakDays = run?.streak_days ?? (userConsented ? 0 : 0);
-  const progress = userConsented ? computeProgress(weekCurrent, weeksTotal) : catalog.progress ?? 0;
+  const streakDays = run?.streak_days ?? 0;
+  const progress = computeExplorationProgress({
+    startedAt: run?.started_at,
+    weeksTotal,
+    weekCurrent
+  });
 
   const phases =
     isActive && userConsented
@@ -106,7 +115,7 @@ function mergeExploration(catalog, run, isActive, userConsented) {
   return {
     ...catalog,
     active: isActive,
-    userConsented,
+    userConsented: true,
     weekCurrent,
     weeksTotal,
     streakDays,
@@ -114,9 +123,7 @@ function mergeExploration(catalog, run, isActive, userConsented) {
     progress,
     phases,
     statusBadge:
-      userConsented && weekCurrent && weeksTotal
-        ? `Week ${weekCurrent} of ${weeksTotal}`
-        : catalog.statusBadge
+      weekCurrent && weeksTotal ? `Week ${weekCurrent} of ${weeksTotal}` : null
   };
 }
 

@@ -19,7 +19,7 @@ import { RichTextParts } from "../utils/RichText";
 const INITIAL_PANEL_HEIGHT = 500;
 
 export default function CommunityScreen() {
-  const { community, explorationEvidence, exploreCopy, explorePage, refetchExplore } = useData();
+  const { community, exploreCopy, explorePage, refetchExplore } = useData();
   const explorations = useUserExplorations();
   const navigation = useNavigation();
   const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
@@ -98,37 +98,13 @@ export default function CommunityScreen() {
     return rows;
   }, [community.researchers, query]);
 
-  const evidenceHits = useMemo(() => Object.keys(explorationEvidence || {}), []);
-  const filteredEvidenceIds = useMemo(() => {
-    const ids = evidenceHits.filter((expId) => {
-      const ev = explorationEvidence[expId];
-      const exp = explorations[expId];
-      if (!query) return true;
-      return (
-        (ev?.docTitle || "").toLowerCase().includes(query) ||
-        (ev?.docSubtitle || "").toLowerCase().includes(query) ||
-        (ev?.summaryShort || "").toLowerCase().includes(query) ||
-        (exp?.title || "").toLowerCase().includes(query) ||
-        (exp?.category || "").toLowerCase().includes(query)
-      );
-    });
-    if (!query) return ids;
-    return ids.sort((a, b) => {
-      const as = explorations[a]?.active ? 0 : 1;
-      const bs = explorations[b]?.active ? 0 : 1;
-      if (as !== bs) return as - bs;
-      return (explorations[a]?.title || "").localeCompare(explorations[b]?.title || "");
-    });
-  }, [evidenceHits, query]);
-
   // Aggregated "All" view: round-robin interleave of every content type so the
-  // list mixes Individuals, Explorations, Researchers and Evidence together.
+  // list mixes Individuals, Explorations and Researchers together.
   const allItems = useMemo(() => {
     const groups = [
       people.map((u) => ({ type: "person", data: u })),
       filteredExplorationIds.map((id) => ({ type: "exploration", data: id })),
-      filteredResearchers.map((r) => ({ type: "researcher", data: r })),
-      filteredEvidenceIds.map((expId) => ({ type: "evidence", data: expId }))
+      filteredResearchers.map((r) => ({ type: "researcher", data: r }))
     ];
     const maxLen = groups.reduce((m, g) => Math.max(m, g.length), 0);
     const mixed = [];
@@ -138,7 +114,7 @@ export default function CommunityScreen() {
       }
     }
     return mixed;
-  }, [people, filteredExplorationIds, filteredResearchers, filteredEvidenceIds]);
+  }, [people, filteredExplorationIds, filteredResearchers]);
 
   const renderPerson = (u) => {
     const uid = u.id;
@@ -232,26 +208,6 @@ export default function CommunityScreen() {
     </View>
   );
 
-  const renderEvidence = (expId) => {
-    const ev = explorationEvidence[expId];
-    if (!ev) return null;
-    const exp = explorations[expId];
-    return (
-      <Pressable key={`evidence:${expId}`} style={styles.evRow} onPress={() => navigation.navigate("Evidence", { id: expId })}>
-        <View style={styles.evIco}>
-          <Text>📄</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.evT}>{ev.docTitle}</Text>
-          <Text style={styles.evS}>
-            {exp?.category || ""} · {ev.docSubtitle}
-          </Text>
-          <Text style={styles.snip}>{(ev.summaryShort || "").slice(0, 140)}…</Text>
-        </View>
-      </Pressable>
-    );
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={layout.screenPad}>
@@ -275,7 +231,7 @@ export default function CommunityScreen() {
         <View style={styles.commBrowse}>
           <View style={styles.commTabs}>
             {c.subTabs.map((label, i) => {
-              const key = ["all", "individuals", "explorations", "researchers", "evidence"][i];
+              const key = ["all", "individuals", "explorations", "researchers"][i];
               const on = tab === key;
               return (
                 <Pressable key={key} style={[styles.csTab, on && styles.csTabOn]} onPress={() => setTab(key)}>
@@ -299,7 +255,6 @@ export default function CommunityScreen() {
                 if (item.type === "person") return renderPerson(item.data);
                 if (item.type === "exploration") return renderExploration(item.data);
                 if (item.type === "researcher") return renderResearcher(item.data);
-                if (item.type === "evidence") return renderEvidence(item.data);
                 return null;
               })}
 
@@ -325,18 +280,19 @@ export default function CommunityScreen() {
                       "You'll be able to view and follow researchers here once researchers join the service."
                   ))}
 
-            {tab === "evidence" && filteredEvidenceIds.map(renderEvidence)}
           </ScrollView>
         </View>
 
-        <Card>
-          <CardTitle>{c.insightCardTitle}</CardTitle>
-          <RichTextParts
-            html={c.insightCardBody}
-            style={text.body}
-            strongStyle={{ fontWeight: "600", color: colors.text }}
-          />
-        </Card>
+        {c.showExampleCommunityInsight !== false ? (
+          <Card>
+            <CardTitle>{c.insightCardTitle}</CardTitle>
+            <RichTextParts
+              html={c.insightCardBody}
+              style={text.body}
+              strongStyle={{ fontWeight: "600", color: colors.text }}
+            />
+          </Card>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -440,24 +396,6 @@ const styles = StyleSheet.create({
   rsub: text.profileMeta,
   rorg: { ...type.profileMeta, color: colors.greenDark, marginTop: 2 },
   expLine: { ...text.caption, marginTop: spacing.sm },
-  evRow: {
-    flexDirection: "row",
-    gap: spacing.xl,
-    paddingVertical: spacing.xl,
-    borderBottomWidth: 1,
-    borderColor: colors.border
-  },
-  evIco: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    backgroundColor: colors.greenLight,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  evT: text.feedName,
-  evS: { ...text.feedTime, marginTop: spacing.xs },
-  snip: { ...text.exploreDesc, marginTop: spacing.sm },
   emptyState: {
     paddingVertical: spacing.blockMb,
     paddingHorizontal: spacing.xl,

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
@@ -16,7 +17,7 @@ import { PrimaryButton } from "../components/primitives/Buttons";
 import { ChipRow } from "../components/primitives/ChipRow";
 import { Card } from "../components/primitives/Card";
 import { Badge } from "../components/primitives/Badge";
-import { Avatar } from "../components/primitives/Avatar";
+import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { RichTextParts } from "../utils/RichText";
 import { ExplorationProgressSummary } from "../components/home/ExplorationProgressSummary";
 import { DailyCheckinCard } from "../components/checkin/DailyCheckinCard";
@@ -32,13 +33,15 @@ import {
 } from "../utils/explorationLogState";
 
 const REMINDER_DISMISS_KEY = "@kind/reminder_banner_dismissed";
+const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
 
 function todayDateString() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export default function HomeScreen() {
-  const { home, refetchHome, refetchInsight, explorations } = useData();
+  const { home, refetchHome, refetchInsight, explorations, insight } = useData();
+  const { individualId } = useAuth();
   const homeFeed = home.feed || {};
   const starterMode = Boolean(home.starterMode);
   const personalization = home.personalization ?? homeFeed.personalization ?? null;
@@ -236,14 +239,86 @@ export default function HomeScreen() {
     try {
       const res = await get(`/home/feed?type=${type}&offset=1`);
       setExtraFeedItems((prev) => [...prev, ...(res.items || [])]);
+      const nextTipsExpanded = type === "tip" ? true : tipsExpanded;
+      const nextScienceExpanded = type === "science" ? true : scienceExpanded;
       if (type === "tip") setTipsExpanded(true);
       if (type === "science") setScienceExpanded(true);
+      if (individualId) {
+        await AsyncStorage.setItem(
+          FEED_EXPANSION_KEY,
+          JSON.stringify({
+            individualId,
+            tipsExpanded: nextTipsExpanded,
+            scienceExpanded: nextScienceExpanded
+          })
+        );
+      }
     } catch {
       showToast("Could not load more feed items.");
     } finally {
       setExpandingFeed(false);
     }
-  }, [expandingFeed, showToast]);
+  }, [expandingFeed, showToast, tipsExpanded, scienceExpanded, individualId]);
+
+  useEffect(() => {
+    setExtraFeedItems((prev) => {
+      const baseIds = new Set((homeFeed.items || []).map((item) => item.id));
+      return prev.filter((item) => !baseIds.has(item.id));
+    });
+  }, [homeFeed.items]);
+
+  useEffect(() => {
+    if (!individualId) return undefined;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(FEED_EXPANSION_KEY);
+        if (!raw || cancelled) return;
+
+        const parsed = JSON.parse(raw);
+        if (parsed.individualId !== individualId) {
+          await AsyncStorage.removeItem(FEED_EXPANSION_KEY);
+          return;
+        }
+
+        const loads = [];
+        if (parsed.tipsExpanded) {
+          setTipsExpanded(true);
+          loads.push(get("/home/feed?type=tip&offset=1"));
+        }
+        if (parsed.scienceExpanded) {
+          setScienceExpanded(true);
+          loads.push(get("/home/feed?type=science&offset=1"));
+        }
+
+        if (!loads.length || cancelled) return;
+
+        const results = await Promise.all(loads);
+        if (cancelled) return;
+
+        setExtraFeedItems((prev) => {
+          const seen = new Set(prev.map((item) => item.id));
+          const next = [...prev];
+          for (const res of results) {
+            for (const item of res.items || []) {
+              if (!seen.has(item.id)) {
+                seen.add(item.id);
+                next.push(item);
+              }
+            }
+          }
+          return next;
+        });
+      } catch {
+        // ignore corrupt storage
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [individualId]);
 
   const baseFeedItems = homeFeed.items || [];
   const allFeedItems = useMemo(
@@ -312,29 +387,7 @@ export default function HomeScreen() {
     return (
       <Pressable key={item.id} style={styles.feed} onPress={() => handleFeedPress(item)}>
         <View style={styles.feedHead}>
-          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
-            <View
-              style={[
-                styles.feedAv,
-                {
-                  backgroundColor: item.avatarBg || item.avatarBgStyle,
-                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
-                }
-              ]}
-            >
-              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
-                {item.icon || item.glyph}
-              </Text>
-            </View>
-          ) : (
-            <Avatar
-              size={34}
-              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-              sceneKey={item.sceneKey}
-              initials={item.initials}
-              backgroundColor={item.avatarBgStyle}
-            />
-          )}
+          <FeedItemAvatar item={item} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
               <Text style={styles.feedName}>{item.displayName}</Text>
@@ -477,7 +530,9 @@ export default function HomeScreen() {
         {showFeedFilterEmpty ? (
           <FeedFilterEmptyState
             filterKey={chip}
+            starterMode={starterMode}
             showLogLink={showLogLinkInFeedEmpty}
+            showCommunityInsightsLink={insight?.showCommunityInsights !== false}
             onBrowseExplorations={goToExplore}
             onOpenLog={openCheckin}
             onGoToYourInsights={goToYourInsights}
@@ -562,13 +617,6 @@ const styles = StyleSheet.create({
   confirmBody: { ...type.exploreDesc, color: colors.textMuted },
   feed: layout.feedItem,
   feedHead: { flexDirection: "row", alignItems: "center", gap: spacing.feedGap, marginBottom: spacing.md },
-  feedAv: {
-    width: 34,
-    height: 34,
-    minHeight: 34,
-    alignItems: "center",
-    justifyContent: "center"
-  },
   feedName: text.feedName,
   feedTime: text.feedTime,
   hl: {

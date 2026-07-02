@@ -51,7 +51,8 @@ const LONGER_DURATION_EXPLORATIONS = new Set([
   "relaxation-short"
 ]);
 
-const STARTER_FEED_LIMIT = 3;
+// Show one tip + one science for every exploration that has feed content.
+const STARTER_FEED_LIMIT = 5;
 
 export async function fetchOnboardingAnswers(individualId) {
   const row = await fetchOnboardingRow(individualId);
@@ -115,7 +116,9 @@ export function buildPersonalizationContext(answers, explorationIds) {
     primaryMatchReason: ranked[0]?.matchReason ?? null,
     rankedExplorationIds,
     recommendedExplorationIds: rankedExplorationIds.slice(0, 2),
-    starterFeedExplorationIds: rankedExplorationIds.slice(0, STARTER_FEED_LIMIT),
+    starterFeedExplorationIds: rankedExplorationIds
+      .filter((id) => explorationIds.includes(id))
+      .slice(0, STARTER_FEED_LIMIT),
     feedEmphasis,
     basedOn: {
       healthGoals: Array.isArray(answers?.healthGoals) ? answers.healthGoals : [],

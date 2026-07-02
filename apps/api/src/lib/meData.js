@@ -297,7 +297,7 @@ export async function generateUserReport(individualId, explorationId) {
 export function buildConsentPayload(choices, privacyPrefs) {
   return {
     ...consentMock,
-    choices: { ...consentMock.annaDefaults, ...choices },
+    choices,
     privacyPrefs,
     completed: Object.keys(choices).length > 0
   };
@@ -312,6 +312,8 @@ export const ANNA_DEMO_ONBOARDING = {
   sexAssignedAtBirth: "female",
   healthGoals: ["energy_focus", "sleep"],
   kindHelp: ["trials", "explore", "insight"],
+  healthApproach: "actively_exploring",
+  recentHealthActivities: ["tracked_metrics", "science_content", "fitness_tracker"],
   longevityImportance: "matters",
   remindersEnabled: true
 };

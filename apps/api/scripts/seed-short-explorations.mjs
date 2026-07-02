@@ -97,10 +97,10 @@ async function seedExploration(client, id) {
       e.participants ?? 0,
       e.isNew ?? false,
       e.active ?? false,
-      e.statusBadge ?? null,
-      e.progress ?? null,
-      e.streak ?? null,
-      e.chartLabel ?? null
+      null,
+      null,
+      null,
+      null
     ]
   );
 
@@ -110,7 +110,7 @@ async function seedExploration(client, id) {
        VALUES ($1,$2,$3,$4,$5)
        ON CONFLICT (exploration_id, sort_order) DO UPDATE SET
          name = EXCLUDED.name, description = EXCLUDED.description, status = EXCLUDED.status`,
-      [id, i, p.name, p.desc, p.status ?? "upcoming"]
+      [id, i, p.name, p.desc, "upcoming"]
     );
   }
 
@@ -121,31 +121,6 @@ async function seedExploration(client, id) {
        ON CONFLICT (exploration_id, sort_order) DO UPDATE SET
          icon = EXCLUDED.icon, label = EXCLUDED.label`,
       [id, i, o.icon, o.label]
-    );
-  }
-
-  for (const [i, k] of (e.kpis ?? []).entries()) {
-    await client.query(
-      `INSERT INTO exploration_kpis
-         (exploration_id, sort_order, label, value_text, unit, change_text, is_positive)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
-       ON CONFLICT (exploration_id, sort_order) DO UPDATE SET
-         label = EXCLUDED.label, value_text = EXCLUDED.value_text, unit = EXCLUDED.unit,
-         change_text = EXCLUDED.change_text, is_positive = EXCLUDED.is_positive`,
-      [id, i, k.label, k.val, k.unit ?? null, k.change ?? null, k.up ?? true]
-    );
-  }
-
-  for (const [i, c] of (e.chart ?? []).entries()) {
-    await client.query(
-      `INSERT INTO exploration_chart_points
-         (exploration_id, sort_order, day_label, height_percent, value_label, is_highlight, is_empty)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
-       ON CONFLICT (exploration_id, sort_order) DO UPDATE SET
-         day_label = EXCLUDED.day_label, height_percent = EXCLUDED.height_percent,
-         value_label = EXCLUDED.value_label, is_highlight = EXCLUDED.is_highlight,
-         is_empty = EXCLUDED.is_empty`,
-      [id, i, c.day, c.h ?? 0, c.v ?? null, c.hi ?? false, c.empty ?? false]
     );
   }
 

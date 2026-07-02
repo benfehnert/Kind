@@ -29,10 +29,7 @@
         "badge": "teal",
         "time": "Yesterday · morning rules",
         "body": "Early outdoor light within <strong>30 minutes of waking</strong> helps anchor your circadian rhythm — many explorers report fewer afternoon crashes when they pair sunlight with a short morning stretch.",
-        "avatarKind": "glyph",
-        "glyph": "✓",
-        "avatarBg": "#FDF0E4",
-        "glyphColor": "#8A4A1A"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-science-morning-rules",
@@ -44,10 +41,7 @@
         "time": "Yesterday · morning rules",
         "body": "Across <strong>78 active participants</strong>, afternoon energy improves most when explorers log <strong>3+ morning rules</strong> before noon. Your data is contributing to this finding.",
         "highlight": "Open-access cohort study in preparation · Data collection until May 2026",
-        "avatarKind": "glyph",
-        "glyph": "⬡",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-tip-eating",
@@ -58,10 +52,7 @@
         "badge": "teal",
         "time": "Yesterday · time-restricted eating",
         "body": "Log your <strong>natural eating window</strong> for two full weeks before narrowing — baseline timing makes your personalised trial report much clearer.",
-        "avatarKind": "glyph",
-        "glyph": "✓",
-        "avatarBg": "#E6F1FB",
-        "glyphColor": "#185FA5"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-science-eating",
@@ -73,10 +64,7 @@
         "time": "Yesterday · time-restricted eating",
         "body": "Early cohort data suggests a consistent <strong>10-hour eating window</strong> correlates with steadier afternoon energy in adults logging 4+ weeks.",
         "highlight": "Aggregated kind dataset · updated weekly",
-        "avatarKind": "glyph",
-        "glyph": "⬡",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-tip-screen-sleep",
@@ -87,10 +75,7 @@
         "badge": "teal",
         "time": "Yesterday · screen time before bed",
         "body": "Switch phones to a <strong>warm night shift</strong> after sunset even before your screen-free window — it reduces melatonin suppression in the last hour awake.",
-        "avatarKind": "glyph",
-        "glyph": "✓",
-        "avatarBg": "#EDE8F5",
-        "glyphColor": "#4A3A6B"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-science-screen-sleep",
@@ -102,10 +87,7 @@
         "time": "Yesterday · screen time before bed",
         "body": "Explorers who log <strong>60+ minutes screen-free before bed</strong> report faster sleep onset within two weeks on average.",
         "highlight": "Pre-print targeted for June 2026",
-        "avatarKind": "glyph",
-        "glyph": "⬡",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-tip-relaxation",
@@ -116,10 +98,7 @@
         "badge": "teal",
         "time": "Yesterday · relaxation practices",
         "body": "<strong>Vagal breathing</strong> (roughly 4 seconds in, 6 out) for two minutes can lower same-day stress scores — useful before meetings or school runs.",
-        "avatarKind": "glyph",
-        "glyph": "✓",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-science-relaxation",
@@ -131,10 +110,7 @@
         "time": "Yesterday · relaxation practices",
         "body": "Daily relaxation practice logged for <strong>3+ weeks</strong> is associated with lower evening anxiety scores in the current Kind cohort.",
         "highlight": "Aggregated kind dataset · updated weekly",
-        "avatarKind": "glyph",
-        "glyph": "⬡",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-tip-upf-mood",
@@ -145,10 +121,7 @@
         "badge": "teal",
         "time": "Yesterday · ultra-processed food",
         "body": "Swap <strong>one UPF-heavy snack</strong> per week rather than overhauling every meal — gradual change sticks and mood logs stay interpretable.",
-        "avatarKind": "glyph",
-        "glyph": "✓",
-        "avatarBg": "#FDF0E4",
-        "glyphColor": "#8A4A1A"
+        "avatarKind": "kind"
       },
       {
         "id": "starter-science-upf-mood",
@@ -160,10 +133,7 @@
         "time": "Yesterday · ultra-processed food",
         "body": "Participants reducing UPF below <strong>20% of daily calories</strong> show improved mood stability scores by week 4 in early analysis.",
         "highlight": "Open-access cohort study in preparation · Data collection until May 2026",
-        "avatarKind": "glyph",
-        "glyph": "⬡",
-        "avatarBg": "#E6ECD0",
-        "glyphColor": "#22401F"
+        "avatarKind": "kind"
       }
     ],
     "hasMoreTips": true,

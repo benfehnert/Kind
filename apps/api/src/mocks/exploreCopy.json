@@ -2,7 +2,7 @@
   "title": "Explore",
   "subtitle": "Discover areas of health and wellbeing to explore, guided by science.",
   "searchPlaceholder": "Find an area of health and wellbeing to explore…",
-  "communitySearchPlaceholder": "Search explorers, explorations, evidence, researchers…",
+  "communitySearchPlaceholder": "Search Individuals, Researchers and Explorations",
   "activeSectionLabel": "Active",
   "availableSectionLabel": "Available to start",
   "timelineCardTitle": "Exploration — morning rules",
@@ -18,7 +18,7 @@
       { "variant": "teal", "label": "78 participants" },
       { "variant": "teal", "label": "1 paper pending" }
     ],
-    "subTabs": ["All", "Individuals", "Explorations", "Researchers", "Evidence"],
+    "subTabs": ["All", "Individuals", "Explorations", "Researchers"],
     "emptyIndividualsTitle": "No individuals yet",
     "emptyIndividualsBody": "You'll be able to view and follow other individuals here once others join the service.",
     "emptyResearchersTitle": "No researchers yet",

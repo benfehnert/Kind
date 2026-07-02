@@ -18,7 +18,7 @@ import { REM } from "../theme/tokens";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
-import { Avatar } from "../components/primitives/Avatar";
+import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -70,27 +70,7 @@ export default function ExploreScreen() {
     return (
       <Pressable key={item.id} style={styles.activityItem} onPress={() => handleActivityPress(item)}>
         <View style={styles.activityHead}>
-          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
-            <View
-              style={[
-                styles.activityAv,
-                {
-                  backgroundColor: item.avatarBg || item.avatarBgStyle,
-                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
-                }
-              ]}
-            >
-              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
-                {item.icon || item.glyph}
-              </Text>
-            </View>
-          ) : (
-            <Avatar
-              size={34}
-              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-              initials={item.initials}
-            />
-          )}
+          <FeedItemAvatar item={item} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
               <Text style={styles.activityName}>{item.displayName}</Text>
@@ -364,13 +344,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.feedGap,
     marginBottom: spacing.md
-  },
-  activityAv: {
-    width: 34,
-    height: 34,
-    minHeight: 34,
-    alignItems: "center",
-    justifyContent: "center"
   },
   activityName: text.feedName,
   activityTime: text.feedTime,

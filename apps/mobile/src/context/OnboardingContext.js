@@ -25,6 +25,8 @@ export const defaultAnswers = {
   sexAssignedAtBirth: null,
   healthGoals: [],
   kindHelp: [],
+  healthApproach: null,
+  recentHealthActivities: [],
   longevityImportance: null,
   remindersEnabled: null,
   notificationsSetup: null

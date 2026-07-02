@@ -1,4 +1,5 @@
 import { query } from "../db.js";
+import { isAnnaDemoIndividual } from "./demoAccount.js";
 import { getCentModule } from "./cent/index.js";
 import { generateFeedContent } from "../feedContent.js";
 import { morningRulesFeedLibrary } from "../data/morningRulesFeedLibrary.js";
@@ -247,6 +248,7 @@ export async function syncExplorationUpdates(individualId, explorationId, explor
   }
 
   if (explorationId === "morning-rules") {
+    const showExampleCommunityInsights = await isAnnaDemoIndividual(individualId);
     const context = buildMorningRulesContext(entries, cohort);
     const { items: feedItems } = await generateFeedContent({
       exploration: {
@@ -263,6 +265,8 @@ export async function syncExplorationUpdates(individualId, explorationId, explor
     });
 
     for (const rawItem of feedItems) {
+      if (!showExampleCommunityInsights && rawItem.insightTab === "community") continue;
+
       const updateKey = `feed:${rawItem.id}`;
       if (existingKeys.has(updateKey)) continue;
 
@@ -299,6 +303,7 @@ function stripSortKey(item) {
 }
 
 export async function fetchUpdateFeedItems(individualId, explorationMeta = {}) {
+  const showExampleCommunityInsights = await isAnnaDemoIndividual(individualId);
   const { rows } = await query(
     `SELECT ueu.exploration_id, ueu.update_key, ueu.feed_item, ueu.generated_at
      FROM user_exploration_updates ueu
@@ -308,7 +313,12 @@ export async function fetchUpdateFeedItems(individualId, explorationMeta = {}) {
     [individualId]
   );
 
-  return rows.map((row) => {
+  return rows
+    .filter((row) => {
+      if (showExampleCommunityInsights) return true;
+      return row.feed_item?.insightTab !== "community";
+    })
+    .map((row) => {
     const feedItem = row.feed_item ?? {};
     const meta = explorationMeta[row.exploration_id] ?? {};
     const theme = getExplorationTheme(row.exploration_id);
