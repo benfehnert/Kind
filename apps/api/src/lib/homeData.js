@@ -1,7 +1,8 @@
 import { query } from "../db.js";
 import {
   buildPersonalizationContext,
-  fetchOnboardingAnswers
+  fetchOnboardingAnswers,
+  rankExplorations
 } from "./onboardingRecommendations.js";
 import {
   syncAllExplorationUpdates,
@@ -704,9 +705,14 @@ export async function buildHomeFeed(individualId) {
   const answers = await fetchOnboardingAnswers(individualId);
   const personalization = buildPersonalizationContext(answers, allStarterIds);
 
+  // Order the user's active explorations by their onboarding health-goal
+  // ranking so the feed keeps surfacing what they told us matters most,
+  // rather than relying on arbitrary consent insertion order.
+  const rankedConsentedIds = rankExplorations(answers, consentedIds).map((r) => r.id);
+
   const contentExplorationIds = starterMode
     ? personalization.starterFeedExplorationIds
-    : consentedIds;
+    : rankedConsentedIds;
   const explorationMeta = await fetchExplorationMeta(
     starterMode ? allStarterIds : contentExplorationIds
   );
@@ -821,7 +827,8 @@ export async function fetchHomeFeedExtras(individualId, { type, explorationId, o
   const allStarterIds = await fetchStarterExplorationIds();
   const answers = await fetchOnboardingAnswers(individualId);
   const personalization = buildPersonalizationContext(answers, allStarterIds);
-  const sourceIds = starterMode ? allStarterIds : consentedIds;
+  const rankedConsentedIds = rankExplorations(answers, consentedIds).map((r) => r.id);
+  const sourceIds = starterMode ? allStarterIds : rankedConsentedIds;
   const visibleIds = starterMode ? personalization.starterFeedExplorationIds : sourceIds;
   const targetIds = explorationId
     ? [explorationId].filter((id) => visibleIds.includes(id))

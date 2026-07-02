@@ -79,6 +79,19 @@ function RootNavigator() {
     );
   }
 
+  // Auth-first: unauthenticated users always land on login / sign up.
+  if (!isAuthenticated) {
+    return (
+      <>
+        <StatusBar style="dark" />
+        <AuthNavigator />
+      </>
+    );
+  }
+
+  // Onboarding is only reachable right after a new account is created, i.e.
+  // when the user is authenticated but has not yet completed onboarding.
+  // Returning users hydrate as completed and skip straight to the app.
   if (!completed) {
     return (
       <ConsentProvider>
@@ -86,15 +99,6 @@ function RootNavigator() {
           <OnboardingFlow />
         </UiProvider>
       </ConsentProvider>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <>
-        <StatusBar style="dark" />
-        <AuthNavigator />
-      </>
     );
   }
 

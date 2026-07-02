@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
 import { useConsent } from "../context/ConsentContext";
@@ -44,7 +44,6 @@ export default function ExplorerOnboardingScreen() {
   const [finishing, setFinishing] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [signupError, setSignupError] = useState("");
-  const didAuthJumpRef = useRef(false);
 
   const visibleSteps = useMemo(
     () => getVisibleSteps(answers, { isAuthenticated }),
@@ -60,17 +59,6 @@ export default function ExplorerOnboardingScreen() {
   useEffect(() => {
     setStage((s) => Math.min(s, Math.max(visibleSteps.length - 1, 0)));
   }, [visibleSteps.length]);
-
-  // Once the user authenticates (via create-account or login), skip the
-  // pre-account steps and resume the questionnaire at the value props.
-  useEffect(() => {
-    if (!isAuthenticated || didAuthJumpRef.current) return;
-    didAuthJumpRef.current = true;
-    const steps = getVisibleSteps(answers, { isAuthenticated: true });
-    const idx = steps.findIndex((s) => s.id === "value-trials");
-    if (idx >= 0) setStage(idx);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
 
   const goToStepId = useCallback(
     (id) => {

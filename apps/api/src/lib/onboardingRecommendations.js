@@ -27,11 +27,11 @@ export const EXPLORATION_CATEGORY = {
 };
 
 const HEALTH_GOAL_BOOSTS = {
-  energy_focus: { "morning-rules": 3 },
-  metabolic: { eating: 3 },
-  sleep: { "screen-sleep": 3 },
-  nutrition: { "upf-mood": 2, eating: 2 },
-  mental: { relaxation: 3 }
+  energy_focus: { "morning-rules": 3, "morning-rules-short": 3 },
+  metabolic: { eating: 3, "eating-short": 3 },
+  sleep: { "screen-sleep": 3, "screen-sleep-short": 3 },
+  nutrition: { "upf-mood": 2, eating: 2, "upf-mood-short": 2, "eating-short": 2 },
+  mental: { relaxation: 3, "relaxation-short": 3 }
 };
 
 const HEALTH_GOAL_LABELS = {
@@ -42,7 +42,14 @@ const HEALTH_GOAL_LABELS = {
   mental: "Mental Health"
 };
 
-const LONGER_DURATION_EXPLORATIONS = new Set(["eating", "screen-sleep", "relaxation"]);
+const LONGER_DURATION_EXPLORATIONS = new Set([
+  "eating",
+  "screen-sleep",
+  "relaxation",
+  "eating-short",
+  "screen-sleep-short",
+  "relaxation-short"
+]);
 
 const STARTER_FEED_LIMIT = 3;
 

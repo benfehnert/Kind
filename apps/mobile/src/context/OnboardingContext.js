@@ -77,6 +77,11 @@ export function OnboardingProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Re-enter the loading state whenever auth changes so we can wait for the
+    // server's onboarding status before deciding whether to show the wizard.
+    // Without this, a returning user signing in on a fresh device would briefly
+    // see onboarding before the server confirms they've already completed it.
+    setHydrating(true);
 
     (async () => {
       let localAnswers = defaultAnswers;
@@ -96,9 +101,13 @@ export function OnboardingProvider({ children }) {
       if (isAuthenticated && !cancelled) {
         try {
           const server = await get("/onboarding");
+          // The server is the source of truth for authenticated users. This
+          // guarantees a freshly created account always sees onboarding and
+          // that completion state can't leak between accounts on a shared
+          // device (local storage isn't cleared on logout).
+          localCompleted = Boolean(server?.completed);
           if (server?.completed) {
             localAnswers = { ...defaultAnswers, ...(server.answers ?? {}) };
-            localCompleted = true;
           } else if (server?.answers && Object.keys(server.answers).length > 0) {
             localAnswers = { ...defaultAnswers, ...server.answers, ...localAnswers };
           }
