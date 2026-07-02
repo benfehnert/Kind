@@ -1,30 +1,20 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { query } from "../db.js";
 import { getCentShortModule, isShortExploration } from "./centShort/index.js";
 import { fetchExplorationMeta, fetchConsentedExplorationIds } from "./homeData.js";
 import { getExplorationTheme } from "./explorationThemes.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-function loadShortCohort(shortId) {
-  try {
-    return JSON.parse(
-      readFileSync(path.join(__dirname, `../data/fixtures/cohort-snapshot-${shortId}.json`), "utf8")
-    );
-  } catch {
-    return null;
-  }
-}
+import cohortSnapshotMorningRulesShort from "../data/fixtures/cohort-snapshot-morning-rules-short.json" with { type: "json" };
+import cohortSnapshotEatingShort from "../data/fixtures/cohort-snapshot-eating-short.json" with { type: "json" };
+import cohortSnapshotScreenSleepShort from "../data/fixtures/cohort-snapshot-screen-sleep-short.json" with { type: "json" };
+import cohortSnapshotRelaxationShort from "../data/fixtures/cohort-snapshot-relaxation-short.json" with { type: "json" };
+import cohortSnapshotUpfMoodShort from "../data/fixtures/cohort-snapshot-upf-mood-short.json" with { type: "json" };
 
 /** Short-only cohort snapshots (day-based, derived from the parent snapshots). */
 const COHORT_BY_SHORT_EXPLORATION = {
-  "morning-rules-short": loadShortCohort("morning-rules-short"),
-  "eating-short": loadShortCohort("eating-short"),
-  "screen-sleep-short": loadShortCohort("screen-sleep-short"),
-  "relaxation-short": loadShortCohort("relaxation-short"),
-  "upf-mood-short": loadShortCohort("upf-mood-short")
+  "morning-rules-short": cohortSnapshotMorningRulesShort,
+  "eating-short": cohortSnapshotEatingShort,
+  "screen-sleep-short": cohortSnapshotScreenSleepShort,
+  "relaxation-short": cohortSnapshotRelaxationShort,
+  "upf-mood-short": cohortSnapshotUpfMoodShort
 };
 
 /**
