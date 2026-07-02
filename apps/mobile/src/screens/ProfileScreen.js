@@ -115,25 +115,32 @@ export default function ProfileScreen() {
 
         <Card>
           <CardTitle>{profile.summaryTitle}</CardTitle>
-          {(profile.summaryRows || []).map((row, i, arr) => (
-            <View
-              key={row.label}
-              style={[
-                styles.kv,
-                i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 8 }
-              ]}
-            >
-              <Text style={styles.kl}>{row.label}</Text>
-              <Text
+          {profile.hasSummaryData ? (
+            (profile.summaryRows || []).map((row, i, arr) => (
+              <View
+                key={row.label}
                 style={[
-                  styles.kvTxt,
-                  row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                  styles.kv,
+                  i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 8 }
                 ]}
               >
-                {row.value}
-              </Text>
-            </View>
-          ))}
+                <Text style={styles.kl}>{row.label}</Text>
+                <Text
+                  style={[
+                    styles.kvTxt,
+                    row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                  ]}
+                >
+                  {row.value}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.exploreEmpty}>
+              {profile.emptySummaryMessage ||
+                "Join an exploration and log daily check-ins to build your personal summary."}
+            </Text>
+          )}
         </Card>
 
         <Card>
@@ -196,6 +203,10 @@ export default function ProfileScreen() {
               onPress={() => {
                 if (a.id === "used") {
                   navigation.navigate("DataUsage");
+                  return;
+                }
+                if (a.id === "export") {
+                  navigation.navigate("DownloadData");
                   return;
                 }
                 if (a.toast) showToast(a.toast);

@@ -19,6 +19,7 @@ import ConsentSummaryScreen from "../screens/ConsentSummaryScreen";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
 import ResearchEthicsScreen from "../screens/ResearchEthicsScreen";
 import DataUsageScreen from "../screens/DataUsageScreen";
+import DownloadDataScreen from "../screens/DownloadDataScreen";
 import ExplorerOnboardingScreen from "../screens/ExplorerOnboardingScreen";
 import ExplorationConsentScreen from "../screens/ExplorationConsentScreen";
 import ExplorationStartedScreen from "../screens/ExplorationStartedScreen";
@@ -72,6 +73,7 @@ export default function AppNavigator() {
       <RootStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <RootStack.Screen name="ResearchEthics" component={ResearchEthicsScreen} />
       <RootStack.Screen name="DataUsage" component={DataUsageScreen} />
+      <RootStack.Screen name="DownloadData" component={DownloadDataScreen} />
       <RootStack.Screen name="ExplorationReport" component={ExplorationReportScreen} />
       <RootStack.Screen name="EnergyReport" component={EnergyReportScreen} />
     </RootStack.Navigator>

@@ -8,9 +8,6 @@
     "text": "#8A4A1A",
     "active": true,
     "duration": "8-week exploration",
-    "statusBadge": "Week 3 of 8",
-    "progress": 38,
-    "streak": 9,
     "participants": 78,
     "evidenceId": "morning-rules",
     "researcherId": "dr-elena-marsh",
@@ -37,32 +34,16 @@
         "label": "Morning meditation: moderate evidence for lower afternoon fatigue via HRV and cortisol slope"
       }
     ],
-    "kpis": [
-      {
-        "label": "Avg afternoon energy",
-        "val": "6.8",
-        "unit": "/10",
-        "change": "+1.4 from baseline",
-        "up": true
-      },
-      {
-        "label": "Crash-free days",
-        "val": "4",
-        "unit": "/7",
-        "change": "+2 vs baseline week",
-        "up": true
-      }
-    ],
     "phases": [
       {
         "name": "Weeks 1–2: Baseline",
         "desc": "Log your usual morning routine and afternoon energy with no new rules — establish your personal baseline.",
-        "status": "complete"
+        "status": "upcoming"
       },
       {
         "name": "Weeks 3–5: Morning rules",
         "desc": "Track which rules you follow each day: sunlight, stretching, delayed caffeine, meditation.",
-        "status": "active"
+        "status": "upcoming"
       },
       {
         "name": "Weeks 6–7: Optimise your stack",
@@ -73,46 +54,6 @@
         "name": "Week 8: Personalised trial analysis report",
         "desc": "Your personal analysis of which morning rules linked to better afternoon energy for you.",
         "status": "upcoming"
-      }
-    ],
-    "chartLabel": "Afternoon energy — last 7 days",
-    "chart": [
-      {
-        "day": "Mon",
-        "h": 48,
-        "v": "4.8"
-      },
-      {
-        "day": "Tue",
-        "h": 55,
-        "v": "5.5"
-      },
-      {
-        "day": "Wed",
-        "h": 62,
-        "v": "6.2"
-      },
-      {
-        "day": "Thu",
-        "h": 68,
-        "v": "6.8"
-      },
-      {
-        "day": "Fri",
-        "h": 72,
-        "v": "7.2"
-      },
-      {
-        "day": "Sat",
-        "h": 68,
-        "v": "6.8",
-        "hi": true
-      },
-      {
-        "day": "Sun",
-        "h": 0,
-        "v": "—",
-        "empty": true
       }
     ],
     "fields": [
@@ -143,7 +84,7 @@
       {
         "type": "range",
         "id": "mr_pm_energy",
-        "label": "Afternoon energy",
+        "label": "Afternoon energy yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -727,7 +668,7 @@
       {
         "type": "range",
         "id": "mr_pm_energy",
-        "label": "Afternoon energy",
+        "label": "Afternoon energy yesterday",
         "min": 1,
         "max": 10,
         "val": 6,

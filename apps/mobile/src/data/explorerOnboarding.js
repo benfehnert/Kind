@@ -178,6 +178,66 @@ export const ONBOARDING_STEPS = [
     continueLabel: "Continue"
   },
   {
+    id: "health-approach",
+    type: "singleSelect",
+    showProgress: true,
+    answerKey: "healthApproach",
+    title: "Which of the following best describes your approach to your health right now?",
+    subtitle: "Select one",
+    options: [
+      {
+        value: "actively_exploring",
+        label: "I'm actively exploring and optimizing my health and wellbeing"
+      },
+      {
+        value: "specific_goals",
+        label: "I'm looking to improve my health with a specific goal(s) in mind"
+      },
+      {
+        value: "understand_concern",
+        label: "I'm looking to understand a health concern or condition better"
+      },
+      { value: "none_of_these", label: "None of these feel like me" }
+    ],
+    continueLabel: "Continue"
+  },
+  {
+    id: "recent-health-activities",
+    type: "multiSelect",
+    showProgress: true,
+    answerKey: "recentHealthActivities",
+    title: "In the last 6 months, which of the following have you done?",
+    subtitle: "Select all that apply",
+    requireSelection: false,
+    options: [
+      {
+        value: "tracked_metrics",
+        label: "Tracked multiple health metrics using wearables or apps"
+      },
+      {
+        value: "tested_supplement",
+        label: "Independently tested a supplement, diet, or practice to see the effects"
+      },
+      {
+        value: "science_content",
+        label: "Regularly sought out science-led health content of research"
+      },
+      {
+        value: "structured_programme",
+        label: "Followed a structured health or fitness programme"
+      },
+      {
+        value: "fitness_tracker",
+        label: "Used a fitness tracker or smartwatch to monitor exercise, sleep, or weight"
+      },
+      {
+        value: "diet_changes",
+        label: "Made deliberate changes to your diet or routine based on health advice"
+      }
+    ],
+    continueLabel: "Continue"
+  },
+  {
     id: "longevity",
     type: "singleSelect",
     showProgress: true,
@@ -284,7 +344,9 @@ export function validateStep(step, answers) {
 
     case "multiSelect": {
       const arr = answers[step.answerKey];
-      return Array.isArray(arr) && arr.length > 0;
+      if (!Array.isArray(arr)) return false;
+      if (step.requireSelection === false) return true;
+      return arr.length > 0;
     }
 
     case "reminders":

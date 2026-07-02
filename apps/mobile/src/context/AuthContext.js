@@ -3,6 +3,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { configureApiAuth, publicPost } from "../lib/api";
 
 const STORAGE_KEY = "@kind/auth";
+const EXPLORATION_CONSENTS_KEY = "@kind/exploration_consents";
+const ACTIVE_EXPLORATION_KEY = "@kind/active_exploration";
+const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
+
+async function clearExplorationStorage() {
+  await AsyncStorage.multiRemove([
+    EXPLORATION_CONSENTS_KEY,
+    ACTIVE_EXPLORATION_KEY,
+    FEED_EXPANSION_KEY
+  ]);
+}
 
 const AuthContext = createContext(null);
 
@@ -112,6 +123,7 @@ export function AuthProvider({ children }) {
   const login = useCallback(
     async (loginEmail, password) => {
       const data = await publicPost("/auth/login", { email: loginEmail.trim(), password });
+      await clearExplorationStorage();
       await saveSession({
         token: data.token,
         refreshToken: data.refreshToken,
@@ -129,6 +141,7 @@ export function AuthProvider({ children }) {
         name: name.trim(),
         password
       });
+      await clearExplorationStorage();
       await saveSession({
         token: data.token,
         refreshToken: data.refreshToken,
@@ -151,6 +164,7 @@ export function AuthProvider({ children }) {
       }
     }
     await clearSession();
+    await clearExplorationStorage();
     await AsyncStorage.removeItem("@kind/user_profile");
   }, [token, clearSession]);
 

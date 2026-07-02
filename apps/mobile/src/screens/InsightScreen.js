@@ -53,6 +53,11 @@ export default function InsightScreen() {
   const your = insight.energyTrend;
   const mr = insight.rulesChart;
   const showCharts = insight.hasPersonalData && your?.bars?.length > 0;
+  const showCommunityInsights = insight.showCommunityInsights !== false;
+
+  useEffect(() => {
+    if (!showCommunityInsights && tab === 1) setTab(0);
+  }, [showCommunityInsights, tab]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -64,9 +69,11 @@ export default function InsightScreen() {
           <Pressable style={[styles.st, tab === 0 && styles.stOn]} onPress={() => setTab(0)}>
             <Text style={[styles.stTxt, tab === 0 && styles.stTxtOn]}>{insight.yourSubTabs[0]}</Text>
           </Pressable>
-          <Pressable style={[styles.st, tab === 1 && styles.stOn]} onPress={() => setTab(1)}>
-            <Text style={[styles.stTxt, tab === 1 && styles.stTxtOn]}>{insight.yourSubTabs[1]}</Text>
-          </Pressable>
+          {showCommunityInsights ? (
+            <Pressable style={[styles.st, tab === 1 && styles.stOn]} onPress={() => setTab(1)}>
+              <Text style={[styles.stTxt, tab === 1 && styles.stTxtOn]}>{insight.yourSubTabs[1]}</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         {tab === 0 ? (

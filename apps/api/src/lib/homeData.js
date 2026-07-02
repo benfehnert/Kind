@@ -1,5 +1,9 @@
 import { query } from "../db.js";
 import {
+  filterStaticFeedRows,
+  STATIC_FEED_EXPLORATION_IDS
+} from "./feedContentLibrary.js";
+import {
   buildPersonalizationContext,
   fetchOnboardingAnswers,
   rankExplorations
@@ -299,10 +303,7 @@ function mapFeedRow(row, explorationMeta = {}) {
       badge: "teal",
       time: `${formatFeedTime(row.published_at)}${timeSuffix}`,
       body: row.body ?? row.headline ?? "",
-      avatarKind: "glyph",
-      glyph: "✓",
-      avatarBg: explorationMeta.bg || "#FDF0E4",
-      glyphColor: explorationMeta.text || "#8A4A1A"
+      avatarKind: "kind"
     };
   }
 
@@ -317,10 +318,7 @@ function mapFeedRow(row, explorationMeta = {}) {
       time: `${formatFeedTime(row.published_at)}${timeSuffix}`,
       body: row.body ?? row.headline ?? "",
       highlight: row.highlight ?? "",
-      avatarKind: "glyph",
-      glyph: "⬡",
-      avatarBg: "#E6ECD0",
-      glyphColor: "#22401F"
+      avatarKind: "kind"
     };
   }
 
@@ -366,11 +364,12 @@ async function fetchStarterExplorationIds() {
        AND exploration_id IS NOT NULL
      ORDER BY exploration_id`
   );
-  return rows.map((r) => r.exploration_id);
+  const ids = rows.map((r) => r.exploration_id);
+  return ids.length ? ids : STATIC_FEED_EXPLORATION_IDS;
 }
 
 async function fetchFeedRows(explorationIds) {
-  const ids = explorationIds.length ? explorationIds : ["__none__"];
+  const ids = explorationIds.length ? explorationIds : STATIC_FEED_EXPLORATION_IDS;
   const { rows } = await query(
     `SELECT fi.id, fi.feed_type::text AS type, fi.exploration_id, fi.headline,
             fi.body, fi.highlight, fi.published_at, fi.sort_order,
@@ -383,7 +382,8 @@ async function fetchFeedRows(explorationIds) {
      ORDER BY fi.sort_order, fi.published_at DESC`,
     [ids]
   );
-  return rows;
+  if (rows.length) return rows;
+  return filterStaticFeedRows(ids);
 }
 
 function shortDisplayName(name) {

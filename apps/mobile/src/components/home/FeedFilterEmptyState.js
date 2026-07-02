@@ -17,32 +17,40 @@ const FILTER_COPY = {
       "Your check-ins and updates from explorers you follow will appear here as you log data and connect with others."
   },
   science: {
-    body:
-      "Science findings from Kind explorations and aggregated community research will appear in this space."
+    default:
+      "Science findings from Kind explorations and aggregated community research will appear in this space.",
+    starter:
+      "Science findings from Kind explorations are shown in your feed. Scroll to the bottom of All to load more science updates."
   },
   tip: {
-    body:
-      "Wellbeing tips tailored to your health explorations will appear here once you join an exploration."
+    default:
+      "Wellbeing tips tailored to your health explorations will appear here once you join an exploration.",
+    starter:
+      "Wellbeing tips from Kind explorations are shown in your feed. Scroll to the bottom of All to load more tips."
   }
 };
 
 export function FeedFilterEmptyState({
   filterKey,
+  starterMode = false,
   showLogLink = false,
+  showCommunityInsightsLink = false,
   onBrowseExplorations,
   onOpenLog,
   onGoToYourInsights,
   onGoToCommunityInsights,
   onGoToCommunity
 }) {
-  const copy = FILTER_COPY[filterKey];
-  if (!copy) return null;
+  const entry = FILTER_COPY[filterKey];
+  if (!entry) return null;
+
+  const copy = entry.body ?? entry[starterMode ? "starter" : "default"] ?? entry.default;
 
   const showBrowse = ["milestone", "insight", "activity"].includes(filterKey);
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.body}>{copy.body}</Text>
+      <Text style={styles.body}>{copy}</Text>
       <View style={styles.links}>
         {showBrowse ? (
           <Pressable onPress={onBrowseExplorations} hitSlop={8} accessibilityRole="link">
@@ -59,7 +67,7 @@ export function FeedFilterEmptyState({
             <Text style={styles.link}>Explore community</Text>
           </Pressable>
         ) : null}
-        {filterKey === "science" ? (
+        {filterKey === "science" && showCommunityInsightsLink ? (
           <Pressable onPress={onGoToCommunityInsights} hitSlop={8} accessibilityRole="link">
             <Text style={styles.link}>View community insights</Text>
           </Pressable>

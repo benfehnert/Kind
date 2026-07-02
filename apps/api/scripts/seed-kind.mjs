@@ -160,10 +160,10 @@ async function seedExplorations() {
       participant_count: e.participants ?? 0,
       is_new: e.isNew ?? false,
       catalog_active: e.active ?? false,
-      status_badge: e.statusBadge ?? null,
-      progress_percent: e.progress ?? null,
-      streak_days: e.streak ?? null,
-      chart_label: e.chartLabel ?? null
+      status_badge: null,
+      progress_percent: null,
+      streak_days: null,
+      chart_label: null
     };
   });
   await upsert("explorations", expRows, { onConflict: "id" });
@@ -178,7 +178,7 @@ async function seedExplorations() {
         sort_order: i,
         name: p.name,
         description: p.desc,
-        status: p.status
+        status: "upcoming"
       });
     });
   }
@@ -193,42 +193,6 @@ async function seedExplorations() {
     });
   }
   await insert("exploration_expected_outcomes", outcomes);
-
-  // KPIs
-  const kpis = [];
-  for (const id of EXPLORATION_ORDER) {
-    const e = explorations[id];
-    (e?.kpis ?? []).forEach((k, i) => {
-      kpis.push({
-        exploration_id: id,
-        sort_order: i,
-        label: k.label,
-        value_text: k.val,
-        unit: k.unit ?? null,
-        change_text: k.change ?? null,
-        is_positive: k.up ?? true
-      });
-    });
-  }
-  await insert("exploration_kpis", kpis);
-
-  // Chart points
-  const chartPoints = [];
-  for (const id of EXPLORATION_ORDER) {
-    const e = explorations[id];
-    (e?.chart ?? []).forEach((c, i) => {
-      chartPoints.push({
-        exploration_id: id,
-        sort_order: i,
-        day_label: c.day,
-        height_percent: c.h ?? 0,
-        value_label: c.v ?? null,
-        is_highlight: c.hi ?? false,
-        is_empty: c.empty ?? false
-      });
-    });
-  }
-  await insert("exploration_chart_points", chartPoints);
 
   // Log field definitions
   const fields = [];
@@ -257,7 +221,7 @@ async function seedExplorations() {
   }
   await insert("log_field_defs", fields);
 
-  console.log("  ✓ explorations, phases, outcomes, kpis, chart points, log fields");
+  console.log("  ✓ explorations, phases, outcomes, log fields");
 }
 
 // ---------------------------------------------------------------------------
@@ -378,6 +342,8 @@ const ANNA_ONBOARDING = {
   sexAssignedAtBirth: "female",
   healthGoals: ["energy_focus", "sleep"],
   kindHelp: ["trials", "explore", "insight"],
+  healthApproach: "actively_exploring",
+  recentHealthActivities: ["tracked_metrics", "science_content", "fitness_tracker"],
   longevityImportance: "matters",
   remindersEnabled: true
 };

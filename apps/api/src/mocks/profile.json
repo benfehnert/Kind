@@ -54,8 +54,7 @@
       },
       {
         "id": "export",
-        "label": "Download my anonymised data",
-        "toast": "Prototype: prepares a downloadable export of your anonymised exploration logs."
+        "label": "Download my data"
       }
     ]
   },

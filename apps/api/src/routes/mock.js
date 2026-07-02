@@ -213,10 +213,7 @@ function mapMockFeedExtra(type, expId, row, index) {
     time: `Yesterday · ${feedLabel}`,
     body: row.body ?? "",
     highlight: row.highlight ?? "",
-    avatarKind: "glyph",
-    glyph: type === "tip" ? "✓" : "⬡",
-    avatarBg: type === "tip" ? exp?.bg || "#FDF0E4" : "#E6ECD0",
-    glyphColor: type === "tip" ? exp?.text || "#8A4A1A" : "#22401F"
+    avatarKind: "kind"
   };
   base.displayName = type === "tip" ? "Wellbeing tip" : "kind science";
   return base;
@@ -396,6 +393,14 @@ router.get("/profile", (c) => {
 
 router.get("/profile/data-usage", (c) => {
   return c.json(dataUsage);
+});
+
+router.post("/profile/data-export-request", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  if (!body.email?.trim()) {
+    return c.json({ error: "email is required" }, 400);
+  }
+  return c.json({ ok: true, requestedAt: new Date().toISOString() });
 });
 
 router.patch("/profile/privacy", async (c) => {

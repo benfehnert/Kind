@@ -16,10 +16,12 @@ import {
 } from "../lib/meData.js";
 import { buildHomePayload, fetchHomeFeedExtras } from "../lib/homeData.js";
 import { buildExplorePayload } from "../lib/exploreData.js";
+import { stripCatalogProgressFields } from "../lib/explorationCatalog.js";
 import { buildInsightPayload } from "../lib/insightData.js";
 import { buildCommunityPayload } from "../lib/communityData.js";
 import { buildProfilePayload, updateProfile } from "../lib/profileData.js";
 import { buildDataUsagePayload } from "../lib/dataUsageData.js";
+import { submitDataExportRequest } from "../lib/dataExportRequest.js";
 import {
   buildActsForIndividual,
   fetchActivityNiceSupporters,
@@ -120,7 +122,10 @@ async function fetchExploration(id) {
     [id]
   );
   if (!rows[0]) return null;
-  return { ...rows[0], category: EXPLORATION_CATEGORY[rows[0].id] ?? null };
+  return stripCatalogProgressFields({
+    ...rows[0],
+    category: EXPLORATION_CATEGORY[rows[0].id] ?? null
+  });
 }
 
 router.get("/explorations", async (c) => {
@@ -429,6 +434,20 @@ router.get("/profile/data-usage", async (c) => {
   return c.json(payload);
 });
 
+router.post("/profile/data-export-request", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const body = await c.req.json().catch(() => ({}));
+  const result = await submitDataExportRequest(individualId, body.email, c.env);
+
+  if (!result.ok) {
+    return c.json({ error: result.error }, result.status);
+  }
+
+  return c.json({ ok: true, requestedAt: result.requestedAt });
+});
+
 router.patch("/profile", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
@@ -490,7 +509,6 @@ router.get("/consent", async (c) => {
   ]);
 
   const mergedChoices = {
-    ...consentMock.annaDefaults,
     ...choices,
     platform_participation: privacyPrefs.globalConsent,
     research_contribution: privacyPrefs.science,

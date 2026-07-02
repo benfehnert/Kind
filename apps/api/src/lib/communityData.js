@@ -1,6 +1,10 @@
 import { query } from "../db.js";
 import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
+import { isAnnaDemoIndividual } from "./demoAccount.js";
 import { EXPLORATION_FEED_LABELS } from "./homeData.js";
+
+const GENERIC_COMMUNITY_INSIGHT_BODY =
+  "Join an exploration to see community findings from others on similar health journeys.";
 
 function stripHtml(text) {
   return String(text ?? "").replace(/<[^>]+>/g, "");
@@ -68,6 +72,7 @@ async function fetchCommunityInsightBody(explorationId, individualId, feedLabel)
 
 export async function buildCommunityCopy(activeExploration, individualId) {
   const explorationId = activeExploration?.id ?? null;
+  const showExampleCommunityInsight = await isAnnaDemoIndividual(individualId);
   const feedLabel =
     activeExploration?.feedLabel ||
     (explorationId ? EXPLORATION_FEED_LABELS[explorationId] : null) ||
@@ -80,13 +85,13 @@ export async function buildCommunityCopy(activeExploration, individualId) {
   const paperCount = explorationId ? await fetchPendingPublicationCount(explorationId) : 0;
 
   const bannerBadges = [];
-  if (participantCount > 0) {
+  if (showExampleCommunityInsight && participantCount > 0) {
     bannerBadges.push({
       variant: "teal",
       label: `${participantCount} participant${participantCount === 1 ? "" : "s"}`
     });
   }
-  if (paperCount > 0) {
+  if (showExampleCommunityInsight && paperCount > 0) {
     bannerBadges.push({
       variant: "teal",
       label: `${paperCount} paper${paperCount === 1 ? "" : "s"} pending`
@@ -97,9 +102,11 @@ export async function buildCommunityCopy(activeExploration, individualId) {
     ? `With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications on how ${feedLabel} affect wellbeing — science that belongs to everyone.`
     : "With your consent, your anonymised data joins a growing dataset. Combined across participants, this supports open publications from everyday health exploration — science that belongs to everyone.";
 
-  const insightCardBody = explorationId
-    ? await fetchCommunityInsightBody(explorationId, individualId, feedLabel)
-    : "Join an exploration to see community findings from others on similar health journeys.";
+  const insightCardBody = showExampleCommunityInsight
+    ? explorationId
+      ? await fetchCommunityInsightBody(explorationId, individualId, feedLabel)
+      : GENERIC_COMMUNITY_INSIGHT_BODY
+    : GENERIC_COMMUNITY_INSIGHT_BODY;
 
   return {
     title: exploreCopyMock.community.title,
@@ -114,7 +121,8 @@ export async function buildCommunityCopy(activeExploration, individualId) {
     emptyResearchersBody: exploreCopyMock.community.emptyResearchersBody,
     nearYouTitle: exploreCopyMock.community.nearYouTitle,
     insightCardTitle: exploreCopyMock.community.insightCardTitle,
-    insightCardBody
+    insightCardBody,
+    showExampleCommunityInsight
   };
 }
 
