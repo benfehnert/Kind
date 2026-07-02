@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { query } from "../db.js";
 import { getCentModule } from "./cent/index.js";
 import { generateFeedContent } from "../feedContent.js";
@@ -8,25 +5,18 @@ import { morningRulesFeedLibrary } from "../data/morningRulesFeedLibrary.js";
 import { buildMorningRulesContext } from "./cent/morningRules/index.js";
 import { fetchExplorationMeta, fetchConsentedExplorationIds } from "./homeData.js";
 import { getExplorationTheme } from "./explorationThemes.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import cohortSnapshotMorningRules from "../data/fixtures/cohort-snapshot-morning-rules.json" with { type: "json" };
+import cohortSnapshotEating from "../data/fixtures/cohort-snapshot-eating.json" with { type: "json" };
+import cohortSnapshotScreenSleep from "../data/fixtures/cohort-snapshot-screen-sleep.json" with { type: "json" };
+import cohortSnapshotRelaxation from "../data/fixtures/cohort-snapshot-relaxation.json" with { type: "json" };
+import cohortSnapshotUpfMood from "../data/fixtures/cohort-snapshot-upf-mood.json" with { type: "json" };
 
 const COHORT_BY_EXPLORATION = {
-  "morning-rules": JSON.parse(
-    readFileSync(path.join(__dirname, "../data/fixtures/cohort-snapshot-morning-rules.json"), "utf8")
-  ),
-  eating: JSON.parse(
-    readFileSync(path.join(__dirname, "../data/fixtures/cohort-snapshot-eating.json"), "utf8")
-  ),
-  "screen-sleep": JSON.parse(
-    readFileSync(path.join(__dirname, "../data/fixtures/cohort-snapshot-screen-sleep.json"), "utf8")
-  ),
-  relaxation: JSON.parse(
-    readFileSync(path.join(__dirname, "../data/fixtures/cohort-snapshot-relaxation.json"), "utf8")
-  ),
-  "upf-mood": JSON.parse(
-    readFileSync(path.join(__dirname, "../data/fixtures/cohort-snapshot-upf-mood.json"), "utf8")
-  )
+  "morning-rules": cohortSnapshotMorningRules,
+  eating: cohortSnapshotEating,
+  "screen-sleep": cohortSnapshotScreenSleep,
+  relaxation: cohortSnapshotRelaxation,
+  "upf-mood": cohortSnapshotUpfMood
 };
 
 /** Minimum study day before each CENT report type is published to the feed. */
