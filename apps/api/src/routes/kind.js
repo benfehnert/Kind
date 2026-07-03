@@ -34,6 +34,12 @@ import {
   toggleActivityMessageReaction
 } from "../lib/activityMessageData.js";
 import meRouter from "./me.js";
+import {
+  isAnnaDemoIndividual,
+  isHiddenFromCommunity
+} from "../lib/demoAccount.js";
+import { EXPLORATION_CATEGORY } from "../lib/onboardingRecommendations.js";
+import { isCatalogExploration, SHORT_EXPLORATION_IDS } from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -61,14 +67,6 @@ async function getIndividualId(authUserId) {
 // ---------------------------------------------------------------------------
 // Explorations
 // ---------------------------------------------------------------------------
-
-const EXPLORATION_CATEGORY = {
-  "morning-rules": "Energy & Focus",
-  "eating": "Metabolic Health",
-  "screen-sleep": "Rest & Sleep",
-  "relaxation": "Stress & Composure",
-  "upf-mood": "Mood & Nutrition"
-};
 
 async function fetchExploration(id) {
   const { rows } = await query(
@@ -129,19 +127,7 @@ async function fetchExploration(id) {
 }
 
 router.get("/explorations", async (c) => {
-  const { rows } = await query(
-    `SELECT id FROM explorations ORDER BY
-       CASE id
-         WHEN 'morning-rules' THEN 1  WHEN 'eating' THEN 2
-         WHEN 'screen-sleep' THEN 3   WHEN 'relaxation' THEN 4
-         WHEN 'upf-mood' THEN 5
-         WHEN 'morning-rules-short' THEN 6 WHEN 'eating-short' THEN 7
-         WHEN 'screen-sleep-short' THEN 8 WHEN 'relaxation-short' THEN 9
-         WHEN 'upf-mood-short' THEN 10    ELSE 11
-       END`
-  );
-
-  const items = await Promise.all(rows.map((r) => fetchExploration(r.id)));
+  const items = await Promise.all(SHORT_EXPLORATION_IDS.map((id) => fetchExploration(id)));
   return c.json({ items: items.filter(Boolean) });
 });
 
@@ -150,7 +136,11 @@ router.get("/explorations/evidence", (c) => {
 });
 
 router.get("/explorations/:id", async (c) => {
-  const data = await fetchExploration(c.req.param("id"));
+  const id = c.req.param("id");
+  if (!isCatalogExploration(id)) {
+    return c.json({ error: "Exploration not found" }, 404);
+  }
+  const data = await fetchExploration(id);
   if (!data) return c.json({ error: "Exploration not found" }, 404);
   return c.json(data);
 });
@@ -166,6 +156,9 @@ router.get("/explorations/:id/evidence", (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/community/individuals", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+
   const { rows: individuals } = await query(
     `SELECT
        i.id,
@@ -212,11 +205,13 @@ router.get("/community/individuals", async (c) => {
      ORDER BY i.display_name`
   );
 
-  const individualsWithTier = individuals.map((ind) => ({
-    ...ind,
-    id: ind.slug,
-    tier: ind.bio ? "comm" : "basic"
-  }));
+  const individualsWithTier = individuals
+    .filter((ind) => !isHiddenFromCommunity(viewerIsAnna, ind.slug))
+    .map((ind) => ({
+      ...ind,
+      id: ind.slug,
+      tier: ind.bio ? "comm" : "basic"
+    }));
 
   const { rows: expFollowers } = await query(
     `SELECT ue.exploration_id, i.slug
@@ -225,6 +220,7 @@ router.get("/community/individuals", async (c) => {
   );
   const explorationFollowers = {};
   for (const row of expFollowers) {
+    if (isHiddenFromCommunity(viewerIsAnna, row.slug)) continue;
     if (!explorationFollowers[row.exploration_id]) {
       explorationFollowers[row.exploration_id] = [];
     }
@@ -258,6 +254,13 @@ router.get("/community/researchers", async (c) => {
 
 router.get("/community/individuals/:slug", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
   const { rows } = await query(
     `SELECT
        i.id,
@@ -289,7 +292,7 @@ router.get("/community/individuals/:slug", async (c) => {
         WHERE ue.individual_id = i.id) AS exps
      FROM individuals i
      WHERE i.slug = $1`,
-    [c.req.param("slug")]
+    [slug]
   );
   if (!rows.length) return c.json({ error: "Individual not found" }, 404);
 
@@ -572,6 +575,8 @@ router.get("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ followingExplorerIds: [], followingResearcherIds: [] });
 
+  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
+
   const { rows: individuals } = await query(
     `SELECT i.slug FROM individual_follows f
      JOIN individuals i ON i.id = f.followee_id
@@ -584,7 +589,9 @@ router.get("/social/follows", async (c) => {
   );
 
   return c.json({
-    followingExplorerIds: individuals.map((r) => r.slug),
+    followingExplorerIds: individuals
+      .map((r) => r.slug)
+      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
     followingResearcherIds: researchers.map((r) => r.researcher_id)
   });
 });
@@ -593,9 +600,13 @@ router.patch("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
+  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
   const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = await c.req.json();
 
   if (followSlug) {
+    if (isHiddenFromCommunity(viewerIsAnna, followSlug)) {
+      return c.json({ error: "Individual not found" }, 404);
+    }
     const { rows: selfRows } = await query("SELECT slug FROM individuals WHERE id = $1", [individualId]);
     if (selfRows[0]?.slug === followSlug) {
       return c.json({ error: "Cannot follow yourself" }, 400);
@@ -643,7 +654,9 @@ router.patch("/social/follows", async (c) => {
 
   return c.json({
     ok: true,
-    followingExplorerIds: followingIndividuals.map((r) => r.slug),
+    followingExplorerIds: followingIndividuals
+      .map((r) => r.slug)
+      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
     followingResearcherIds: followingResearchers.map((r) => r.researcher_id)
   });
 });
@@ -762,6 +775,8 @@ router.get("/notifications", (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/search", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const q = (c.req.query("q") || "").toLowerCase().trim();
   if (!q) return c.json({ explorations: [], community: [] });
 
@@ -769,15 +784,19 @@ router.get("/search", async (c) => {
   const { rows: explorations } = await query(
     `SELECT id, title AS title, description
      FROM explorations
-     WHERE LOWER(title) LIKE $1 OR LOWER(description) LIKE $1`,
-    [pattern]
+     WHERE id = ANY($2::text[])
+       AND (LOWER(title) LIKE $1 OR LOWER(description) LIKE $1)`,
+    [pattern, SHORT_EXPLORATION_IDS]
   );
-  const { rows: community } = await query(
-    `SELECT slug AS id, display_name AS name, profile_meta AS meta
+  const { rows: communityRows } = await query(
+    `SELECT slug AS id, display_name AS name, profile_meta AS meta, slug
      FROM individuals
      WHERE LOWER(display_name) LIKE $1`,
     [pattern]
   );
+  const community = communityRows.filter(
+    (row) => !isHiddenFromCommunity(viewerIsAnna, row.slug)
+  ).map(({ slug: _slug, ...row }) => row);
 
   return c.json({ explorations, community });
 });

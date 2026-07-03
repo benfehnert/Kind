@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Platform } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { useConsent } from "../context/ConsentContext";
@@ -19,6 +20,7 @@ import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 
 export default function ProfileScreen() {
+  const posthog = usePostHog();
   const { profile, explorations, refetchProfile } = useData();
   const navigation = useNavigation();
   const { followingCount } = useFollow();
@@ -63,6 +65,9 @@ export default function ProfileScreen() {
       }
     }
     updatePrivacyPref(key, next);
+    if (key === "globalConsent" || key === "science" || key === "visible") {
+      posthog?.capture("updated data controls");
+    }
   };
 
   return (

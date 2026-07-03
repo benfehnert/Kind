@@ -24,6 +24,7 @@ import ExplorerOnboardingScreen from "./src/screens/ExplorerOnboardingScreen";
 import { PostHogRoot } from "./src/components/PostHogRoot";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
 import { ProtoToast } from "./src/components/ProtoToast";
+import { FeedbackFab } from "./src/components/FeedbackFab";
 
 function AppShell() {
   const { toast } = useUiShell();
@@ -31,11 +32,12 @@ function AppShell() {
   const inOnboarding = !hydrating && !completed;
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <StatusBar style={inOnboarding ? "dark" : "light"} />
       <AppNavigator />
       <ProtoToast message={toast} visible={!!toast} />
-    </>
+      <FeedbackFab />
+    </View>
   );
 }
 

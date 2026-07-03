@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Linking, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { ProfileDetailScreen } from "../components/profile/ProfileDetailScreen";
 import { Badge } from "../components/primitives/Badge";
 import { get } from "../lib/api";
@@ -42,6 +43,7 @@ function PublicationCard({ source, title, meta, status, publicationUrl, onPress 
 }
 
 export default function DataUsageScreen() {
+  const posthog = usePostHog();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,12 +54,13 @@ export default function DataUsageScreen() {
     try {
       const payload = await get("/profile/data-usage");
       setData(payload);
+      posthog?.capture("viewed data use information");
     } catch (err) {
       setError(err.message || "Could not load data usage summary.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [posthog]);
 
   useFocusEffect(
     useCallback(() => {

@@ -1,24 +1,24 @@
 import React, { useEffect } from "react";
 import { PostHogProvider, PostHogSurveyProvider, usePostHog } from "posthog-react-native";
-import { POSTHOG_API_KEY, POSTHOG_HOST, POSTHOG_ENABLED } from "../lib/posthog";
+import { POSTHOG_API_KEY, POSTHOG_HOST, POSTHOG_ENABLED, identifyPostHogUser } from "../lib/posthog";
 import { useAuth } from "../context/AuthContext";
 
 function PostHogIdentity() {
   const posthog = usePostHog();
-  const { isAuthenticated, individualId, email, hydrating } = useAuth();
+  const { isAuthenticated, email, hydrating } = useAuth();
 
   useEffect(() => {
     if (!posthog || hydrating) return;
 
-    if (isAuthenticated && individualId) {
-      posthog.identify(String(individualId), email ? { email } : undefined);
+    if (isAuthenticated && email) {
+      identifyPostHogUser(posthog, email);
       return;
     }
 
     if (!isAuthenticated) {
       posthog.reset();
     }
-  }, [posthog, isAuthenticated, individualId, email, hydrating]);
+  }, [posthog, isAuthenticated, email, hydrating]);
 
   return null;
 }

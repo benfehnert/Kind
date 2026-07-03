@@ -15,6 +15,7 @@ import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
 import consent from "../mocks/consent.json" with { type: "json" };
 import trialReports from "../data/explorationTrialReports.json" with { type: "json" };
 import { ANNA_DEMO_ONBOARDING } from "../lib/meData.js";
+import { isCatalogExploration, SHORT_EXPLORATION_IDS } from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -234,21 +235,8 @@ function buildMockHomeFeedExtras(type, offset = 1) {
 // Explorations
 // ---------------------------------------------------------------------------
 
-const EXPLORATION_ORDER = [
-  "morning-rules",
-  "eating",
-  "screen-sleep",
-  "relaxation",
-  "upf-mood",
-  "morning-rules-short",
-  "eating-short",
-  "screen-sleep-short",
-  "relaxation-short",
-  "upf-mood-short"
-];
-
 router.get("/explorations", (c) => {
-  const items = EXPLORATION_ORDER.filter((id) => explorations[id]).map((id) => ({
+  const items = SHORT_EXPLORATION_IDS.filter((id) => explorations[id]).map((id) => ({
     id,
     ...explorations[id]
   }));
@@ -261,6 +249,9 @@ router.get("/explorations/evidence", (c) => {
 
 router.get("/explorations/:id", (c) => {
   const id = c.req.param("id");
+  if (!isCatalogExploration(id)) {
+    return c.json({ error: "Exploration not found" }, 404);
+  }
   const data = explorations[id];
   if (!data) return c.json({ error: "Exploration not found" }, 404);
   return c.json({ id, ...data });
@@ -345,9 +336,10 @@ router.get("/search", (c) => {
 
   const explorationResults = (search.explorations || []).filter(
     (e) =>
-      e.title?.toLowerCase().includes(q) ||
-      e.description?.toLowerCase().includes(q) ||
-      e.id?.toLowerCase().includes(q)
+      isCatalogExploration(e.id) &&
+      (e.title?.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        e.id?.toLowerCase().includes(q))
   );
   const communityResults = (search.community || []).filter(
     (u) =>
@@ -468,7 +460,7 @@ router.get("/consent/state", (c) =>
 router.get("/me/explorations", (c) =>
   c.json({
     activeExplorationId: "morning-rules",
-    items: EXPLORATION_ORDER.map((explorationId) => {
+    items: SHORT_EXPLORATION_IDS.map((explorationId) => {
       const exp = explorations[explorationId];
       const complete = explorationId !== "morning-rules";
       return {

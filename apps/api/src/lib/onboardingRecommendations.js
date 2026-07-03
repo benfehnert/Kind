@@ -1,24 +1,9 @@
 import { fetchOnboardingRow } from "./meData.js";
+import { SHORT_EXPLORATION_IDS } from "./centShort/index.js";
 
-export const DEFAULT_EXPLORATION_ORDER = [
-  "morning-rules",
-  "eating",
-  "screen-sleep",
-  "relaxation",
-  "upf-mood",
-  "morning-rules-short",
-  "eating-short",
-  "screen-sleep-short",
-  "relaxation-short",
-  "upf-mood-short"
-];
+export const DEFAULT_EXPLORATION_ORDER = SHORT_EXPLORATION_IDS;
 
 export const EXPLORATION_CATEGORY = {
-  "morning-rules": "Energy & Focus",
-  eating: "Metabolic Health",
-  "screen-sleep": "Rest & Sleep",
-  relaxation: "Stress & Composure",
-  "upf-mood": "Mood & Nutrition",
   "morning-rules-short": "Energy & Focus",
   "eating-short": "Metabolic Health",
   "screen-sleep-short": "Rest & Sleep",
@@ -27,11 +12,11 @@ export const EXPLORATION_CATEGORY = {
 };
 
 const HEALTH_GOAL_BOOSTS = {
-  energy_focus: { "morning-rules": 3, "morning-rules-short": 3 },
-  metabolic: { eating: 3, "eating-short": 3 },
-  sleep: { "screen-sleep": 3, "screen-sleep-short": 3 },
-  nutrition: { "upf-mood": 2, eating: 2, "upf-mood-short": 2, "eating-short": 2 },
-  mental: { relaxation: 3, "relaxation-short": 3 }
+  energy_focus: { "morning-rules-short": 3 },
+  metabolic: { "eating-short": 3 },
+  sleep: { "screen-sleep-short": 3 },
+  nutrition: { "upf-mood-short": 2, "eating-short": 2 },
+  mental: { "relaxation-short": 3 }
 };
 
 const HEALTH_GOAL_LABELS = {
@@ -43,9 +28,6 @@ const HEALTH_GOAL_LABELS = {
 };
 
 const LONGER_DURATION_EXPLORATIONS = new Set([
-  "eating",
-  "screen-sleep",
-  "relaxation",
   "eating-short",
   "screen-sleep-short",
   "relaxation-short"

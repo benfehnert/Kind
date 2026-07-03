@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
@@ -40,6 +41,7 @@ function todayDateString() {
 }
 
 export default function HomeScreen() {
+  const posthog = usePostHog();
   const { home, refetchHome, refetchInsight, explorations, insight } = useData();
   const { individualId } = useAuth();
   const homeFeed = home.feed || {};
@@ -70,6 +72,7 @@ export default function HomeScreen() {
   const [expandingFeed, setExpandingFeed] = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
   const [lastSavedNames, setLastSavedNames] = useState([]);
+  const completedExplorationsTracked = useRef(new Set());
 
   const consentedIds = useMemo(
     () =>
@@ -130,6 +133,15 @@ export default function HomeScreen() {
       return next;
     });
   }, [logExplorations]);
+
+  useEffect(() => {
+    for (const ex of progressExplorations) {
+      if (ex.progress >= 100 && !completedExplorationsTracked.current.has(ex.id)) {
+        completedExplorationsTracked.current.add(ex.id);
+        posthog?.capture("exploration completed");
+      }
+    }
+  }, [posthog, progressExplorations]);
 
   const savedConfirmBody = useMemo(() => {
     const tail = home.confirm.body.replace(/^Your data has been saved\.\s*/i, "");
@@ -356,6 +368,7 @@ export default function HomeScreen() {
       setLastSavedNames(logExplorations.map((ex) => ex.title));
       setSaved(true);
       setShowLog(false);
+      posthog?.capture("daily log submitted");
     } catch {
       showToast("Could not save your log. Please try again.");
     } finally {

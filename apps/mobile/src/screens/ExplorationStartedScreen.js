@@ -2,6 +2,7 @@ import React from "react";
 import { View, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
@@ -16,6 +17,7 @@ export default function ExplorationStartedScreen() {
   const { explorations: catalog } = useData();
   const userExplorations = useUserExplorations();
   const navigation = useNavigation();
+  const posthog = usePostHog();
   const { params } = useRoute();
   const explorationId = params?.id;
   const exploration = explorationId ? userExplorations[explorationId] || catalog[explorationId] : null;
@@ -35,6 +37,7 @@ export default function ExplorationStartedScreen() {
 
   function goToHome() {
     navigation.navigate("MainTabs", { screen: "Home", params: { openLog: true } });
+    posthog?.capture("exploration joined");
   }
 
   return (

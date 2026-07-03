@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { get, patch, post } from "../lib/api";
 import { useData } from "../context/DataContext";
 import { colors, fontFamily, radius, spacing } from "../theme/colors";
@@ -60,6 +61,7 @@ function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggl
 }
 
 export default function ActivityMessagesScreen() {
+  const posthog = usePostHog();
   const navigation = useNavigation();
   const { params } = useRoute();
   const { profile } = useData();
@@ -118,13 +120,14 @@ export default function ActivityMessagesScreen() {
       setMc(result.mc ?? result.messages?.length ?? 0);
       setDraft("");
       setReplyTo(null);
+      posthog?.capture("interacted with a community post");
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (err) {
       setError(err.message || "Could not send message.");
     } finally {
       setSending(false);
     }
-  }, [activityPostId, draft, replyTo, sending]);
+  }, [activityPostId, draft, posthog, replyTo, sending]);
 
   const toggleReaction = useCallback(
     async (message, reactionType) => {
@@ -141,13 +144,15 @@ export default function ActivityMessagesScreen() {
             row.id === message.id ? { ...row, reactions: result.reactions } : row
           )
         );
+        const viewerReacted = result.reactions?.[reactionType]?.viewerReacted;
+        if (viewerReacted) posthog?.capture("interacted with a community post");
       } catch (err) {
         setError(err.message || "Could not update reaction.");
       } finally {
         setTogglingReaction(null);
       }
     },
-    [activityPostId, togglingReaction]
+    [activityPostId, posthog, togglingReaction]
   );
 
   const headerLabel = mc === 1 ? "1 message" : `${mc} messages`;

@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, TextInput, Pressable } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
@@ -19,6 +20,7 @@ import { RichTextParts } from "../utils/RichText";
 const INITIAL_PANEL_HEIGHT = 500;
 
 export default function CommunityScreen() {
+  const posthog = usePostHog();
   const { community, exploreCopy, explorePage, refetchExplore } = useData();
   const explorations = useUserExplorations();
   const navigation = useNavigation();
@@ -27,6 +29,13 @@ export default function CommunityScreen() {
   const [q, setQ] = useState("");
   const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
   const query = q.trim().toLowerCase();
+
+  function handleSubtabPress(key) {
+    if (tab !== key) {
+      posthog?.capture("explored community");
+    }
+    setTab(key);
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -234,7 +243,7 @@ export default function CommunityScreen() {
               const key = ["all", "individuals", "explorations", "researchers"][i];
               const on = tab === key;
               return (
-                <Pressable key={key} style={[styles.csTab, on && styles.csTabOn]} onPress={() => setTab(key)}>
+                <Pressable key={key} style={[styles.csTab, on && styles.csTabOn]} onPress={() => handleSubtabPress(key)}>
                   <Text style={[styles.csTabText, on && styles.csTabTextOn]}>{label}</Text>
                 </Pressable>
               );

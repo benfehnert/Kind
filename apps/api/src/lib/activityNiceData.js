@@ -1,5 +1,7 @@
 import { query } from "../db.js";
 import { fetchActivityMessageSummary } from "./activityMessageData.js";
+import { isAnnaDemoIndividual } from "./demoAccount.js";
+import { isHiddenFromCommunity } from "./demoProfiles.js";
 
 const SUPPORTER_PREVIEW_LIMIT = 5;
 
@@ -18,7 +20,7 @@ export function formatActivityTime(postedAt) {
   return then.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-async function fetchSupporterPreview(activityPostId, limit = SUPPORTER_PREVIEW_LIMIT) {
+async function fetchSupporterPreview(activityPostId, viewerIsAnna, limit = SUPPORTER_PREVIEW_LIMIT) {
   const { rows } = await query(
     `SELECT i.slug, i.display_name AS name, i.avatar_image_id AS img, i.avatar_initials AS initials
      FROM activity_nices an
@@ -28,7 +30,7 @@ async function fetchSupporterPreview(activityPostId, limit = SUPPORTER_PREVIEW_L
      LIMIT $2`,
     [activityPostId, limit]
   );
-  return rows;
+  return rows.filter((row) => !isHiddenFromCommunity(viewerIsAnna, row.slug));
 }
 
 async function fetchNiceCount(activityPostId) {
@@ -53,6 +55,7 @@ async function viewerHasNiced(activityPostId, viewerId) {
 }
 
 export async function buildActsForIndividual(individualId, viewerId) {
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const { rows: posts } = await query(
     `SELECT ap.id, ap.summary, ap.detail_metrics, ap.exploration_label, ap.posted_at, ap.sort_order,
             COALESCE(anc.nice_count, ap.nice_count_base, 0)::int AS nice_count
@@ -66,7 +69,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
   return Promise.all(
     posts.map(async (post) => {
       const [supporterPreview, niced, messageSummary] = await Promise.all([
-        fetchSupporterPreview(post.id),
+        fetchSupporterPreview(post.id, viewerIsAnna),
         viewerHasNiced(post.id, viewerId),
         fetchActivityMessageSummary(post.id)
       ]);
@@ -87,6 +90,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
 }
 
 export async function toggleActivityNice(activityPostId, viewerId) {
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const alreadyNiced = await viewerHasNiced(activityPostId, viewerId);
 
   if (alreadyNiced) {
@@ -105,7 +109,7 @@ export async function toggleActivityNice(activityPostId, viewerId) {
 
   const [nc, supporterPreview] = await Promise.all([
     fetchNiceCount(activityPostId),
-    fetchSupporterPreview(activityPostId)
+    fetchSupporterPreview(activityPostId, viewerIsAnna)
   ]);
 
   return {
@@ -116,6 +120,7 @@ export async function toggleActivityNice(activityPostId, viewerId) {
 }
 
 export async function fetchActivityNiceSupporters(activityPostId, viewerId) {
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const { rows } = await query(
     `SELECT
        i.slug,
@@ -139,6 +144,7 @@ export async function fetchActivityNiceSupporters(activityPostId, viewerId) {
   const others = [];
 
   for (const row of rows) {
+    if (isHiddenFromCommunity(viewerIsAnna, row.slug)) continue;
     const entry = {
       slug: row.slug,
       name: row.name,
@@ -151,8 +157,10 @@ export async function fetchActivityNiceSupporters(activityPostId, viewerId) {
     else others.push(entry);
   }
 
+  const visibleCount = following.length + others.length;
+
   return {
-    count: rows.length,
+    count: visibleCount,
     following,
     others
   };

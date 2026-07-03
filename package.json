@@ -17,6 +17,7 @@
     "supabase:push": "node scripts/supabase-guard.mjs && npx supabase db push",
     "supabase:status": "node scripts/supabase-guard.mjs && npx supabase status",
     "seed:kind": "node apps/api/scripts/seed-kind.mjs",
+    "purge:dev-users": "node apps/api/scripts/purge-dev-users.mjs",
     "cent:analysis": "node apps/api/scripts/run-cent-analysis.mjs --pretty",
     "cent:export-csv": "node apps/api/scripts/export-cent-csv.mjs",
     "cent:reports-pdf": "node apps/api/scripts/generate-cent-reports-pdf.mjs",

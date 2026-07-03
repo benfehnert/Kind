@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { usePostHog } from "posthog-react-native";
+import { identifyPostHogUser } from "../lib/posthog";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useAuth } from "../context/AuthContext";
 import { useConsent } from "../context/ConsentContext";
@@ -36,6 +38,7 @@ function mapAnswersToConsent(answers) {
 }
 
 export default function ExplorerOnboardingScreen() {
+  const posthog = usePostHog();
   const { answers, updateAnswers, completeOnboarding } = useOnboarding();
   const { isAuthenticated, signup, login } = useAuth();
   const { saveConsent, syncFromOnboarding } = useConsent();
@@ -80,9 +83,14 @@ export default function ExplorerOnboardingScreen() {
         updateAnswers({ [key]: value, notificationsSetup: null });
         return;
       }
+      if (value === true && answers[key] !== true) {
+        if (key === "consentPrivacy") posthog?.capture("onboarding master consent");
+        if (key === "consentCitizenScience") posthog?.capture("onboarding citizen science consent");
+        if (key === "consentDiscoverable") posthog?.capture("onboarding community consent");
+      }
       updateAnswers({ [key]: value });
     },
-    [updateAnswers]
+    [answers, posthog, updateAnswers]
   );
 
   const goNext = useCallback(async () => {
@@ -129,9 +137,10 @@ export default function ExplorerOnboardingScreen() {
   const handleLogin = useCallback(
     async (loginEmail, loginPassword) => {
       await login(loginEmail, loginPassword);
-      // Navigation is handled by the auth effect / root navigator.
+      identifyPostHogUser(posthog, loginEmail);
+      posthog?.capture("signed in");
     },
-    [login]
+    [login, posthog]
   );
 
   const goBack = useCallback(() => {
@@ -152,13 +161,14 @@ export default function ExplorerOnboardingScreen() {
       saveConsent(mapAnswersToConsent(answers));
       await syncFromOnboarding(answers);
       await completeOnboarding(answers);
+      posthog?.capture("onboarding completed");
       showToast("You're all set — welcome to Kind.");
     } catch {
       showToast("Something went wrong saving your answers. Please try again.");
     } finally {
       setFinishing(false);
     }
-  }, [answers, completeOnboarding, finishing, saveConsent, showToast, syncFromOnboarding]);
+  }, [answers, completeOnboarding, finishing, posthog, saveConsent, showToast, syncFromOnboarding]);
 
   const renderStep = () => {
     if (!step) return null;
