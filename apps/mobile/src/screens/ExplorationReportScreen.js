@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import Svg, { Polyline, Polygon, Line, Circle, Text as SvgText } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { colors } from "../theme/colors";
 import { useUiShell } from "../context/UiContext";
 import { useData } from "../context/DataContext";
@@ -265,6 +266,7 @@ export function ExplorationReportView({ report, theme = DEFAULT_THEME }) {
 
 export default function ExplorationReportScreen({ route }) {
   const explorationId = route?.params?.explorationId ?? "morning-rules";
+  const posthog = usePostHog();
   const { explorations } = useData();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -284,11 +286,16 @@ export default function ExplorationReportScreen({ route }) {
         const res = await get(`/me/explorations/${explorationId}/report`);
         if (!cancelled && res?.report) {
           setReport(res.report);
+          posthog?.capture("exploration report viewed");
         } else if (!cancelled) {
           setReport(getExplorationReport(explorationId));
+          posthog?.capture("exploration report viewed");
         }
       } catch {
-        if (!cancelled) setReport(getExplorationReport(explorationId));
+        if (!cancelled) {
+          setReport(getExplorationReport(explorationId));
+          posthog?.capture("exploration report viewed");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -298,7 +305,7 @@ export default function ExplorationReportScreen({ route }) {
     return () => {
       cancelled = true;
     };
-  }, [explorationId]);
+  }, [explorationId, posthog]);
 
   if (loading) {
     return (

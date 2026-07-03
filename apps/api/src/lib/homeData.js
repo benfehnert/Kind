@@ -1,7 +1,6 @@
 import { query } from "../db.js";
 import {
-  filterStaticFeedRows,
-  STATIC_FEED_EXPLORATION_IDS
+  filterStaticFeedRows
 } from "./feedContentLibrary.js";
 import {
   buildPersonalizationContext,
@@ -13,6 +12,10 @@ import {
   fetchUpdateFeedItems
 } from "./userExplorationUpdates.js";
 import { syncAllShortExplorationUpdates } from "./userExplorationUpdatesShort.js";
+import {
+  feedContentExplorationId,
+  SHORT_EXPLORATION_IDS
+} from "./centShort/index.js";
 
 export const FEED_CHIPS = [
   { key: "all", label: "All" },
@@ -357,19 +360,24 @@ export async function fetchExplorationMeta(explorationIds) {
 }
 
 async function fetchStarterExplorationIds() {
-  const { rows } = await query(
-    `SELECT DISTINCT exploration_id
-     FROM feed_items
-     WHERE feed_type IN ('tip', 'science')
-       AND exploration_id IS NOT NULL
-     ORDER BY exploration_id`
+  return SHORT_EXPLORATION_IDS;
+}
+
+function remapFeedRowsToCatalogIds(rows, catalogIds) {
+  const contentToCatalog = Object.fromEntries(
+    catalogIds.map((id) => [feedContentExplorationId(id), id])
   );
-  const ids = rows.map((r) => r.exploration_id);
-  return ids.length ? ids : STATIC_FEED_EXPLORATION_IDS;
+  return rows.map((row) => ({
+    ...row,
+    exploration_id: row.exploration_id
+      ? contentToCatalog[row.exploration_id] ?? row.exploration_id
+      : row.exploration_id
+  }));
 }
 
 async function fetchFeedRows(explorationIds) {
-  const ids = explorationIds.length ? explorationIds : STATIC_FEED_EXPLORATION_IDS;
+  const catalogIds = explorationIds.length ? explorationIds : SHORT_EXPLORATION_IDS;
+  const feedContentIds = [...new Set(catalogIds.map(feedContentExplorationId))];
   const { rows } = await query(
     `SELECT fi.id, fi.feed_type::text AS type, fi.exploration_id, fi.headline,
             fi.body, fi.highlight, fi.published_at, fi.sort_order,
@@ -380,10 +388,10 @@ async function fetchFeedRows(explorationIds) {
      WHERE fi.feed_type IN ('tip', 'science')
        AND (fi.exploration_id IS NULL OR fi.exploration_id = ANY($1::text[]))
      ORDER BY fi.sort_order, fi.published_at DESC`,
-    [ids]
+    [feedContentIds]
   );
-  if (rows.length) return rows;
-  return filterStaticFeedRows(ids);
+  if (rows.length) return remapFeedRowsToCatalogIds(rows, catalogIds);
+  return remapFeedRowsToCatalogIds(filterStaticFeedRows(feedContentIds), catalogIds);
 }
 
 function shortDisplayName(name) {

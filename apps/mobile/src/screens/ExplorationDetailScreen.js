@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
@@ -10,6 +11,7 @@ import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
+  const posthog = usePostHog();
   const { community } = useData();
   const userExplorations = useUserExplorations();
   const startExploration = useExplorationStart();
@@ -18,6 +20,10 @@ export default function ExplorationDetailScreen() {
   const { params } = useRoute();
   const id = params?.id;
   const e = id ? userExplorations[id] : null;
+
+  useEffect(() => {
+    if (e) posthog?.capture("exploration details opened");
+  }, [posthog, e]);
 
   if (!e) {
     return (

@@ -426,7 +426,7 @@ async function seedDemoUser() {
       individual_id: anna.id,
       platform_consent: true,
       contribute_to_citizen_science: true,
-      visible_in_community: true,
+      visible_in_community: false,
       daily_reminders: true
     },
     { onConflict: "individual_id" }

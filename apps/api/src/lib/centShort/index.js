@@ -29,6 +29,15 @@ import {
   buildStudyMeta as buildUpfMeta
 } from "./upfReductionShort/index.js";
 
+/** Ordered catalog of Short (alpha) explorations available to users. */
+export const SHORT_EXPLORATION_IDS = [
+  "morning-rules-short",
+  "eating-short",
+  "screen-sleep-short",
+  "relaxation-short",
+  "upf-mood-short"
+];
+
 /**
  * Short (alpha) explorations run a completely separate analysis pipeline from
  * the full-length CENT modules. One logged day maps to one full-study week, so
@@ -77,4 +86,14 @@ export function centShortSupportsExploration(explorationId) {
 
 export function isShortExploration(explorationId) {
   return typeof explorationId === "string" && explorationId.endsWith("-short");
+}
+
+export function isCatalogExploration(explorationId) {
+  return SHORT_EXPLORATION_IDS.includes(explorationId);
+}
+
+/** Map a Short catalog ID to the parent ID used in feed content seed data. */
+export function feedContentExplorationId(explorationId) {
+  if (!isShortExploration(explorationId)) return explorationId;
+  return explorationId.replace(/-short$/, "");
 }

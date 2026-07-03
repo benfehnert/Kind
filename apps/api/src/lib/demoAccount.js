@@ -1,6 +1,12 @@
 import { query } from "../db.js";
+import { ANNA_DEMO_SLUG, isHiddenFromCommunity } from "./demoProfiles.js";
 
-export const ANNA_DEMO_SLUG = "anna-ross";
+export { ANNA_DEMO_SLUG, isHiddenFromCommunity } from "./demoProfiles.js";
+
+/** @deprecated Use isHiddenFromCommunity */
+export function isAnnaHiddenFromCommunity(viewerIsAnna, targetSlug) {
+  return isHiddenFromCommunity(viewerIsAnna, targetSlug);
+}
 
 export async function isAnnaDemoIndividual(individualId) {
   if (!individualId) return false;

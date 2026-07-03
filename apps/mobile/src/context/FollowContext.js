@@ -1,10 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { usePostHog } from "posthog-react-native";
 import { patch } from "../lib/api";
 import { useData } from "./DataContext";
 
 const FollowContext = createContext(null);
 
 export function FollowProvider({ children }) {
+  const posthog = usePostHog();
   const data = useData();
   const { updateSocialFollows, applySocialFollows } = data ?? {};
   const selfSlug = data?.profile?.viewerSlug ?? null;
@@ -57,6 +59,7 @@ export function FollowProvider({ children }) {
             wasFollowing ? { unfollowSlug: userId } : { followSlug: userId }
           );
         }
+        if (!wasFollowing) posthog?.capture("followed a community member");
       } catch {
         setFollowing((prev) => {
           const n = new Set(prev);
@@ -66,7 +69,7 @@ export function FollowProvider({ children }) {
         });
       }
     },
-    [isSelf, applySocialFollows, updateSocialFollows, socialMeta]
+    [isSelf, applySocialFollows, updateSocialFollows, socialMeta, posthog]
   );
 
   const toggleResearcherFollow = useCallback((rid) => {

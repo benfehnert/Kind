@@ -12,7 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useAuth } from "../context/AuthContext";
+import { identifyPostHogUser } from "../lib/posthog";
 import { ApiError } from "../lib/api";
 import { KindBlob } from "../components/onboarding/KindBlob";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
@@ -21,6 +23,7 @@ import { type } from "../theme/typography";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const posthog = usePostHog();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,6 +38,8 @@ export default function LoginScreen() {
     setSubmitting(true);
     try {
       await login(email, password);
+      identifyPostHogUser(posthog, email);
+      posthog?.capture("signed in");
     } catch (err) {
       const message =
         err instanceof ApiError ? err.message : "Something went wrong. Please try again.";

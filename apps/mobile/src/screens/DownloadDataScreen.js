@@ -12,6 +12,7 @@ import {
 import { ProfileDetailScreen } from "../components/profile/ProfileDetailScreen";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
 import { useAuth } from "../context/AuthContext";
+import { usePostHog } from "posthog-react-native";
 import { post, ApiError } from "../lib/api";
 import { downloadDataContent as c } from "../data/downloadDataContent";
 import { colors, fontFamily, radius, spacing } from "../theme/colors";
@@ -24,6 +25,7 @@ function normalizeEmail(value) {
 
 export default function DownloadDataScreen() {
   const { email: accountEmail } = useAuth();
+  const posthog = usePostHog();
   const [email, setEmail] = useState(accountEmail || "");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -42,6 +44,7 @@ export default function DownloadDataScreen() {
     setSubmitting(true);
     try {
       await post("/profile/data-export-request", { email: email.trim() });
+      posthog?.capture("downloaded data");
       setSubmitted(true);
     } catch (err) {
       const message =
