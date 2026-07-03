@@ -553,6 +553,19 @@ p  { color: var(--slate); line-height: 1.7; }
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+.legal-page ol {
+  list-style: decimal;
+  padding-left: 1.35rem;
+  margin-bottom: 1rem;
+}
+.legal-page .install-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1.1em;
+  height: 1.1em;
+  margin: 0 0.15em;
+  color: var(--slate);
+}
 
 /* ── FAQ ── */
 .faq-group { margin-bottom: 56px; }
