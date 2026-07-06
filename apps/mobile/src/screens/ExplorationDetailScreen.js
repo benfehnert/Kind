@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
+import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
 import { colors, fontFamily } from "../theme/colors";
@@ -12,7 +13,8 @@ import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
   const posthog = usePostHog();
-  const { community } = useData();
+  const { community, explorePage } = useData();
+  const { explorationHydrating } = useConsent();
   const userExplorations = useUserExplorations();
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
@@ -38,6 +40,9 @@ export default function ExplorationDetailScreen() {
 
   const r = getResearcher(e.researcherId, community.researchers);
   const showKindResearchBox = id === "eating" || id === "relaxation";
+  const isActiveForUser =
+    e.active || explorePage?.activeExploration?.id === id;
+  const showStartButton = !explorationHydrating && !isActiveForUser;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -82,7 +87,7 @@ export default function ExplorationDetailScreen() {
 
         <PrimaryButton title="See evidence summary" style={{ marginBottom: 12 }} onPress={() => navigation.navigate("Evidence", { id })} />
 
-        {!e.active ? (
+        {!showStartButton ? null : (
           <PrimaryButton
             title="Start this exploration"
             onPress={() => startExploration(navigation, id, { showToast })}
@@ -90,7 +95,7 @@ export default function ExplorationDetailScreen() {
             textColor="#fff"
             style={{ marginBottom: 12 }}
           />
-        ) : null}
+        )}
 
         <Text style={styles.sec}>Hypothesised outcomes supported by emerging evidence:</Text>
         {(e.outcomes || []).map((o, i) => (
@@ -140,7 +145,7 @@ export default function ExplorationDetailScreen() {
           Exploration logging mirrors the prototype — structured fields configured per exploration JSON.
         </Text>
 
-        {!e.active ? (
+        {showStartButton ? (
           <PrimaryButton
             title="Start this exploration"
             onPress={() => startExploration(navigation, id, { showToast })}
@@ -148,11 +153,11 @@ export default function ExplorationDetailScreen() {
             textColor="#fff"
             style={{ marginTop: 16 }}
           />
-        ) : (
+        ) : isActiveForUser ? (
           <Text style={{ marginTop: 8, fontSize: 12, color: colors.greenDark, fontWeight: "600" }}>
             You're active · keep logging consistently.
           </Text>
-        )}
+        ) : null}
 
         <Pressable style={{ marginTop: 24 }} onPress={() => navigation.navigate("ExplorersList", { explorationId: id })}>
           <Text style={styles.evL}>Browse public explorers ({e.participants})</Text>

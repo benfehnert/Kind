@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
@@ -56,6 +56,7 @@ export default function HomeScreen() {
     explorationRuns,
     activeExplorationId,
     privacyPrefs,
+    explorationHydrating,
     refreshExplorationRuns
   } = useConsent();
   const { showToast } = useUiShell();
@@ -73,6 +74,7 @@ export default function HomeScreen() {
   const [reminderDismissed, setReminderDismissed] = useState(false);
   const [lastSavedNames, setLastSavedNames] = useState([]);
   const completedExplorationsTracked = useRef(new Set());
+  const pendingOpenLogRef = useRef(false);
 
   const consentedIds = useMemo(
     () =>
@@ -216,10 +218,26 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (route.params?.openLog) {
-      openCheckin();
-      navigation.setParams({ openLog: undefined });
+      pendingOpenLogRef.current = true;
+      navigation.setParams({ openLog: undefined, explorationId: undefined });
     }
-  }, [route.params?.openLog, navigation, openCheckin]);
+  }, [route.params?.openLog, navigation]);
+
+  useEffect(() => {
+    if (!pendingOpenLogRef.current) return;
+    if (explorationHydrating) return;
+    if (logExplorations.length === 0) return;
+    pendingOpenLogRef.current = false;
+    openCheckin();
+  }, [explorationHydrating, logExplorations.length, openCheckin]);
+
+  useEffect(() => {
+    if (!showLog) return;
+    if (explorationHydrating) return;
+    if (logExplorations.length > 0) return;
+    if (pendingOpenLogRef.current) return;
+    setShowLog(false);
+  }, [showLog, explorationHydrating, logExplorations.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -513,6 +531,13 @@ export default function HomeScreen() {
           />
         ) : null}
 
+        {showLog && !saved && logExplorations.length > 0 && prefilling ? (
+          <Card style={styles.prefillLoading}>
+            <ActivityIndicator color={colors.greenDark} />
+            <Text style={styles.prefillLoadingText}>Loading today's check-in…</Text>
+          </Card>
+        ) : null}
+
         {showLog && !saved && logExplorations.length > 0 && !prefilling ? (
           <DailyCheckinCard
             explorations={logExplorations}
@@ -628,6 +653,13 @@ const styles = StyleSheet.create({
   },
   confirmTitle: { ...type.buttonMd, color: colors.greenDark, marginBottom: spacing.xs },
   confirmBody: { ...type.exploreDesc, color: colors.textMuted },
+  prefillLoading: {
+    marginBottom: spacing.lg,
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.xl
+  },
+  prefillLoadingText: { ...type.exploreDesc, color: colors.textMuted },
   feed: layout.feedItem,
   feedHead: { flexDirection: "row", alignItems: "center", gap: spacing.feedGap, marginBottom: spacing.md },
   feedName: text.feedName,

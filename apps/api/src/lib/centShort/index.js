@@ -97,3 +97,9 @@ export function feedContentExplorationId(explorationId) {
   if (!isShortExploration(explorationId)) return explorationId;
   return explorationId.replace(/-short$/, "");
 }
+
+/** Map a Short catalog ID to the parent ID used for evidence documents. */
+export function evidenceExplorationId(explorationId) {
+  if (!isShortExploration(explorationId)) return explorationId;
+  return explorationId.replace(/-short$/, "");
+}
