@@ -1,6 +1,7 @@
 import { query } from "../db.js";
 import {
-  filterStaticFeedRows
+  filterStaticFeedRows,
+  isCohortStatsScience
 } from "./feedContentLibrary.js";
 import {
   buildPersonalizationContext,
@@ -752,7 +753,8 @@ export async function buildHomeFeed(individualId) {
     } else if (
       row.type === "science" &&
       row.exploration_id &&
-      contentExplorationIds.includes(row.exploration_id)
+      contentExplorationIds.includes(row.exploration_id) &&
+      !(starterMode && isCohortStatsScience(row))
     ) {
       if (!scienceByExp[row.exploration_id]) scienceByExp[row.exploration_id] = [];
       scienceByExp[row.exploration_id].push(row);
@@ -847,6 +849,7 @@ export async function fetchHomeFeedExtras(individualId, { type, explorationId, o
   const byExp = {};
   for (const row of rows) {
     if (row.type !== type || !row.exploration_id || !targetIds.includes(row.exploration_id)) continue;
+    if (starterMode && type === "science" && isCohortStatsScience(row)) continue;
     if (!byExp[row.exploration_id]) byExp[row.exploration_id] = [];
     byExp[row.exploration_id].push(row);
   }

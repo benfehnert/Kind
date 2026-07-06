@@ -29,7 +29,7 @@ function buildAtAGlance(exploration) {
 }
 
 export default function ExplorationConsentScreen() {
-  const { explorations } = useData();
+  const { explorations, refetchExplore } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const explorationId = params?.id;
@@ -60,6 +60,7 @@ export default function ExplorationConsentScreen() {
     setSubmitting(true);
     try {
       await enrollInExploration(explorationId, { setActive: true });
+      await refetchExplore();
       navigation.replace("ExplorationStarted", { id: explorationId });
     } catch {
       showToast("Something went wrong. Please try again.");

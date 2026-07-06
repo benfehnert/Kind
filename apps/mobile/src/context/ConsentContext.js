@@ -144,7 +144,9 @@ export function ConsentProvider({ children }) {
 
       const nextConsents = {};
       const nextRuns = {};
+      const serverExplorationIds = new Set();
       for (const item of payload.items || []) {
+        serverExplorationIds.add(item.explorationId);
         if (item.consented) {
           nextConsents[item.explorationId] = {
             granted: true,
@@ -161,14 +163,30 @@ export function ConsentProvider({ children }) {
         };
       }
 
-      setExplorationConsents(nextConsents);
-      persistExplorationConsents(nextConsents);
+      setExplorationConsents((prev) => {
+        const merged = { ...nextConsents };
+        for (const [id, local] of Object.entries(prev)) {
+          if (!local?.granted || serverExplorationIds.has(id)) continue;
+          merged[id] = local;
+        }
+        persistExplorationConsents(merged);
+        return merged;
+      });
       setExplorationRuns(nextRuns);
 
-      if (payload.activeExplorationId) {
-        setActiveExplorationId(payload.activeExplorationId);
-        persistActiveExploration(payload.activeExplorationId);
-      } else {
+      const resolvedActiveId =
+        payload.activeExplorationId ??
+        payload.items?.find((item) => item.isActive)?.explorationId ??
+        null;
+
+      if (resolvedActiveId) {
+        setActiveExplorationId(resolvedActiveId);
+        persistActiveExploration(resolvedActiveId);
+      } else if (
+        Array.isArray(payload.items) &&
+        payload.items.length > 0 &&
+        !payload.items.some((item) => item.isActive)
+      ) {
         setActiveExplorationId(null);
         persistActiveExploration(null);
       }

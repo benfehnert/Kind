@@ -125,7 +125,17 @@ export async function fetchExplorationConsents(individualId) {
     }
     if (row.is_active) activeExplorationId = row.exploration_id;
   }
-  return { map, activeExplorationId };
+  return { map, activeExplorationId, rows };
+}
+
+/** Resolve the user's active exploration from consent and run rows. */
+export function resolveActiveExplorationId({ consentActiveId, consents, runs } = {}) {
+  const fromConsents =
+    consentActiveId ??
+    consents?.find((c) => c.is_active)?.exploration_id ??
+    null;
+  const fromRuns = runs?.find((r) => r.is_active)?.exploration_id ?? null;
+  return fromConsents ?? fromRuns ?? null;
 }
 
 export async function fetchUserExplorations(individualId) {

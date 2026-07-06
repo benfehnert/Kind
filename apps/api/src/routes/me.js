@@ -15,7 +15,8 @@ import {
   privacyFromOnboardingAnswers,
   setActiveExploration,
   upsertIndividualConsents,
-  upsertPrivacyFromOnboarding
+  upsertPrivacyFromOnboarding,
+  resolveActiveExplorationId
 } from "../lib/meData.js";
 import { recordActivityFromLog } from "../lib/homeData.js";
 import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
@@ -191,10 +192,14 @@ router.get("/me/explorations", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const [runs, { map, activeExplorationId }] = await Promise.all([
+  const [runs, { map, activeExplorationId: consentActiveId }] = await Promise.all([
     fetchUserExplorations(individualId),
     fetchExplorationConsents(individualId)
   ]);
+  const activeExplorationId = resolveActiveExplorationId({
+    consentActiveId,
+    runs
+  });
 
   const reportIds = runs.map((r) => r.exploration_id);
   const { rows: reportRows } = await query(

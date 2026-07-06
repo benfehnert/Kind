@@ -39,7 +39,11 @@ import {
   isHiddenFromCommunity
 } from "../lib/demoAccount.js";
 import { EXPLORATION_CATEGORY } from "../lib/onboardingRecommendations.js";
-import { isCatalogExploration, SHORT_EXPLORATION_IDS } from "../lib/centShort/index.js";
+import {
+  evidenceExplorationId,
+  isCatalogExploration,
+  SHORT_EXPLORATION_IDS
+} from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -122,7 +126,8 @@ async function fetchExploration(id) {
   if (!rows[0]) return null;
   return stripCatalogProgressFields({
     ...rows[0],
-    category: EXPLORATION_CATEGORY[rows[0].id] ?? null
+    category: EXPLORATION_CATEGORY[rows[0].id] ?? null,
+    evidenceId: evidenceExplorationId(rows[0].id)
   });
 }
 
@@ -146,7 +151,8 @@ router.get("/explorations/:id", async (c) => {
 });
 
 router.get("/explorations/:id/evidence", (c) => {
-  const data = explorationEvidence[c.req.param("id")];
+  const evidenceKey = evidenceExplorationId(c.req.param("id"));
+  const data = explorationEvidence[evidenceKey];
   if (!data) return c.json({ error: "Evidence not found" }, 404);
   return c.json(data);
 });
