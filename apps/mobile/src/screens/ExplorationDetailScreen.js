@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
@@ -10,6 +11,7 @@ import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
+  const posthog = usePostHog();
   const { community } = useData();
   const userExplorations = useUserExplorations();
   const startExploration = useExplorationStart();
@@ -18,6 +20,10 @@ export default function ExplorationDetailScreen() {
   const { params } = useRoute();
   const id = params?.id;
   const e = id ? userExplorations[id] : null;
+
+  useEffect(() => {
+    if (e) posthog?.capture("exploration details opened");
+  }, [posthog, e]);
 
   if (!e) {
     return (
@@ -76,6 +82,16 @@ export default function ExplorationDetailScreen() {
 
         <PrimaryButton title="See evidence summary" style={{ marginBottom: 12 }} onPress={() => navigation.navigate("Evidence", { id })} />
 
+        {!e.active ? (
+          <PrimaryButton
+            title="Start this exploration"
+            onPress={() => startExploration(navigation, id, { showToast })}
+            backgroundColor={e.text}
+            textColor="#fff"
+            style={{ marginBottom: 12 }}
+          />
+        ) : null}
+
         <Text style={styles.sec}>Hypothesised outcomes supported by emerging evidence:</Text>
         {(e.outcomes || []).map((o, i) => (
           <View key={i} style={styles.outRow}>
@@ -87,7 +103,13 @@ export default function ExplorationDetailScreen() {
         <Text style={styles.cardEyeb}>Phases</Text>
         {(e.phases || []).map((ph, i) => (
           <View key={i} style={styles.tl}>
-            <View style={[styles.dot, ph.status === "active" && styles.dotAct]} />
+            <View
+              style={[
+                styles.dot,
+                e.userConsented && ph.status === "active" && styles.dotAct,
+                e.userConsented && ph.status === "complete" && { backgroundColor: colors.borderMed }
+              ]}
+            />
             <View style={{ flex: 1 }}>
               <Text style={styles.phn}>{ph.name}</Text>
               <Text style={styles.phd}>{ph.desc}</Text>
@@ -95,7 +117,7 @@ export default function ExplorationDetailScreen() {
           </View>
         ))}
 
-        {e.chart && e.chart.length ? (
+        {e.userConsented && e.chart && e.chart.length ? (
           <>
             <Text style={styles.cardEyeb}>{e.chartLabel}</Text>
             <View style={styles.chartWrap}>
@@ -122,6 +144,8 @@ export default function ExplorationDetailScreen() {
           <PrimaryButton
             title="Start this exploration"
             onPress={() => startExploration(navigation, id, { showToast })}
+            backgroundColor={e.text}
+            textColor="#fff"
             style={{ marginTop: 16 }}
           />
         ) : (

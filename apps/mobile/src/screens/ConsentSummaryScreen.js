@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { masterConsentSummary } from "../data/profileLegalContent";
@@ -26,6 +27,7 @@ function buildExplorationConsentList(explorations, explorationConsents, activeEx
 }
 
 export default function ConsentSummaryScreen() {
+  const posthog = usePostHog();
   const { consent, explorations } = useData();
   const navigation = useNavigation();
   const { privacyPrefs, explorationConsents, activeExplorationId } = useConsent();
@@ -36,6 +38,10 @@ export default function ConsentSummaryScreen() {
     explorationConsents,
     activeExplorationId
   );
+
+  useEffect(() => {
+    posthog?.capture("viewed exploration data controls");
+  }, [posthog]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Platform } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { useConsent } from "../context/ConsentContext";
@@ -19,6 +20,7 @@ import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 
 export default function ProfileScreen() {
+  const posthog = usePostHog();
   const { profile, explorations, refetchProfile } = useData();
   const navigation = useNavigation();
   const { followingCount } = useFollow();
@@ -36,6 +38,7 @@ export default function ProfileScreen() {
   );
 
   const toggles = profile.privacy?.toggles || [];
+  const reminderToggles = profile.reminders?.toggles || [];
 
   const consentedExplorations = Object.entries(explorationConsents || {})
     .filter(([, v]) => v?.granted)
@@ -62,6 +65,9 @@ export default function ProfileScreen() {
       }
     }
     updatePrivacyPref(key, next);
+    if (key === "globalConsent" || key === "science" || key === "visible") {
+      posthog?.capture("updated data controls");
+    }
   };
 
   return (
@@ -114,25 +120,32 @@ export default function ProfileScreen() {
 
         <Card>
           <CardTitle>{profile.summaryTitle}</CardTitle>
-          {(profile.summaryRows || []).map((row, i, arr) => (
-            <View
-              key={row.label}
-              style={[
-                styles.kv,
-                i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 8 }
-              ]}
-            >
-              <Text style={styles.kl}>{row.label}</Text>
-              <Text
+          {profile.hasSummaryData ? (
+            (profile.summaryRows || []).map((row, i, arr) => (
+              <View
+                key={row.label}
                 style={[
-                  styles.kvTxt,
-                  row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                  styles.kv,
+                  i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 8 }
                 ]}
               >
-                {row.value}
-              </Text>
-            </View>
-          ))}
+                <Text style={styles.kl}>{row.label}</Text>
+                <Text
+                  style={[
+                    styles.kvTxt,
+                    row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                  ]}
+                >
+                  {row.value}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.exploreEmpty}>
+              {profile.emptySummaryMessage ||
+                "Join an exploration and log daily check-ins to build your personal summary."}
+            </Text>
+          )}
         </Card>
 
         <Card>
@@ -158,7 +171,7 @@ export default function ProfileScreen() {
                     </Text>
                   ) : null}
                 </View>
-                {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Joined</Badge>}
+                <Badge variant="amber">Active</Badge>
               </View>
             ))
           )}
@@ -189,10 +202,50 @@ export default function ProfileScreen() {
             );
           })}
           {(profile.privacy.actions || []).map((a) => (
-            <Pressable key={a.id} style={styles.po} onPress={() => showToast(a.toast)}>
+            <Pressable
+              key={a.id}
+              style={styles.po}
+              onPress={() => {
+                if (a.id === "used") {
+                  navigation.navigate("DataUsage");
+                  return;
+                }
+                if (a.id === "export") {
+                  navigation.navigate("DownloadData");
+                  return;
+                }
+                if (a.toast) showToast(a.toast);
+              }}
+            >
               <Text style={styles.poT}>{a.label}</Text>
             </Pressable>
           ))}
+        </Card>
+
+        <Card>
+          <CardTitle>{profile.reminders?.title || "Reminders"}</CardTitle>
+          {reminderToggles.map((t, i) => {
+            const on = Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            return (
+              <View
+                key={t.key}
+                style={[styles.setRow, i === reminderToggles.length - 1 && { borderBottomWidth: 0 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sl}>{t.label}</Text>
+                  <Text style={styles.ss}>{t.sub}</Text>
+                </View>
+                <Pressable
+                  style={[styles.toggle, !on && styles.toggleOff]}
+                  onPress={() => handleToggle(t.key, !on)}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: on }}
+                >
+                  <View style={[styles.toggleKnob, !on && styles.toggleKnobOff]} />
+                </Pressable>
+              </View>
+            );
+          })}
         </Card>
 
         <Pressable style={styles.signOutBtn} onPress={logout}>

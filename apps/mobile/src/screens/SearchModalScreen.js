@@ -11,6 +11,7 @@ import {
   Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { colors, fontSize, iconSize, radius, spacing } from "../theme/colors";
 import { text } from "../theme/textStyles";
@@ -20,7 +21,13 @@ import { CloseIcon } from "../components/icons/ProtoIcons";
 export default function SearchModalScreen() {
   const { search: searchData, exploreCopy } = useData();
   const navigation = useNavigation();
+  const posthog = usePostHog();
   const [q, setQ] = useState("");
+
+  function handleSearchSubmit() {
+    if (!q.trim()) return;
+    posthog?.capture("searched for exploration");
+  }
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -48,6 +55,7 @@ export default function SearchModalScreen() {
             placeholderTextColor={colors.textMuted}
             value={q}
             onChangeText={setQ}
+            onSubmitEditing={handleSearchSubmit}
             autoFocus
           />
           <Pressable style={styles.x} onPress={() => navigation.goBack()} accessibilityLabel="Close search">

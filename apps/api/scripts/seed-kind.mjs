@@ -13,6 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { readFileSync } from "fs";
 import { config } from "dotenv";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -62,6 +63,7 @@ const UUID_PK_TABLES = [
   "waitlist_entries",
   "feed_items",
   "activity_messages",
+  "activity_message_reactions",
   "activity_nices",
   "researcher_exploration_nices",
   "activity_posts",
@@ -98,6 +100,11 @@ async function clearAll() {
     if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
   }
 
+  for (const table of ["activity_message_reactions"]) {
+    const { error } = await supabase.from(table).delete().gte("created_at", "1970-01-01");
+    if (error) console.warn(`  warn clearing ${table}: ${error.message}`);
+  }
+
   for (const table of ["exploration_consents", "individual_onboarding"]) {
     const { error } = await supabase
       .from(table)
@@ -124,7 +131,18 @@ async function clearAll() {
 // 1. Explorations catalog
 // ---------------------------------------------------------------------------
 
-const EXPLORATION_ORDER = ["morning-rules", "eating", "screen-sleep", "relaxation", "upf-mood"];
+const EXPLORATION_ORDER = [
+  "morning-rules",
+  "eating",
+  "screen-sleep",
+  "relaxation",
+  "upf-mood",
+  "morning-rules-short",
+  "eating-short",
+  "screen-sleep-short",
+  "relaxation-short",
+  "upf-mood-short"
+];
 
 async function seedExplorations() {
   console.log("Seeding explorations…");
@@ -142,10 +160,10 @@ async function seedExplorations() {
       participant_count: e.participants ?? 0,
       is_new: e.isNew ?? false,
       catalog_active: e.active ?? false,
-      status_badge: e.statusBadge ?? null,
-      progress_percent: e.progress ?? null,
-      streak_days: e.streak ?? null,
-      chart_label: e.chartLabel ?? null
+      status_badge: null,
+      progress_percent: null,
+      streak_days: null,
+      chart_label: null
     };
   });
   await upsert("explorations", expRows, { onConflict: "id" });
@@ -160,7 +178,7 @@ async function seedExplorations() {
         sort_order: i,
         name: p.name,
         description: p.desc,
-        status: p.status
+        status: "upcoming"
       });
     });
   }
@@ -175,42 +193,6 @@ async function seedExplorations() {
     });
   }
   await insert("exploration_expected_outcomes", outcomes);
-
-  // KPIs
-  const kpis = [];
-  for (const id of EXPLORATION_ORDER) {
-    const e = explorations[id];
-    (e?.kpis ?? []).forEach((k, i) => {
-      kpis.push({
-        exploration_id: id,
-        sort_order: i,
-        label: k.label,
-        value_text: k.val,
-        unit: k.unit ?? null,
-        change_text: k.change ?? null,
-        is_positive: k.up ?? true
-      });
-    });
-  }
-  await insert("exploration_kpis", kpis);
-
-  // Chart points
-  const chartPoints = [];
-  for (const id of EXPLORATION_ORDER) {
-    const e = explorations[id];
-    (e?.chart ?? []).forEach((c, i) => {
-      chartPoints.push({
-        exploration_id: id,
-        sort_order: i,
-        day_label: c.day,
-        height_percent: c.h ?? 0,
-        value_label: c.v ?? null,
-        is_highlight: c.hi ?? false,
-        is_empty: c.empty ?? false
-      });
-    });
-  }
-  await insert("exploration_chart_points", chartPoints);
 
   // Log field definitions
   const fields = [];
@@ -239,7 +221,7 @@ async function seedExplorations() {
   }
   await insert("log_field_defs", fields);
 
-  console.log("  ✓ explorations, phases, outcomes, kpis, chart points, log fields");
+  console.log("  ✓ explorations, phases, outcomes, log fields");
 }
 
 // ---------------------------------------------------------------------------
@@ -360,6 +342,8 @@ const ANNA_ONBOARDING = {
   sexAssignedAtBirth: "female",
   healthGoals: ["energy_focus", "sleep"],
   kindHelp: ["trials", "explore", "insight"],
+  healthApproach: "actively_exploring",
+  recentHealthActivities: ["tracked_metrics", "science_content", "fitness_tracker"],
   longevityImportance: "matters",
   remindersEnabled: true
 };
@@ -377,7 +361,12 @@ const HOME_METRIC_FIELDS = {
   eating: ["te_energy", "te_hunger"],
   "screen-sleep": ["ss_sleep", "ss_windup"],
   relaxation: ["rp_stress", "rp_composure"],
-  "upf-mood": ["upf_mood", "upf_energy"]
+  "upf-mood": ["upf_mood", "upf_energy"],
+  "morning-rules-short": ["mr_pm_energy", "mr_rules", "mr_crash"],
+  "eating-short": ["te_energy", "te_hunger"],
+  "screen-sleep-short": ["ss_sleep", "ss_windup"],
+  "relaxation-short": ["rp_stress", "rp_composure"],
+  "upf-mood-short": ["upf_mood", "upf_energy"]
 };
 
 const USER_EXPLORATION_IDS = {};
@@ -437,7 +426,7 @@ async function seedDemoUser() {
       individual_id: anna.id,
       platform_consent: true,
       contribute_to_citizen_science: true,
-      visible_in_community: true,
+      visible_in_community: false,
       daily_reminders: true
     },
     { onConflict: "individual_id" }
@@ -705,7 +694,101 @@ async function seedActivityPosts() {
   }
 
   await insert("activity_posts", posts);
-  console.log(`  ✓ ${posts.length} activity posts`);
+
+  const { data: insertedPosts, error: postsError } = await supabase
+    .from("activity_posts")
+    .select("id, individual_id, nice_count_base, sort_order");
+  if (postsError) die("select activity_posts", postsError);
+
+  const nices = [];
+  const allIndividualIds = Object.values(INDIVIDUAL_IDS).filter(Boolean);
+  const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
+
+  for (const post of insertedPosts ?? []) {
+    const targetCount = Math.max(0, Number(post.nice_count_base ?? 0));
+    if (!targetCount) continue;
+
+    const candidates = allIndividualIds.filter((id) => id !== post.individual_id);
+    for (let i = 0; i < Math.min(targetCount, candidates.length); i += 1) {
+      const supporterId = candidates[(post.sort_order + i) % candidates.length];
+      nices.push({
+        individual_id: supporterId,
+        activity_post_id: post.id
+      });
+    }
+
+    if (annaId && annaId !== post.individual_id && targetCount > 0) {
+      const hasAnna = nices.some(
+        (row) => row.activity_post_id === post.id && row.individual_id === annaId
+      );
+      if (!hasAnna) {
+        nices.push({ individual_id: annaId, activity_post_id: post.id });
+      }
+    }
+  }
+
+  const uniqueNices = [];
+  const seen = new Set();
+  for (const row of nices) {
+    const key = `${row.individual_id}:${row.activity_post_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqueNices.push(row);
+  }
+  await insert("activity_nices", uniqueNices);
+
+  const messageRows = [];
+  const messageBodies = [
+    "Really inspiring progress — keep it up!",
+    "Love seeing this consistency.",
+    "This is motivating me to stay on track too.",
+    "Great milestone, well done!"
+  ];
+
+  for (const post of insertedPosts ?? []) {
+    const msgCount = Math.min(3, Math.max(0, Math.floor(Number(post.nice_count_base ?? 0) / 2)));
+    if (!msgCount) continue;
+
+    const candidates = allIndividualIds.filter((id) => id !== post.individual_id);
+    for (let i = 0; i < Math.min(msgCount, candidates.length); i += 1) {
+      messageRows.push({
+        sender_id: candidates[(post.sort_order + i + 1) % candidates.length],
+        activity_post_id: post.id,
+        body: messageBodies[i % messageBodies.length],
+        sent_at: new Date(Date.now() - (msgCount - i) * 3600000 * 5).toISOString()
+      });
+    }
+  }
+  await insert("activity_messages", messageRows);
+
+  const { data: insertedMessages, error: messagesError } = await supabase
+    .from("activity_messages")
+    .select("id, sender_id");
+  if (messagesError) die("select activity_messages", messagesError);
+
+  const reactionRows = [];
+  for (const msg of insertedMessages ?? []) {
+    const candidates = allIndividualIds.filter((id) => id !== msg.sender_id);
+    if (candidates[0]) {
+      reactionRows.push({
+        individual_id: candidates[0],
+        activity_message_id: msg.id,
+        reaction_type: "heart"
+      });
+    }
+    if (candidates[1]) {
+      reactionRows.push({
+        individual_id: candidates[1],
+        activity_message_id: msg.id,
+        reaction_type: "clap"
+      });
+    }
+  }
+  await insert("activity_message_reactions", reactionRows);
+
+  console.log(
+    `  ✓ ${posts.length} activity posts, ${uniqueNices.length} activity nices, ${messageRows.length} messages, ${reactionRows.length} reactions`
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -802,6 +885,33 @@ async function seedDailyLogs() {
   console.log(`  ✓ ${logs.length} daily logs for morning-rules`);
 }
 
+async function seedAnnaCompletionLogs(explorationId, fixtureFile) {
+  const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
+  const ueId = USER_EXPLORATION_IDS[explorationId];
+  if (!annaId || !ueId) return;
+
+  const fixturePath = join(__dir, "../src/data/fixtures", fixtureFile);
+  const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
+  const logs = (fixture.logs ?? []).map((row) => ({
+    individual_id: annaId,
+    exploration_id: explorationId,
+    user_exploration_id: ueId,
+    log_date: row.log_date,
+    field_values: row.field_values
+  }));
+
+  await insert("daily_logs", logs);
+  console.log(`  ✓ ${logs.length} daily logs for ${explorationId} (completion fixture)`);
+}
+
+async function seedAnnaExplorationLogs() {
+  console.log("Seeding Anna completed exploration logs…");
+  await seedAnnaCompletionLogs("eating", "anna-eating-completion.json");
+  await seedAnnaCompletionLogs("screen-sleep", "anna-screen-sleep-completion.json");
+  await seedAnnaCompletionLogs("relaxation", "anna-relaxation-completion.json");
+  await seedAnnaCompletionLogs("upf-mood", "anna-upf-mood-completion.json");
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -845,6 +955,7 @@ async function main() {
   await seedBadges();
   await seedUserExplorations();
   await seedDailyLogs();
+  await seedAnnaExplorationLogs();
   await seedOnboardingAndConsents();
   await seedTrialReports();
   await seedFollows();

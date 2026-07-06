@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useRoute, useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { colors, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -35,10 +36,25 @@ function InsightIcon({ variant }) {
 }
 
 export default function InsightScreen() {
+  const posthog = usePostHog();
   const { insight, refetchInsight } = useData();
   const route = useRoute();
   const [tab, setTab] = useState(route.params?.community ? 1 : 0);
   const highlightFeedItemId = route.params?.feedItemId;
+  const ownInsightsSeen = useRef(false);
+  const communityInsightsSeen = useRef(false);
+
+  function handleScroll(e) {
+    const y = e.nativeEvent.contentOffset.y;
+    if (tab === 0 && y > 80 && !ownInsightsSeen.current) {
+      ownInsightsSeen.current = true;
+      posthog?.capture("viewed own insights");
+    }
+    if (tab === 1 && y > 80 && !communityInsightsSeen.current) {
+      communityInsightsSeen.current = true;
+      posthog?.capture("viewed community insights");
+    }
+  }
 
   useFocusEffect(
     React.useCallback(() => {
@@ -53,10 +69,19 @@ export default function InsightScreen() {
   const your = insight.energyTrend;
   const mr = insight.rulesChart;
   const showCharts = insight.hasPersonalData && your?.bars?.length > 0;
+  const showCommunityInsights = insight.showCommunityInsights !== false;
+
+  useEffect(() => {
+    if (!showCommunityInsights && tab === 1) setTab(0);
+  }, [showCommunityInsights, tab]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={layout.screenPad}>
+      <ScrollView
+        contentContainerStyle={layout.screenPad}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <SectionTitle>{insight.header.title}</SectionTitle>
         <SectionSub>{insight.header.sub}</SectionSub>
 
@@ -64,9 +89,11 @@ export default function InsightScreen() {
           <Pressable style={[styles.st, tab === 0 && styles.stOn]} onPress={() => setTab(0)}>
             <Text style={[styles.stTxt, tab === 0 && styles.stTxtOn]}>{insight.yourSubTabs[0]}</Text>
           </Pressable>
-          <Pressable style={[styles.st, tab === 1 && styles.stOn]} onPress={() => setTab(1)}>
-            <Text style={[styles.stTxt, tab === 1 && styles.stTxtOn]}>{insight.yourSubTabs[1]}</Text>
-          </Pressable>
+          {showCommunityInsights ? (
+            <Pressable style={[styles.st, tab === 1 && styles.stOn]} onPress={() => setTab(1)}>
+              <Text style={[styles.stTxt, tab === 1 && styles.stTxtOn]}>{insight.yourSubTabs[1]}</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         {tab === 0 ? (

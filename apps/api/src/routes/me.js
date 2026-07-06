@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { query } from "../db.js";
 import {
-  ANNA_DEMO_ONBOARDING,
   buildConsentPayload,
   ensureUserExploration,
   fetchConsentChoices,
@@ -19,6 +18,9 @@ import {
   upsertPrivacyFromOnboarding
 } from "../lib/meData.js";
 import { recordActivityFromLog } from "../lib/homeData.js";
+import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
+import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
+import { isShortExploration, isCatalogExploration } from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -87,7 +89,7 @@ router.post("/onboarding/complete", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const body = await c.req.json().catch(() => ({}));
-  const answers = { ...ANNA_DEMO_ONBOARDING, ...(body.answers ?? body) };
+  const answers = body.answers ?? body;
 
   const { rows } = await query(
     `INSERT INTO individual_onboarding (individual_id, answers, completed_at)
@@ -227,6 +229,9 @@ router.post("/me/explorations/:id/consent", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const explorationId = c.req.param("id");
+  if (!isCatalogExploration(explorationId)) {
+    return c.json({ error: "Exploration not available" }, 400);
+  }
   const body = await c.req.json().catch(() => ({}));
   const setActive = body.setActive !== false;
 
@@ -262,6 +267,9 @@ router.patch("/me/explorations/:id/active", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const explorationId = c.req.param("id");
+  if (!isCatalogExploration(explorationId)) {
+    return c.json({ error: "Exploration not available" }, 400);
+  }
   const { rows } = await query(
     `SELECT granted FROM exploration_consents
      WHERE individual_id = $1 AND exploration_id = $2 AND granted = TRUE`,
@@ -280,6 +288,9 @@ router.post("/me/explorations/:id/complete", async (c) => {
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
   const explorationId = c.req.param("id");
+  if (!isCatalogExploration(explorationId)) {
+    return c.json({ error: "Exploration not available" }, 400);
+  }
   await query(
     `UPDATE user_explorations SET
        status = 'complete',
@@ -397,11 +408,16 @@ router.post("/me/logs", async (c) => {
 
   await recordActivityFromLog(individualId, explorationId, rows[0].field_values, userExplorationId);
 
+  const feedUpdates = isShortExploration(explorationId)
+    ? await syncShortExplorationUpdates(individualId, explorationId)
+    : await syncExplorationUpdates(individualId, explorationId);
+
   return c.json({
     ok: true,
     logDate: rows[0].log_date,
     fieldValues: rows[0].field_values,
-    createdAt: rows[0].created_at
+    createdAt: rows[0].created_at,
+    feedUpdates: feedUpdates.length
   });
 });
 

@@ -1,0 +1,192 @@
+{
+  "generated_at": "2026-06-29T13:22:01.674Z",
+  "exploration_id": "eating",
+  "avg_improvement_points": 1.6,
+  "top_habit_by_energy": "window_10h_or_less",
+  "by_week": {
+    "1": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    },
+    "2": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    },
+    "3": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    },
+    "4": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    },
+    "5": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    },
+    "6": {
+      "participant_count": 64,
+      "logging_pct_distribution": [
+        48,
+        55,
+        60,
+        65,
+        70,
+        74,
+        78,
+        82,
+        85,
+        88,
+        91,
+        93,
+        95,
+        97,
+        98
+      ]
+    }
+  },
+  "weekly_energy": {
+    "1": {
+      "n": 54,
+      "mean": 5.22,
+      "p25": 4.45,
+      "p75": 5.95
+    },
+    "2": {
+      "n": 56,
+      "mean": 5.44,
+      "p25": 4.6,
+      "p75": 6.2
+    },
+    "3": {
+      "n": 58,
+      "mean": 5.66,
+      "p25": 4.75,
+      "p75": 6.45
+    },
+    "4": {
+      "n": 60,
+      "mean": 5.88,
+      "p25": 4.8999999999999995,
+      "p75": 6.7
+    },
+    "5": {
+      "n": 62,
+      "mean": 6.1,
+      "p25": 5.05,
+      "p75": 6.95
+    },
+    "6": {
+      "n": 64,
+      "mean": 6.32,
+      "p25": 5.199999999999999,
+      "p75": 7.2
+    }
+  },
+  "stacking_effect_at_week": {
+    "1": {
+      "mean_energy_10h_or_less": 5.85,
+      "mean_energy_wider_window": 5.0200000000000005
+    },
+    "2": {
+      "mean_energy_10h_or_less": 6.1,
+      "mean_energy_wider_window": 5.140000000000001
+    },
+    "3": {
+      "mean_energy_10h_or_less": 6.35,
+      "mean_energy_wider_window": 5.260000000000001
+    },
+    "4": {
+      "mean_energy_10h_or_less": 6.6,
+      "mean_energy_wider_window": 5.380000000000001
+    },
+    "5": {
+      "mean_energy_10h_or_less": 6.85,
+      "mean_energy_wider_window": 5.5
+    },
+    "6": {
+      "mean_energy_10h_or_less": 7.1,
+      "mean_energy_wider_window": 5.62
+    }
+  }
+}

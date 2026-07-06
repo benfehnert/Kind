@@ -12,10 +12,14 @@ import ResearcherProfileScreen from "../screens/ResearcherProfileScreen";
 import FeedBankScreen from "../screens/FeedBankScreen";
 import ExplorersListScreen from "../screens/ExplorersListScreen";
 import FollowListScreen from "../screens/FollowListScreen";
+import NiceSupportersScreen from "../screens/NiceSupportersScreen";
+import ActivityMessagesScreen from "../screens/ActivityMessagesScreen";
 import OnboardingConsentScreen from "../screens/OnboardingConsentScreen";
 import ConsentSummaryScreen from "../screens/ConsentSummaryScreen";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
 import ResearchEthicsScreen from "../screens/ResearchEthicsScreen";
+import DataUsageScreen from "../screens/DataUsageScreen";
+import DownloadDataScreen from "../screens/DownloadDataScreen";
 import ExplorerOnboardingScreen from "../screens/ExplorerOnboardingScreen";
 import ExplorationConsentScreen from "../screens/ExplorationConsentScreen";
 import ExplorationStartedScreen from "../screens/ExplorationStartedScreen";
@@ -62,10 +66,14 @@ export default function AppNavigator() {
       <RootStack.Screen name="FeedBank" component={FeedBankScreen} />
       <RootStack.Screen name="ExplorersList" component={ExplorersListScreen} />
       <RootStack.Screen name="FollowList" component={FollowListScreen} />
+      <RootStack.Screen name="NiceSupporters" component={NiceSupportersScreen} />
+      <RootStack.Screen name="ActivityMessages" component={ActivityMessagesScreen} />
       <RootStack.Screen name="OnboardingConsent" component={OnboardingConsentScreen} />
       <RootStack.Screen name="ConsentSummary" component={ConsentSummaryScreen} />
       <RootStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <RootStack.Screen name="ResearchEthics" component={ResearchEthicsScreen} />
+      <RootStack.Screen name="DataUsage" component={DataUsageScreen} />
+      <RootStack.Screen name="DownloadData" component={DownloadDataScreen} />
       <RootStack.Screen name="ExplorationReport" component={ExplorationReportScreen} />
       <RootStack.Screen name="EnergyReport" component={EnergyReportScreen} />
     </RootStack.Navigator>

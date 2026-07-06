@@ -1,0 +1,412 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-02-01",
+  "endDate": "2026-03-14",
+  "explorationId": "upf-mood",
+  "logs": [
+    {
+      "log_date": "2026-02-01",
+      "field_values": {
+        "upf_pct": 86,
+        "upf_mood": 5.5,
+        "upf_energy": 5.3,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-02",
+      "field_values": {
+        "upf_pct": 84,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-03",
+      "field_values": {
+        "upf_pct": 82,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-04",
+      "field_values": {
+        "upf_pct": 80,
+        "upf_mood": 5.7,
+        "upf_energy": 5.5,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-06",
+      "field_values": {
+        "upf_pct": 78,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-07",
+      "field_values": {
+        "upf_pct": 52,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-08",
+      "field_values": {
+        "upf_pct": 50,
+        "upf_mood": 5.5,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-09",
+      "field_values": {
+        "upf_pct": 48,
+        "upf_mood": 5.7,
+        "upf_energy": 5.5,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-10",
+      "field_values": {
+        "upf_pct": 46,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-11",
+      "field_values": {
+        "upf_pct": 29,
+        "upf_mood": 5.6,
+        "upf_energy": 5.4,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-13",
+      "field_values": {
+        "upf_pct": 28,
+        "upf_mood": 5.5,
+        "upf_energy": 5.3,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-14",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 5.6,
+        "upf_energy": 5.5,
+        "upf_swaps": []
+      }
+    },
+    {
+      "log_date": "2026-02-15",
+      "field_values": {
+        "upf_pct": 44,
+        "upf_mood": 6.2,
+        "upf_energy": 5.9,
+        "upf_swaps": [
+          "Breakfast"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-16",
+      "field_values": {
+        "upf_pct": 42,
+        "upf_mood": 6.4,
+        "upf_energy": 6,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-17",
+      "field_values": {
+        "upf_pct": 40,
+        "upf_mood": 6.4,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-18",
+      "field_values": {
+        "upf_pct": 38,
+        "upf_mood": 6.5,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-19",
+      "field_values": {
+        "upf_pct": 36,
+        "upf_mood": 6,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Lunch"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-20",
+      "field_values": {
+        "upf_pct": 34,
+        "upf_mood": 6.4,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-21",
+      "field_values": {
+        "upf_pct": 33,
+        "upf_mood": 6.4,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-22",
+      "field_values": {
+        "upf_pct": 32,
+        "upf_mood": 6.5,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks",
+          "Lunch"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-24",
+      "field_values": {
+        "upf_pct": 31,
+        "upf_mood": 6.1,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Dinner"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-25",
+      "field_values": {
+        "upf_pct": 30,
+        "upf_mood": 6.4,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-26",
+      "field_values": {
+        "upf_pct": 29,
+        "upf_mood": 6.2,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Dinner"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-27",
+      "field_values": {
+        "upf_pct": 28,
+        "upf_mood": 6.2,
+        "upf_energy": 6.1,
+        "upf_swaps": [
+          "Snacks",
+          "Lunch"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-28",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 6.4,
+        "upf_energy": 6.2,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-01",
+      "field_values": {
+        "upf_pct": 32,
+        "upf_mood": 7.7,
+        "upf_energy": 6.6,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-02",
+      "field_values": {
+        "upf_pct": 30,
+        "upf_mood": 7.9,
+        "upf_energy": 6.7,
+        "upf_swaps": [
+          "Breakfast"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-03",
+      "field_values": {
+        "upf_pct": 29,
+        "upf_mood": 7.9,
+        "upf_energy": 6.8,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-04",
+      "field_values": {
+        "upf_pct": 31,
+        "upf_mood": 6.8,
+        "upf_energy": 6.3,
+        "upf_swaps": [
+          "Lunch",
+          "Dinner"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-05",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 8,
+        "upf_energy": 6.8,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-06",
+      "field_values": {
+        "upf_pct": 26,
+        "upf_mood": 7.8,
+        "upf_energy": 6.7,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks",
+          "Dinner"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-07",
+      "field_values": {
+        "upf_pct": 25,
+        "upf_mood": 7.9,
+        "upf_energy": 6.8,
+        "upf_swaps": [
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-08",
+      "field_values": {
+        "upf_pct": 34,
+        "upf_mood": 7.2,
+        "upf_energy": 6.9,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-09",
+      "field_values": {
+        "upf_pct": 32,
+        "upf_mood": 7.2,
+        "upf_energy": 6.9,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-11",
+      "field_values": {
+        "upf_pct": 28,
+        "upf_mood": 7.3,
+        "upf_energy": 7,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks",
+          "Lunch"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-12",
+      "field_values": {
+        "upf_pct": 33,
+        "upf_mood": 7.2,
+        "upf_energy": 6.9,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-03-14",
+      "field_values": {
+        "upf_pct": 27,
+        "upf_mood": 7.2,
+        "upf_energy": 6.9,
+        "upf_swaps": [
+          "Breakfast",
+          "Snacks",
+          "Dinner"
+        ]
+      }
+    }
+  ]
+}

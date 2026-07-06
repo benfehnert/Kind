@@ -48,7 +48,7 @@ export function ExplorationProgressSummary({ explorations, starterMode = false }
               {ex.title}
             </Text>
             <View style={styles.meta}>
-              {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="blue">Joined</Badge>}
+              <Badge variant="amber">Active</Badge>
               {ex.weekCurrent && ex.weeksTotal ? (
                 <Badge variant="teal">
                   Week {ex.weekCurrent} of {ex.weeksTotal}

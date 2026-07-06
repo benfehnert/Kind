@@ -58,12 +58,6 @@ export function ConsentProvider({ children }) {
   const [explorationHydrating, setExplorationHydrating] = useState(true);
 
   useEffect(() => {
-    if (data?.consent?.annaDefaults && !onboardingCompleted) {
-      setChoices({ ...data.consent.annaDefaults });
-    }
-  }, [data, onboardingCompleted]);
-
-  useEffect(() => {
     if (hydrating) return;
 
     let cancelled = false;
@@ -100,33 +94,12 @@ export function ConsentProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        const consentsRaw = await AsyncStorage.getItem(EXPLORATION_CONSENTS_KEY);
-        const activeRaw = await AsyncStorage.getItem(ACTIVE_EXPLORATION_KEY);
-        if (cancelled) return;
-
-        if (consentsRaw && !isAuthenticated) {
-          setExplorationConsents(JSON.parse(consentsRaw));
-        } else if (
-          !isAuthenticated &&
-          !onboardingCompleted &&
-          data?.consent?.annaDefaults?.exploration_participation
-        ) {
-          const seeded = {
-            "morning-rules": { granted: true, consentedAt: new Date().toISOString() }
-          };
-          setExplorationConsents(seeded);
-          await AsyncStorage.setItem(EXPLORATION_CONSENTS_KEY, JSON.stringify(seeded));
-        }
-
-        if (activeRaw && !isAuthenticated) {
-          setActiveExplorationId(activeRaw);
-        } else if (
-          !isAuthenticated &&
-          !onboardingCompleted &&
-          data?.consent?.annaDefaults?.exploration_participation
-        ) {
-          setActiveExplorationId("morning-rules");
-          await AsyncStorage.setItem(ACTIVE_EXPLORATION_KEY, "morning-rules");
+        if (!isAuthenticated) {
+          const consentsRaw = await AsyncStorage.getItem(EXPLORATION_CONSENTS_KEY);
+          const activeRaw = await AsyncStorage.getItem(ACTIVE_EXPLORATION_KEY);
+          if (cancelled) return;
+          if (consentsRaw) setExplorationConsents(JSON.parse(consentsRaw));
+          if (activeRaw) setActiveExplorationId(activeRaw);
         }
       } catch {
         // ignore corrupt storage
@@ -138,7 +111,7 @@ export function ConsentProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [hydrating, onboardingCompleted, data, isAuthenticated]);
+  }, [hydrating, isAuthenticated]);
 
   const persistPrefs = useCallback(async (next) => {
     try {
@@ -233,13 +206,22 @@ export function ConsentProvider({ children }) {
   }, []);
 
   const syncFromOnboarding = useCallback(
-    (answers) => {
+    async (answers) => {
       const prefs = privacyFromAnswers(answers);
       setPrivacyPrefs(prefs);
-      setChoices((prev) => ({ ...prev, ...choicesFromPrefs(prefs) }));
-      persistPrefs(prefs);
+      const nextChoices = choicesFromPrefs(prefs);
+      setChoices((prev) => ({ ...prev, ...nextChoices }));
+      await persistPrefs(prefs);
+
+      if (isAuthenticated) {
+        try {
+          await post("/consent/choices", { choices: nextChoices });
+        } catch {
+          // local state remains when API unavailable
+        }
+      }
     },
-    [persistPrefs]
+    [isAuthenticated, persistPrefs]
   );
 
   const updatePrivacyPref = useCallback(

@@ -1,0 +1,91 @@
+{
+  "title": "How your data has been used",
+  "intro": "A summary of how Kind has used your data to support your health journey and, where you have opted in, wider research.",
+  "healthExplorations": {
+    "heading": "Your health explorations",
+    "body": "When you join a health exploration, your check-in data is used to generate personalised analysis and support your own health journey.",
+    "items": [
+      {
+        "explorationId": "morning-rules",
+        "title": "Do morning rules reduce my chances of an afternoon crash?",
+        "feedLabel": "Morning rules & afternoon energy",
+        "consentedAt": "2026-05-15T09:00:00.000Z",
+        "logCount": 12,
+        "confirmation": "Your check-in data has been used to generate personalised analysis reports and support your health journey in this exploration."
+      },
+      {
+        "explorationId": "eating",
+        "title": "Does time restricted eating improve my energy levels?",
+        "feedLabel": "Time-restricted eating",
+        "consentedAt": "2026-03-03T09:00:00.000Z",
+        "logCount": 42,
+        "confirmation": "Your check-in data has been used to generate personalised analysis reports and support your health journey in this exploration."
+      },
+      {
+        "explorationId": "screen-sleep",
+        "title": "Does moderation of screen exposure improve my sleep quality?",
+        "feedLabel": "Screen moderation & sleep",
+        "consentedAt": "2026-01-10T09:00:00.000Z",
+        "logCount": 28,
+        "confirmation": "Your check-in data has been used to generate personalised analysis reports and support your health journey in this exploration."
+      }
+    ]
+  },
+  "kindAnalyses": {
+    "heading": "Kind community analyses",
+    "body": "Your de-identified data has contributed to these wider Kind analyses when you opt in to citizen science.",
+    "items": [
+      {
+        "explorationId": "morning-rules",
+        "source": "kind · In preparation",
+        "title": "Morning rules and afternoon energy: a personalised trial cohort study across 78 participants",
+        "meta": "kind research team & contributors · Expected June 2026 · Open access",
+        "status": "In preparation"
+      },
+      {
+        "explorationId": "eating",
+        "source": "kind · In preparation",
+        "title": "Circadian meal timing and subjective daily energy: a personalised trial cohort study across 64 participants",
+        "meta": "kind research team & contributors · Expected Q3 2026 · Open access",
+        "status": "In preparation"
+      },
+      {
+        "explorationId": "screen-sleep",
+        "source": "kind · In preparation",
+        "title": "Screen habits and restorative sleep architecture: a personalised trial cohort study across 51 participants",
+        "meta": "kind research team & contributors · Data collection ongoing · Open access",
+        "status": "In preparation"
+      }
+    ]
+  },
+  "researcherAnalyses": {
+    "heading": "Researcher-led analyses",
+    "body": "Your de-identified data has also supported analyses led by Kind research partners.",
+    "items": [
+      {
+        "explorationId": "morning-rules",
+        "researcherName": "Dr Elena Marsh",
+        "researcherOrg": "University of Colorado Boulder · Sleep & Circadian Institute",
+        "title": "Morning light and movement routines: a naturalistic N-of-1 cohort study",
+        "meta": "Marsh et al. · Pre-print expected 2026 · Open access",
+        "status": "In preparation"
+      },
+      {
+        "explorationId": "eating",
+        "researcherName": "Dr James Fyfe",
+        "researcherOrg": "University College London · Energy Metabolism Lab",
+        "title": "Time-restricted eating and daily energy: an exploratory cohort analysis",
+        "meta": "Fyfe et al. · Pre-print expected Q3 2026 · Open access",
+        "status": "In preparation"
+      },
+      {
+        "explorationId": "screen-sleep",
+        "researcherName": "Dr Sarah Williams",
+        "researcherOrg": "Oxford Sleep & Circadian Neuroscience Institute",
+        "title": "Evening screen exposure and sleep quality in working adults",
+        "meta": "Williams et al. · Pre-print in preparation · Open access",
+        "status": "In preparation"
+      }
+    ]
+  }
+}

@@ -15,8 +15,15 @@
 // Scenarios: baseline | rules | optimise | report
 
 import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { generateFeedContent } from "../src/feedContent.js";
 import { morningRulesFeedLibrary } from "../src/data/morningRulesFeedLibrary.js";
+import {
+  logsFromFixture,
+  buildStudyMeta,
+  buildMorningRulesContext
+} from "../src/lib/cent/morningRules/index.js";
 
 const args = process.argv.slice(2);
 const getFlag = (name) => {
@@ -131,10 +138,22 @@ const SCENARIOS = {
 async function main() {
   const scenarioName = getFlag("scenario") || "rules";
   const contextPath = getFlag("context");
+  const fromFixture = getFlag("from-fixture");
 
   let context;
   let label;
-  if (contextPath) {
+  if (fromFixture === "anna-completion") {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fixture = JSON.parse(
+      readFileSync(path.join(__dirname, "../src/data/fixtures/anna-morning-rules-completion.json"), "utf8")
+    );
+    const cohort = JSON.parse(
+      readFileSync(path.join(__dirname, "../src/data/fixtures/cohort-snapshot-morning-rules.json"), "utf8")
+    );
+    const entries = logsFromFixture(fixture);
+    context = buildMorningRulesContext(entries, cohort);
+    label = `Anna completion fixture · week ${context.week} · ${context.phase}`;
+  } else if (contextPath) {
     context = JSON.parse(readFileSync(contextPath, "utf8"));
     label = `custom context (${contextPath})`;
   } else {

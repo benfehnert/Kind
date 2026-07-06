@@ -1,0 +1,442 @@
+{
+  "participantName": "Anna",
+  "studyStartDate": "2026-01-10",
+  "endDate": "2026-02-20",
+  "explorationId": "screen-sleep",
+  "logs": [
+    {
+      "log_date": "2026-01-10",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-11",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-12",
+      "field_values": {
+        "ss_last": "15–30 min before",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-14",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": [
+          "Conversation"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-01-15",
+      "field_values": {
+        "ss_last": "15–30 min before",
+        "ss_bed": "15–30 min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-16",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-17",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "30+ min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-19",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": [
+          "Conversation"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-01-20",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-21",
+      "field_values": {
+        "ss_last": "15–30 min before",
+        "ss_bed": "30+ min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-22",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 10,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.4,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-23",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "15–30 min",
+        "ss_windup": 5,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 5.5,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-24",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 35,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 6.2,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-01-26",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 45,
+        "ss_onset": "20–40 min",
+        "ss_sleep": 6.8,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-27",
+      "field_values": {
+        "ss_last": "Right before bed",
+        "ss_bed": "30+ min",
+        "ss_windup": 10,
+        "ss_onset": "Over 40 min",
+        "ss_sleep": 5.8,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-28",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 40,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-29",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 45,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-01-30",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 35,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 6.7,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-01-31",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 40,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-01",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 45,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-03",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 40,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-04",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 45,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-05",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 35,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.3,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-06",
+      "field_values": {
+        "ss_last": "30–60 min before",
+        "ss_bed": "None",
+        "ss_windup": 40,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.1,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-07",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 70,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.8,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-08",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 60,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.8,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-10",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 70,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.8,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-11",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 60,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.8,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-12",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 65,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.8,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-13",
+      "field_values": {
+        "ss_last": "15–30 min before",
+        "ss_bed": "Under 15 min",
+        "ss_windup": 40,
+        "ss_onset": "10–20 min",
+        "ss_sleep": 6.9,
+        "ss_activities": []
+      }
+    },
+    {
+      "log_date": "2026-02-14",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 65,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-15",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 70,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-16",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 65,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-17",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 70,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-19",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 70,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading"
+        ]
+      }
+    },
+    {
+      "log_date": "2026-02-20",
+      "field_values": {
+        "ss_last": "60+ min before",
+        "ss_bed": "None",
+        "ss_windup": 65,
+        "ss_onset": "Under 10 min",
+        "ss_sleep": 7.9,
+        "ss_activities": [
+          "Reading",
+          "Stretching"
+        ]
+      }
+    }
+  ]
+}

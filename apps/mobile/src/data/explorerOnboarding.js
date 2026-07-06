@@ -8,12 +8,30 @@ export const ONBOARDING_STEPS = [
     continueLabel: "Continue"
   },
   {
+    id: "auth-choice",
+    type: "authChoice",
+    showProgress: false
+  },
+  {
+    id: "login",
+    type: "login",
+    showProgress: false
+  },
+  {
+    id: "signup",
+    type: "signup",
+    showProgress: false,
+    title: "Create your account",
+    body: "Use your email and a password to save your progress and personalise Kind.",
+    continueLabel: "Create account"
+  },
+  {
     id: "value-trials",
     type: "message",
     showProgress: true,
     icon: "trials",
-    title: "Access science-backed personalised trials",
-    body: "I'll match you with structured explorations designed by researchers — so you can test what might work for you, backed by real science.",
+    title: "Access health explorations, backed by science",
+    body: "I'll match you with structured health explorations designed by researchers — so you can find out what actually works for you.",
     continueLabel: "Continue"
   },
   {
@@ -22,7 +40,7 @@ export const ONBOARDING_STEPS = [
     showProgress: true,
     icon: "explore",
     title: "Explore your health and find out what works for you",
-    body: "You're your own comparison. I'll help you run small, structured experiments and see what actually moves the needle for your body.",
+    body: "You're your own comparison. I'll help you run small, structured health explorations so you can see what actually moves the needle for you.",
     continueLabel: "Continue"
   },
   {
@@ -40,7 +58,7 @@ export const ONBOARDING_STEPS = [
     showProgress: true,
     icon: "insight",
     title: "Build insight and understanding together",
-    body: "Your anonymised data can contribute to citizen science — helping everyone learn what works and for whom.",
+    body: "Your de-identified data can contribute to citizen science — helping Kind researchers build and share insight about what works and for whom.",
     continueLabel: "Continue"
   },
   {
@@ -50,7 +68,7 @@ export const ONBOARDING_STEPS = [
     icon: "alpha",
     title: "You're joining our Alpha",
     body: "Kind is currently in Alpha. As an Individual Health Explorer, you'll be helping us shape the product while taking part in early explorations.",
-    note: "This is research and self-experimentation, not medical care. Your feedback helps us improve Kind for everyone.",
+    note: "Note: This is research and self-experimentation, not medical care.\n\nYour feedback helps us improve Kind for everyone.",
     continueLabel: "Continue"
   },
   {
@@ -152,10 +170,70 @@ export const ONBOARDING_STEPS = [
     answerKey: "kindHelp",
     title: "How can Kind help you succeed?",
     options: [
-      { value: "trials", label: "Access science-backed personalised trials" },
+      { value: "trials", label: "Access health explorations, backed by science" },
       { value: "explore", label: "Explore your health and find out what works for you" },
       { value: "community", label: "Have the support of a community of Individuals and Researchers" },
       { value: "insight", label: "Build insight and understanding together" }
+    ],
+    continueLabel: "Continue"
+  },
+  {
+    id: "health-approach",
+    type: "singleSelect",
+    showProgress: true,
+    answerKey: "healthApproach",
+    title: "Which of the following best describes your approach to your health right now?",
+    subtitle: "Select one",
+    options: [
+      {
+        value: "actively_exploring",
+        label: "I'm actively exploring and optimizing my health and wellbeing"
+      },
+      {
+        value: "specific_goals",
+        label: "I'm looking to improve my health with a specific goal(s) in mind"
+      },
+      {
+        value: "understand_concern",
+        label: "I'm looking to understand a health concern or condition better"
+      },
+      { value: "none_of_these", label: "None of these feel like me" }
+    ],
+    continueLabel: "Continue"
+  },
+  {
+    id: "recent-health-activities",
+    type: "multiSelect",
+    showProgress: true,
+    answerKey: "recentHealthActivities",
+    title: "In the last 6 months, which of the following have you done?",
+    subtitle: "Select all that apply",
+    requireSelection: false,
+    options: [
+      {
+        value: "tracked_metrics",
+        label: "Tracked multiple health metrics using wearables or apps"
+      },
+      {
+        value: "tested_supplement",
+        label: "Independently tested a supplement, diet, or practice to see the effects"
+      },
+      {
+        value: "science_content",
+        label: "Regularly sought out science-led health content of research"
+      },
+      {
+        value: "structured_programme",
+        label: "Followed a structured health or fitness programme"
+      },
+      {
+        value: "fitness_tracker",
+        label: "Used a fitness tracker or smartwatch to monitor exercise, sleep, or weight"
+      },
+      {
+        value: "diet_changes",
+        label: "Made deliberate changes to your diet or routine based on health advice"
+      }
     ],
     continueLabel: "Continue"
   },
@@ -191,17 +269,22 @@ export const ONBOARDING_STEPS = [
     continueLabel: "Continue"
   },
   {
-    id: "create-account",
-    type: "createAccount",
+    id: "finish",
+    type: "finish",
     showProgress: false,
-    continueLabel: "Continue with Google"
+    title: "You're all set",
+    body: "Kind will use your goals to recommend explorations and personalise your feed. Tap Get started to begin.",
+    continueLabel: "Get started"
   }
 ];
 
 export const PROGRESS_STEP_COUNT = ONBOARDING_STEPS.filter((s) => s.showProgress).length;
 
-export function getVisibleSteps(answers) {
+export function getVisibleSteps(answers, { isAuthenticated = false } = {}) {
   return ONBOARDING_STEPS.filter((step) => {
+    if (step.id === "signup" || step.id === "login" || step.id === "auth-choice") {
+      return !isAuthenticated;
+    }
     if (step.id === "notifications") {
       return answers.remindersEnabled === true;
     }
@@ -227,8 +310,16 @@ export function validateStep(step, answers) {
   switch (step.type) {
     case "welcome":
     case "message":
-    case "createAccount":
+    case "finish":
+    case "authChoice":
+    case "login":
       return true;
+
+    case "signup": {
+      const email = (answers.signupEmail || "").trim();
+      const password = answers.signupPassword || "";
+      return email.includes("@") && email.includes(".") && password.length >= 8;
+    }
 
     case "yesNo": {
       const val = answers[step.answerKey];
@@ -253,7 +344,9 @@ export function validateStep(step, answers) {
 
     case "multiSelect": {
       const arr = answers[step.answerKey];
-      return Array.isArray(arr) && arr.length > 0;
+      if (!Array.isArray(arr)) return false;
+      if (step.requireSelection === false) return true;
+      return arr.length > 0;
     }
 
     case "reminders":

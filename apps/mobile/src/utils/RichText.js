@@ -2,9 +2,19 @@ import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { colors, fontFamily } from "../theme/colors";
 
+function decodeHtmlEntities(s) {
+  return String(s)
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function stripHtml(s) {
   if (!s) return "";
-  return String(s).replace(/<[^>]+>/g, "");
+  return decodeHtmlEntities(String(s).replace(/<[^>]+>/g, ""));
 }
 
 /**

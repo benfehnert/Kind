@@ -14,10 +14,11 @@ import { useUiShell } from "../context/UiContext";
 import { useExplorationStart } from "../hooks/useUserExplorations";
 import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
+import { REM } from "../theme/tokens";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
-import { Avatar } from "../components/primitives/Avatar";
+import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -28,6 +29,7 @@ export default function ExploreScreen() {
   const exploreCopy = explorePage?.copy ?? {};
   const active = explorePage?.activeExploration ?? null;
   const available = explorePage?.availableExplorations ?? [];
+  const recommended = explorePage?.recommendedExplorations ?? [];
   const activity = explorePage?.activity ?? [];
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
@@ -68,27 +70,7 @@ export default function ExploreScreen() {
     return (
       <Pressable key={item.id} style={styles.activityItem} onPress={() => handleActivityPress(item)}>
         <View style={styles.activityHead}>
-          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
-            <View
-              style={[
-                styles.activityAv,
-                {
-                  backgroundColor: item.avatarBg || item.avatarBgStyle,
-                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
-                }
-              ]}
-            >
-              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
-                {item.icon || item.glyph}
-              </Text>
-            </View>
-          ) : (
-            <Avatar
-              size={34}
-              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-              initials={item.initials}
-            />
-          )}
+          <FeedItemAvatar item={item} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
               <Text style={styles.activityName}>{item.displayName}</Text>
@@ -224,6 +206,44 @@ export default function ExploreScreen() {
           </View>
         )}
 
+        {!active && recommended.length > 0 ? (
+          <View style={styles.recommendedSection}>
+            <Text style={styles.secLabel}>Recommended for you</Text>
+            {recommended.map((entry) => {
+              const e = explorationsForChat[entry.id];
+              if (!e) return null;
+              return (
+                <Pressable
+                  key={entry.id}
+                  style={[styles.area, styles.recommendedArea]}
+                  onPress={() => navigation.navigate("ExplorationDetail", { id: entry.id })}
+                >
+                  <View style={[styles.ico, { backgroundColor: e.bg }]}>
+                    <Text style={styles.icoGlyph}>{e.icon}</Text>
+                  </View>
+                  <View style={styles.areaBody}>
+                    <Text style={styles.cat}>{e.category}</Text>
+                    <Text style={styles.tit}>{e.title}</Text>
+                    <Text style={styles.recommendedReason}>{entry.matchReason}</Text>
+                  </View>
+                  <View style={styles.areaStatus}>
+                    <Pressable
+                      style={[styles.startPill, { backgroundColor: e.bg }]}
+                      onPress={async (ev) => {
+                        ev.stopPropagation?.();
+                        const started = await startExploration(navigation, entry.id, { showToast });
+                        if (started) await refetchExplore();
+                      }}
+                    >
+                      <Text style={[styles.startTxt, { color: e.text }]}>Start</Text>
+                    </Pressable>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
         {activity.length > 0 ? (
           <View style={styles.activitySection}>
             <Text style={styles.secLabel}>Recent activity</Text>
@@ -308,7 +328,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     color: colors.text,
     minHeight: 48,
-    ...type.body
+    fontFamily: type.body.fontFamily,
+    fontSize: REM,
+    lineHeight: Math.round(REM * 1.55)
   },
   secLabel: {
     ...text.uppercaseLabel,
@@ -322,13 +344,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.feedGap,
     marginBottom: spacing.md
-  },
-  activityAv: {
-    width: 34,
-    height: 34,
-    minHeight: 34,
-    alignItems: "center",
-    justifyContent: "center"
   },
   activityName: text.feedName,
   activityTime: text.feedTime,
@@ -354,6 +369,13 @@ const styles = StyleSheet.create({
     ...type.exploreDesc,
     color: colors.textMuted,
     textAlign: "center"
+  },
+  recommendedSection: { marginBottom: spacing.blockMb },
+  recommendedArea: { borderColor: colors.greenDark, borderWidth: 1.5 },
+  recommendedReason: {
+    ...type.exploreDesc,
+    color: colors.greenDark,
+    marginTop: spacing.xs
   },
   areaBody: { flex: 1, justifyContent: "center", minHeight: 72 },
   areaMeta: {

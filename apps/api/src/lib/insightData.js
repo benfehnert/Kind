@@ -1,10 +1,13 @@
 import { query } from "../db.js";
-import insightMock from "../mocks/insight.json" with { type: "json" };
+import { isAnnaDemoIndividual } from "./demoAccount.js";
 import {
   fetchActiveRun,
   fetchFallbackExplorationId,
   EXPLORATION_FEED_LABELS
 } from "./homeData.js";
+import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js";
+import { buildEatingInsights } from "./cent/timeRestrictedEating/insightAdapter.js";
+import { loadDayEntries as loadEatingEntries } from "./cent/timeRestrictedEating/normalize.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
 
@@ -458,10 +461,6 @@ async function buildPublications(explorationId, explorationTitle, participantCou
     });
   }
 
-  if (publications.length === 1 && explorationId === "morning-rules") {
-    publications.push(...insightMock.publications.slice(1));
-  }
-
   return publications;
 }
 
@@ -508,6 +507,13 @@ function buildPersonalInsights(explorationId, logs, run) {
   }
 
   if (explorationId === "morning-rules") {
+    const centViews = buildInsightViewsFromLogs(logs, run);
+    if (centViews) {
+      return {
+        hasPersonalData: true,
+        ...centViews
+      };
+    }
     return {
       hasPersonalData: true,
       energyTrend: buildMorningRulesEnergyTrend(logs, weekCurrent),
@@ -515,6 +521,20 @@ function buildPersonalInsights(explorationId, logs, run) {
       observations: buildMorningRulesObservations(logs, weekCurrent),
       adherence: buildAdherence(logs, run)
     };
+  }
+
+  if (explorationId === "eating" && run?.started_at) {
+    const entries = loadEatingEntries(logs, run.started_at);
+    const insights = buildEatingInsights(entries);
+    if (insights.length) {
+      return {
+        hasPersonalData: true,
+        energyTrend: buildGenericEnergyTrend(logs, "te_energy", "Daily energy over time"),
+        rulesChart: { title: "Timing habits", legend: [], bars: [] },
+        observations: insights.map((i) => ({ icon: "💡", text: i.body, title: i.title })),
+        adherence: buildAdherence(logs, run)
+      };
+    }
   }
 
   const rangeKey = Object.keys(logs[0]?.field_values ?? {}).find((k) =>
@@ -559,9 +579,26 @@ function buildPersonalInsights(explorationId, logs, run) {
   };
 }
 
-async function buildCommunitySection(explorationId) {
+async function buildCommunitySection(explorationId, individualId) {
+  const showExampleCommunityInsights = await isAnnaDemoIndividual(individualId);
+
+  if (!showExampleCommunityInsights) {
+    return {
+      showCommunityInsights: false,
+      communityIntro: {
+        title: "From the kind community",
+        sub: explorationId
+          ? "Community findings will appear here as more explorers contribute data."
+          : "Join an exploration to see findings alongside your own data."
+      },
+      communityInsights: [],
+      publications: []
+    };
+  }
+
   if (!explorationId) {
     return {
+      showCommunityInsights: true,
       communityIntro: {
         title: "From the kind community",
         sub: "Join an exploration to see findings alongside your own data."
@@ -581,6 +618,7 @@ async function buildCommunitySection(explorationId) {
   const publications = await buildPublications(explorationId, explorationTitle, participantCount);
 
   return {
+    showCommunityInsights: true,
     communityIntro: {
       title: "From the kind community",
       sub: `Derived from ${participantCount} active participant${participantCount === 1 ? "" : "s"} in the ${feedLabel} exploration.`
@@ -612,7 +650,7 @@ export async function buildInsightPayload(individualId, { communityExplorationId
 
   if (!explorationId) {
     const communityScopeId = communityExplorationId ?? null;
-    const community = await buildCommunitySection(communityScopeId);
+    const community = await buildCommunitySection(communityScopeId, individualId);
     return {
       ...STATIC_COPY,
       ...emptyPersonalInsights(null),
@@ -623,7 +661,7 @@ export async function buildInsightPayload(individualId, { communityExplorationId
   const communityScopeId = communityExplorationId ?? explorationId;
   const [logs, community] = await Promise.all([
     fetchExplorationLogs(individualId, explorationId),
-    buildCommunitySection(communityScopeId)
+    buildCommunitySection(communityScopeId, individualId)
   ]);
 
   const personal = buildPersonalInsights(explorationId, logs, activeRun);

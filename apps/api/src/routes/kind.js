@@ -16,10 +16,30 @@ import {
 } from "../lib/meData.js";
 import { buildHomePayload, fetchHomeFeedExtras } from "../lib/homeData.js";
 import { buildExplorePayload } from "../lib/exploreData.js";
+import { stripCatalogProgressFields } from "../lib/explorationCatalog.js";
 import { buildInsightPayload } from "../lib/insightData.js";
 import { buildCommunityPayload } from "../lib/communityData.js";
 import { buildProfilePayload, updateProfile } from "../lib/profileData.js";
+import { buildDataUsagePayload } from "../lib/dataUsageData.js";
+import { submitDataExportRequest } from "../lib/dataExportRequest.js";
+import {
+  buildActsForIndividual,
+  fetchActivityNiceSupporters,
+  toggleActivityNice
+} from "../lib/activityNiceData.js";
+import {
+  createActivityMessage,
+  fetchActivityMessages,
+  fetchActivityMessageSummary,
+  toggleActivityMessageReaction
+} from "../lib/activityMessageData.js";
 import meRouter from "./me.js";
+import {
+  isAnnaDemoIndividual,
+  isHiddenFromCommunity
+} from "../lib/demoAccount.js";
+import { EXPLORATION_CATEGORY } from "../lib/onboardingRecommendations.js";
+import { isCatalogExploration, SHORT_EXPLORATION_IDS } from "../lib/centShort/index.js";
 
 const router = new Hono();
 
@@ -47,14 +67,6 @@ async function getIndividualId(authUserId) {
 // ---------------------------------------------------------------------------
 // Explorations
 // ---------------------------------------------------------------------------
-
-const EXPLORATION_CATEGORY = {
-  "morning-rules": "Energy & Focus",
-  "eating": "Metabolic Health",
-  "screen-sleep": "Rest & Sleep",
-  "relaxation": "Stress & Composure",
-  "upf-mood": "Mood & Nutrition"
-};
 
 async function fetchExploration(id) {
   const { rows } = await query(
@@ -108,20 +120,14 @@ async function fetchExploration(id) {
     [id]
   );
   if (!rows[0]) return null;
-  return { ...rows[0], category: EXPLORATION_CATEGORY[rows[0].id] ?? null };
+  return stripCatalogProgressFields({
+    ...rows[0],
+    category: EXPLORATION_CATEGORY[rows[0].id] ?? null
+  });
 }
 
 router.get("/explorations", async (c) => {
-  const { rows } = await query(
-    `SELECT id FROM explorations ORDER BY
-       CASE id
-         WHEN 'morning-rules' THEN 1 WHEN 'eating' THEN 2
-         WHEN 'screen-sleep' THEN 3  WHEN 'relaxation' THEN 4
-         WHEN 'upf-mood' THEN 5      ELSE 6
-       END`
-  );
-
-  const items = await Promise.all(rows.map((r) => fetchExploration(r.id)));
+  const items = await Promise.all(SHORT_EXPLORATION_IDS.map((id) => fetchExploration(id)));
   return c.json({ items: items.filter(Boolean) });
 });
 
@@ -130,7 +136,11 @@ router.get("/explorations/evidence", (c) => {
 });
 
 router.get("/explorations/:id", async (c) => {
-  const data = await fetchExploration(c.req.param("id"));
+  const id = c.req.param("id");
+  if (!isCatalogExploration(id)) {
+    return c.json({ error: "Exploration not found" }, 404);
+  }
+  const data = await fetchExploration(id);
   if (!data) return c.json({ error: "Exploration not found" }, 404);
   return c.json(data);
 });
@@ -146,6 +156,9 @@ router.get("/explorations/:id/evidence", (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/community/individuals", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+
   const { rows: individuals } = await query(
     `SELECT
        i.id,
@@ -176,20 +189,29 @@ router.get("/community/individuals", async (c) => {
         JOIN explorations e ON e.id = ue.exploration_id
         WHERE ue.individual_id = i.id) AS exps,
        (SELECT COALESCE(json_agg(
-          json_build_object('t', ap.summary, 'time', ap.posted_at, 'exp', ap.exploration_label,
-                            'detail', ap.detail_metrics, 'nc', ap.nice_count_base)
-          ORDER BY ap.sort_order
+          json_build_object(
+            'id', ap.id,
+            't', ap.summary,
+            'time', ap.posted_at,
+            'exp', ap.exploration_label,
+            'detail', ap.detail_metrics,
+            'nc', COALESCE(anc.nice_count, ap.nice_count_base, 0)
+          ) ORDER BY ap.sort_order
         ), '[]'::json)
-        FROM activity_posts ap WHERE ap.individual_id = i.id) AS acts
+        FROM activity_posts ap
+        LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
+        WHERE ap.individual_id = i.id) AS acts
      FROM individuals i
      ORDER BY i.display_name`
   );
 
-  const individualsWithTier = individuals.map((ind) => ({
-    ...ind,
-    id: ind.slug,
-    tier: ind.bio ? "comm" : "basic"
-  }));
+  const individualsWithTier = individuals
+    .filter((ind) => !isHiddenFromCommunity(viewerIsAnna, ind.slug))
+    .map((ind) => ({
+      ...ind,
+      id: ind.slug,
+      tier: ind.bio ? "comm" : "basic"
+    }));
 
   const { rows: expFollowers } = await query(
     `SELECT ue.exploration_id, i.slug
@@ -198,6 +220,7 @@ router.get("/community/individuals", async (c) => {
   );
   const explorationFollowers = {};
   for (const row of expFollowers) {
+    if (isHiddenFromCommunity(viewerIsAnna, row.slug)) continue;
     if (!explorationFollowers[row.exploration_id]) {
       explorationFollowers[row.exploration_id] = [];
     }
@@ -230,6 +253,14 @@ router.get("/community/researchers", async (c) => {
 });
 
 router.get("/community/individuals/:slug", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
   const { rows } = await query(
     `SELECT
        i.id,
@@ -258,19 +289,21 @@ router.get("/community/individuals/:slug", async (c) => {
         ), '[]'::json)
         FROM user_explorations ue
         JOIN explorations e ON e.id = ue.exploration_id
-        WHERE ue.individual_id = i.id) AS exps,
-       (SELECT COALESCE(json_agg(
-          json_build_object('t', ap.summary, 'time', ap.posted_at, 'exp', ap.exploration_label,
-                            'detail', ap.detail_metrics, 'nc', ap.nice_count_base)
-          ORDER BY ap.sort_order
-        ), '[]'::json)
-        FROM activity_posts ap WHERE ap.individual_id = i.id) AS acts
+        WHERE ue.individual_id = i.id) AS exps
      FROM individuals i
      WHERE i.slug = $1`,
-    [c.req.param("slug")]
+    [slug]
   );
   if (!rows.length) return c.json({ error: "Individual not found" }, 404);
-  return c.json(rows[0]);
+
+  const profile = rows[0];
+  const acts = await buildActsForIndividual(profile.id, viewerId);
+
+  return c.json({
+    ...profile,
+    id: profile.slug,
+    acts
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -396,6 +429,28 @@ router.get("/profile", async (c) => {
   return c.json(payload);
 });
 
+router.get("/profile/data-usage", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const payload = await buildDataUsagePayload(individualId);
+  return c.json(payload);
+});
+
+router.post("/profile/data-export-request", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const body = await c.req.json().catch(() => ({}));
+  const result = await submitDataExportRequest(individualId, body.email, c.env);
+
+  if (!result.ok) {
+    return c.json({ error: result.error }, result.status);
+  }
+
+  return c.json({ ok: true, requestedAt: result.requestedAt });
+});
+
 router.patch("/profile", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
@@ -457,7 +512,6 @@ router.get("/consent", async (c) => {
   ]);
 
   const mergedChoices = {
-    ...consentMock.annaDefaults,
     ...choices,
     platform_participation: privacyPrefs.globalConsent,
     research_contribution: privacyPrefs.science,
@@ -521,6 +575,8 @@ router.get("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ followingExplorerIds: [], followingResearcherIds: [] });
 
+  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
+
   const { rows: individuals } = await query(
     `SELECT i.slug FROM individual_follows f
      JOIN individuals i ON i.id = f.followee_id
@@ -533,7 +589,9 @@ router.get("/social/follows", async (c) => {
   );
 
   return c.json({
-    followingExplorerIds: individuals.map((r) => r.slug),
+    followingExplorerIds: individuals
+      .map((r) => r.slug)
+      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
     followingResearcherIds: researchers.map((r) => r.researcher_id)
   });
 });
@@ -542,9 +600,13 @@ router.patch("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
+  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
   const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = await c.req.json();
 
   if (followSlug) {
+    if (isHiddenFromCommunity(viewerIsAnna, followSlug)) {
+      return c.json({ error: "Individual not found" }, 404);
+    }
     const { rows: selfRows } = await query("SELECT slug FROM individuals WHERE id = $1", [individualId]);
     if (selfRows[0]?.slug === followSlug) {
       return c.json({ error: "Cannot follow yourself" }, 400);
@@ -579,7 +641,112 @@ router.patch("/social/follows", async (c) => {
     );
   }
 
-  return c.json({ ok: true });
+  const { rows: followingIndividuals } = await query(
+    `SELECT i.slug FROM individual_follows f
+     JOIN individuals i ON i.id = f.followee_id
+     WHERE f.follower_id = $1`,
+    [individualId]
+  );
+  const { rows: followingResearchers } = await query(
+    "SELECT researcher_id FROM researcher_follows WHERE individual_id = $1",
+    [individualId]
+  );
+
+  return c.json({
+    ok: true,
+    followingExplorerIds: followingIndividuals
+      .map((r) => r.slug)
+      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
+    followingResearcherIds: followingResearchers.map((r) => r.researcher_id)
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Activity nices
+// ---------------------------------------------------------------------------
+
+router.patch("/activity-posts/:id/nice", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const result = await toggleActivityNice(postId, viewerId);
+  return c.json(result);
+});
+
+router.get("/activity-posts/:id/nices", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const supporters = await fetchActivityNiceSupporters(postId, viewerId);
+  return c.json(supporters);
+});
+
+router.get("/activity-posts/:id/messages", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const [messages, summary] = await Promise.all([
+    fetchActivityMessages(postId, viewerId),
+    fetchActivityMessageSummary(postId)
+  ]);
+
+  return c.json({ ...summary, messages });
+});
+
+router.post("/activity-posts/:id/messages", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
+  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+
+  const body = await c.req.json().catch(() => ({}));
+
+  try {
+    const result = await createActivityMessage(postId, viewerId, {
+      body: body.body,
+      parentMessageId: body.parentMessageId
+    });
+    return c.json(result, 201);
+  } catch (err) {
+    const status = err.status || 400;
+    return c.json({ error: err.message || "Could not send message" }, status);
+  }
+});
+
+router.patch("/activity-posts/:id/messages/:messageId/reactions", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const messageId = c.req.param("messageId");
+  const body = await c.req.json().catch(() => ({}));
+
+  try {
+    const reactions = await toggleActivityMessageReaction(
+      postId,
+      messageId,
+      viewerId,
+      body.reactionType
+    );
+    return c.json({ reactions });
+  } catch (err) {
+    const status = err.status || 400;
+    return c.json({ error: err.message || "Could not update reaction" }, status);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -608,6 +775,8 @@ router.get("/notifications", (c) => {
 // ---------------------------------------------------------------------------
 
 router.get("/search", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const q = (c.req.query("q") || "").toLowerCase().trim();
   if (!q) return c.json({ explorations: [], community: [] });
 
@@ -615,15 +784,19 @@ router.get("/search", async (c) => {
   const { rows: explorations } = await query(
     `SELECT id, title AS title, description
      FROM explorations
-     WHERE LOWER(title) LIKE $1 OR LOWER(description) LIKE $1`,
-    [pattern]
+     WHERE id = ANY($2::text[])
+       AND (LOWER(title) LIKE $1 OR LOWER(description) LIKE $1)`,
+    [pattern, SHORT_EXPLORATION_IDS]
   );
-  const { rows: community } = await query(
-    `SELECT slug AS id, display_name AS name, profile_meta AS meta
+  const { rows: communityRows } = await query(
+    `SELECT slug AS id, display_name AS name, profile_meta AS meta, slug
      FROM individuals
      WHERE LOWER(display_name) LIKE $1`,
     [pattern]
   );
+  const community = communityRows.filter(
+    (row) => !isHiddenFromCommunity(viewerIsAnna, row.slug)
+  ).map(({ slug: _slug, ...row }) => row);
 
   return c.json({ explorations, community });
 });

@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
+import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
@@ -16,7 +18,7 @@ import { PrimaryButton } from "../components/primitives/Buttons";
 import { ChipRow } from "../components/primitives/ChipRow";
 import { Card } from "../components/primitives/Card";
 import { Badge } from "../components/primitives/Badge";
-import { Avatar } from "../components/primitives/Avatar";
+import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { RichTextParts } from "../utils/RichText";
 import { ExplorationProgressSummary } from "../components/home/ExplorationProgressSummary";
 import { DailyCheckinCard } from "../components/checkin/DailyCheckinCard";
@@ -32,15 +34,23 @@ import {
 } from "../utils/explorationLogState";
 
 const REMINDER_DISMISS_KEY = "@kind/reminder_banner_dismissed";
+const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
 
 function todayDateString() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export default function HomeScreen() {
-  const { home, refetchHome, refetchInsight, explorations } = useData();
+  const posthog = usePostHog();
+  const { home, refetchHome, refetchInsight, explorations, insight } = useData();
+  const { individualId } = useAuth();
   const homeFeed = home.feed || {};
   const starterMode = Boolean(home.starterMode);
+  const personalization = home.personalization ?? homeFeed.personalization ?? null;
+  const recommendedExplorationId = personalization?.primaryExplorationId ?? null;
+  const recommendedExploration = recommendedExplorationId
+    ? explorations[recommendedExplorationId]
+    : null;
   const {
     explorationConsents,
     explorationRuns,
@@ -62,6 +72,7 @@ export default function HomeScreen() {
   const [expandingFeed, setExpandingFeed] = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
   const [lastSavedNames, setLastSavedNames] = useState([]);
+  const completedExplorationsTracked = useRef(new Set());
 
   const consentedIds = useMemo(
     () =>
@@ -122,6 +133,15 @@ export default function HomeScreen() {
       return next;
     });
   }, [logExplorations]);
+
+  useEffect(() => {
+    for (const ex of progressExplorations) {
+      if (ex.progress >= 100 && !completedExplorationsTracked.current.has(ex.id)) {
+        completedExplorationsTracked.current.add(ex.id);
+        posthog?.capture("exploration completed");
+      }
+    }
+  }, [posthog, progressExplorations]);
 
   const savedConfirmBody = useMemo(() => {
     const tail = home.confirm.body.replace(/^Your data has been saved\.\s*/i, "");
@@ -231,14 +251,86 @@ export default function HomeScreen() {
     try {
       const res = await get(`/home/feed?type=${type}&offset=1`);
       setExtraFeedItems((prev) => [...prev, ...(res.items || [])]);
+      const nextTipsExpanded = type === "tip" ? true : tipsExpanded;
+      const nextScienceExpanded = type === "science" ? true : scienceExpanded;
       if (type === "tip") setTipsExpanded(true);
       if (type === "science") setScienceExpanded(true);
+      if (individualId) {
+        await AsyncStorage.setItem(
+          FEED_EXPANSION_KEY,
+          JSON.stringify({
+            individualId,
+            tipsExpanded: nextTipsExpanded,
+            scienceExpanded: nextScienceExpanded
+          })
+        );
+      }
     } catch {
       showToast("Could not load more feed items.");
     } finally {
       setExpandingFeed(false);
     }
-  }, [expandingFeed, showToast]);
+  }, [expandingFeed, showToast, tipsExpanded, scienceExpanded, individualId]);
+
+  useEffect(() => {
+    setExtraFeedItems((prev) => {
+      const baseIds = new Set((homeFeed.items || []).map((item) => item.id));
+      return prev.filter((item) => !baseIds.has(item.id));
+    });
+  }, [homeFeed.items]);
+
+  useEffect(() => {
+    if (!individualId) return undefined;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(FEED_EXPANSION_KEY);
+        if (!raw || cancelled) return;
+
+        const parsed = JSON.parse(raw);
+        if (parsed.individualId !== individualId) {
+          await AsyncStorage.removeItem(FEED_EXPANSION_KEY);
+          return;
+        }
+
+        const loads = [];
+        if (parsed.tipsExpanded) {
+          setTipsExpanded(true);
+          loads.push(get("/home/feed?type=tip&offset=1"));
+        }
+        if (parsed.scienceExpanded) {
+          setScienceExpanded(true);
+          loads.push(get("/home/feed?type=science&offset=1"));
+        }
+
+        if (!loads.length || cancelled) return;
+
+        const results = await Promise.all(loads);
+        if (cancelled) return;
+
+        setExtraFeedItems((prev) => {
+          const seen = new Set(prev.map((item) => item.id));
+          const next = [...prev];
+          for (const res of results) {
+            for (const item of res.items || []) {
+              if (!seen.has(item.id)) {
+                seen.add(item.id);
+                next.push(item);
+              }
+            }
+          }
+          return next;
+        });
+      } catch {
+        // ignore corrupt storage
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [individualId]);
 
   const baseFeedItems = homeFeed.items || [];
   const allFeedItems = useMemo(
@@ -257,7 +349,6 @@ export default function HomeScreen() {
   const showFeedFilterEmpty = chip !== "all" && visible.length === 0;
   const showLogLinkInFeedEmpty =
     logExplorations.length > 0 || (starterMode && logExplorations.length === 0);
-  const reportItems = homeFeed.reportItems || [];
 
   async function handleSaveLogs() {
     if (saving || logExplorations.length === 0) return;
@@ -277,6 +368,7 @@ export default function HomeScreen() {
       setLastSavedNames(logExplorations.map((ex) => ex.title));
       setSaved(true);
       setShowLog(false);
+      posthog?.capture("daily log submitted");
     } catch {
       showToast("Could not save your log. Please try again.");
     } finally {
@@ -308,29 +400,7 @@ export default function HomeScreen() {
     return (
       <Pressable key={item.id} style={styles.feed} onPress={() => handleFeedPress(item)}>
         <View style={styles.feedHead}>
-          {item.avatarKind === "icon" || item.avatarKind === "glyph" ? (
-            <View
-              style={[
-                styles.feedAv,
-                {
-                  backgroundColor: item.avatarBg || item.avatarBgStyle,
-                  borderRadius: item.avatarKind === "glyph" ? 8 : 999
-                }
-              ]}
-            >
-              <Text style={{ color: item.iconColor || item.glyphColor, fontSize: 16 }}>
-                {item.icon || item.glyph}
-              </Text>
-            </View>
-          ) : (
-            <Avatar
-              size={34}
-              img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-              sceneKey={item.sceneKey}
-              initials={item.initials}
-              backgroundColor={item.avatarBgStyle}
-            />
-          )}
+          <FeedItemAvatar item={item} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
               <Text style={styles.feedName}>{item.displayName}</Text>
@@ -367,6 +437,25 @@ export default function HomeScreen() {
           explorations={progressExplorations}
           starterMode={starterMode}
         />
+
+        {starterMode && recommendedExploration ? (
+          <Card style={styles.recommendedCard}>
+            <Text style={styles.recommendedEyebrow}>Recommended for you</Text>
+            <Text style={styles.recommendedTitle}>
+              Start with {recommendedExploration.title}
+            </Text>
+            {personalization?.primaryMatchReason ? (
+              <Text style={styles.recommendedBody}>{personalization.primaryMatchReason}</Text>
+            ) : null}
+            <PrimaryButton
+              title="View exploration"
+              onPress={() =>
+                navigation.navigate("ExplorationDetail", { id: recommendedExplorationId })
+              }
+              style={{ marginTop: 12 }}
+            />
+          </Card>
+        ) : null}
 
         {(home.metrics || []).length > 0 ? (
           <MetricGrid>
@@ -454,7 +543,9 @@ export default function HomeScreen() {
         {showFeedFilterEmpty ? (
           <FeedFilterEmptyState
             filterKey={chip}
+            starterMode={starterMode}
             showLogLink={showLogLinkInFeedEmpty}
+            showCommunityInsightsLink={insight?.showCommunityInsights !== false}
             onBrowseExplorations={goToExplore}
             onOpenLog={openCheckin}
             onGoToYourInsights={goToYourInsights}
@@ -484,13 +575,6 @@ export default function HomeScreen() {
                 : "Additional science updates for your explorations"}
             </Text>
           </Pressable>
-        ) : null}
-
-        {reportItems.length > 0 ? (
-          <View style={styles.demoSection}>
-            <Text style={styles.demoSectionTitle}>Personalised trial final reports</Text>
-            {reportItems.map((item) => renderFeedItem(item))}
-          </View>
         ) : null}
       </ScrollView>
     </View>
@@ -523,17 +607,29 @@ const styles = StyleSheet.create({
     backgroundColor: colors.greenLight,
     borderColor: colors.greenDark
   },
+  recommendedCard: {
+    marginBottom: spacing.lg,
+    backgroundColor: colors.surface,
+    borderColor: colors.border
+  },
+  recommendedEyebrow: {
+    ...text.uppercaseLabel,
+    color: colors.greenDark,
+    marginBottom: spacing.xs
+  },
+  recommendedTitle: {
+    ...type.buttonMd,
+    color: colors.text,
+    marginBottom: spacing.xs
+  },
+  recommendedBody: {
+    ...type.exploreDesc,
+    color: colors.textMuted
+  },
   confirmTitle: { ...type.buttonMd, color: colors.greenDark, marginBottom: spacing.xs },
   confirmBody: { ...type.exploreDesc, color: colors.textMuted },
   feed: layout.feedItem,
   feedHead: { flexDirection: "row", alignItems: "center", gap: spacing.feedGap, marginBottom: spacing.md },
-  feedAv: {
-    width: 34,
-    height: 34,
-    minHeight: 34,
-    alignItems: "center",
-    justifyContent: "center"
-  },
   feedName: text.feedName,
   feedTime: text.feedTime,
   hl: {

@@ -1,11 +1,7 @@
 import { useMemo } from "react";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
-
-function computeProgress(weekCurrent, weeksTotal) {
-  if (!weeksTotal) return 0;
-  return Math.round((weekCurrent / weeksTotal) * 100);
-}
+import { computeExplorationProgress } from "../utils/explorationProgress";
 
 /** Merge API exploration data with per-user consent and active state. */
 export function useUserExplorations() {
@@ -18,30 +14,53 @@ export function useUserExplorations() {
       const consent = explorationConsents[id];
       const run = explorationRuns[id];
       const userConsented = Boolean(consent?.granted);
-      const weekCurrent = run?.weekCurrent ?? (userConsented ? 1 : null);
+
+      if (!userConsented) {
+        merged[id] = {
+          ...ex,
+          id,
+          active: activeExplorationId === id,
+          userConsented: false,
+          consentedAt: null,
+          weekCurrent: null,
+          weeksTotal: null,
+          streakDays: 0,
+          streak: 0,
+          progress: 0,
+          statusBadge: null,
+          kpis: [],
+          chart: [],
+          chartLabel: null,
+          phases: (ex.phases ?? []).map((p) => ({ ...p, status: "upcoming" }))
+        };
+        continue;
+      }
+
+      const weekCurrent = run?.weekCurrent ?? 1;
       const weeksTotal =
         run?.weeksTotal ??
         Number(ex.duration?.match(/\d+/)?.[0]) ??
         null;
-      const streakDays = run?.streakDays ?? (userConsented ? 0 : ex.streak);
-      const progress = userConsented
-        ? computeProgress(weekCurrent, weeksTotal)
-        : ex.progress;
+      const streakDays = run?.streakDays ?? 0;
+      const progress = computeExplorationProgress({
+        startedAt: run?.startedAt,
+        weeksTotal,
+        weekCurrent
+      });
 
       merged[id] = {
         ...ex,
         id,
         active: activeExplorationId === id,
-        userConsented,
+        userConsented: true,
         consentedAt: consent?.consentedAt ?? null,
         weekCurrent,
         weeksTotal,
         streakDays,
         streak: streakDays,
         progress,
-        statusBadge: userConsented && weekCurrent && weeksTotal
-          ? `Week ${weekCurrent} of ${weeksTotal}`
-          : ex.statusBadge
+        statusBadge:
+          weekCurrent && weeksTotal ? `Week ${weekCurrent} of ${weeksTotal}` : null
       };
     }
     return merged;
@@ -90,7 +109,11 @@ export function listConsentedExplorations(explorations, explorationConsents, act
         weekCurrent,
         weeksTotal,
         streakDays: run?.streakDays ?? 0,
-        progress: computeProgress(weekCurrent, weeksTotal)
+        progress: computeExplorationProgress({
+          startedAt: run?.startedAt,
+          weeksTotal,
+          weekCurrent
+        })
       };
     });
 }
