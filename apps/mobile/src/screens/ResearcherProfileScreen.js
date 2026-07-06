@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
+import { catalogExplorationId } from "../utils/explorationIds";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
@@ -66,14 +67,19 @@ export default function ResearcherProfileScreen() {
 
         <Text style={styles.sec}>Explorations</Text>
         {(r.explorations || []).map((ex) => {
-          const meta = explorations[ex.expId];
+          const catalogId = catalogExplorationId(ex.expId);
+          const meta = explorations[catalogId] ?? explorations[ex.expId];
           return (
             <View key={ex.expId} style={styles.card}>
-              <Pressable onPress={() => navigation.navigate("ExplorationDetail", { id: ex.expId })}>
+              <Pressable onPress={() => navigation.navigate("ExplorationDetail", { id: catalogId })}>
                 <Text style={styles.expTitle}>{meta?.title || ex.expId}</Text>
               </Pressable>
               <Text style={styles.note}>{ex.note}</Text>
-              <PrimaryButton title="Evidence summary" onPress={() => navigation.navigate("Evidence", { id: ex.expId })} style={{ marginTop: 10 }} />
+              <PrimaryButton
+                title="Evidence summary"
+                onPress={() => navigation.navigate("Evidence", { id: catalogId })}
+                style={{ marginTop: 10 }}
+              />
             </View>
           );
         })}

@@ -290,7 +290,12 @@ export default function ExploreScreen() {
                 >
                   <Badge variant="blue">{e.participants} explorers active</Badge>
                 </Pressable>
-                <Pressable onPress={() => navigation.navigate("Evidence", { id: e.id })}>
+                <Pressable
+                  onPress={(ev) => {
+                    ev.stopPropagation?.();
+                    navigation.navigate("Evidence", { id: e.id });
+                  }}
+                >
                   <Text style={styles.evidenceLink}>See evidence</Text>
                 </Pressable>
               </View>
