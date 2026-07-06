@@ -15,7 +15,12 @@ import exploreChat from "../mocks/exploreChat.json" with { type: "json" };
 import consent from "../mocks/consent.json" with { type: "json" };
 import trialReports from "../data/explorationTrialReports.json" with { type: "json" };
 import { ANNA_DEMO_ONBOARDING } from "../lib/meData.js";
-import { isCatalogExploration, SHORT_EXPLORATION_IDS } from "../lib/centShort/index.js";
+import {
+  evidenceExplorationId,
+  isCatalogExploration,
+  SHORT_EXPLORATION_IDS
+} from "../lib/centShort/index.js";
+import { isCohortStatsScience } from "../lib/feedContentLibrary.js";
 
 const router = new Hono();
 
@@ -220,10 +225,13 @@ function mapMockFeedExtra(type, expId, row, index) {
   return base;
 }
 
-function buildMockHomeFeedExtras(type, offset = 1) {
+function buildMockHomeFeedExtras(type, offset = 1, { starterMode = false } = {}) {
   const items = [];
   for (const expId of feed.feedExpIds ?? []) {
-    const rows = type === "tip" ? feed.feedTips?.[expId] ?? [] : feed.feedScience?.[expId] ?? [];
+    let rows = type === "tip" ? feed.feedTips?.[expId] ?? [] : feed.feedScience?.[expId] ?? [];
+    if (starterMode && type === "science") {
+      rows = rows.filter((row) => !isCohortStatsScience(row));
+    }
     for (const [i, row] of rows.slice(offset).entries()) {
       items.push(mapMockFeedExtra(type, expId, row, i + offset));
     }
@@ -258,8 +266,8 @@ router.get("/explorations/:id", (c) => {
 });
 
 router.get("/explorations/:id/evidence", (c) => {
-  const id = c.req.param("id");
-  const data = explorationEvidence[id];
+  const evidenceKey = evidenceExplorationId(c.req.param("id"));
+  const data = explorationEvidence[evidenceKey];
   if (!data) return c.json({ error: "Evidence not found" }, 404);
   return c.json(data);
 });
@@ -372,7 +380,8 @@ router.get("/home/feed", (c) => {
     return c.json({ error: "type must be tip or science" }, 400);
   }
   const offset = parseInt(c.req.query("offset") ?? "1", 10);
-  return c.json({ items: buildMockHomeFeedExtras(type, offset) });
+  const starterMode = c.req.query("starter") === "1";
+  return c.json({ items: buildMockHomeFeedExtras(type, offset, { starterMode }) });
 });
 
 // ---------------------------------------------------------------------------

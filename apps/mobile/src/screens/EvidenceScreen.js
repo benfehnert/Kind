@@ -9,8 +9,10 @@ export default function EvidenceScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
-  const ev = id ? explorationEvidence[id] : null;
   const exp = id ? explorations[id] : null;
+  const evidenceId =
+    exp?.evidenceId ?? (id?.endsWith("-short") ? id.replace(/-short$/, "") : id);
+  const ev = evidenceId ? explorationEvidence[evidenceId] : null;
 
   const table = ev?.summaryTable || [];
   const colKeys = table.length ? Object.keys(table[0]) : [];

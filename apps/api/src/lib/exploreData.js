@@ -11,6 +11,8 @@ import {
 } from "./onboardingRecommendations.js";
 import { computeExplorationProgress } from "./explorationProgress.js";
 import { stripCatalogProgressFields } from "./explorationCatalog.js";
+import { evidenceExplorationId } from "./centShort/index.js";
+import { resolveActiveExplorationId } from "./meData.js";
 
 function applyUserPhaseStatus(phases, weekCurrent, weeksTotal) {
   if (!phases?.length || !weekCurrent || !weeksTotal) return phases ?? [];
@@ -60,7 +62,8 @@ async function fetchCatalogExploration(id) {
   return {
     ...rows[0],
     category: EXPLORATION_CATEGORY[rows[0].id] ?? null,
-    feedLabel: EXPLORATION_FEED_LABELS[rows[0].id] || rows[0].title
+    feedLabel: EXPLORATION_FEED_LABELS[rows[0].id] || rows[0].title,
+    evidenceId: evidenceExplorationId(rows[0].id)
   };
 }
 
@@ -80,10 +83,7 @@ async function fetchUserExplorationState(individualId) {
 
   const runsById = Object.fromEntries(runs.map((r) => [r.exploration_id, r]));
   const consentedIds = new Set(consents.map((c) => c.exploration_id));
-  let activeExplorationId =
-    consents.find((c) => c.is_active)?.exploration_id ??
-    runs.find((r) => r.is_active)?.exploration_id ??
-    null;
+  const activeExplorationId = resolveActiveExplorationId({ consents, runs });
 
   return { runsById, consentedIds, activeExplorationId };
 }

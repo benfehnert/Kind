@@ -3,6 +3,10 @@ import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { computeExplorationProgress } from "../utils/explorationProgress";
 
+function isExplorationActive(id, activeExplorationId, run) {
+  return activeExplorationId === id || run?.isActive === true;
+}
+
 /** Merge API exploration data with per-user consent and active state. */
 export function useUserExplorations() {
   const { explorations } = useData();
@@ -19,7 +23,7 @@ export function useUserExplorations() {
         merged[id] = {
           ...ex,
           id,
-          active: activeExplorationId === id,
+          active: isExplorationActive(id, activeExplorationId, run),
           userConsented: false,
           consentedAt: null,
           weekCurrent: null,
@@ -51,7 +55,7 @@ export function useUserExplorations() {
       merged[id] = {
         ...ex,
         id,
-        active: activeExplorationId === id,
+        active: isExplorationActive(id, activeExplorationId, run),
         userConsented: true,
         consentedAt: consent?.consentedAt ?? null,
         weekCurrent,
@@ -105,7 +109,7 @@ export function listConsentedExplorations(explorations, explorationConsents, act
         text: ex?.text,
         granted: true,
         consentedAt: v.consentedAt,
-        active: activeExplorationId === id,
+        active: isExplorationActive(id, activeExplorationId, run),
         weekCurrent,
         weeksTotal,
         streakDays: run?.streakDays ?? 0,

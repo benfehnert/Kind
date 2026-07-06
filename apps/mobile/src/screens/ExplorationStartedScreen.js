@@ -14,7 +14,7 @@ import {
 import { colors, fontFamily, spacing } from "../theme/colors";
 
 export default function ExplorationStartedScreen() {
-  const { explorations: catalog } = useData();
+  const { explorations: catalog, refetchHome } = useData();
   const userExplorations = useUserExplorations();
   const navigation = useNavigation();
   const posthog = usePostHog();
@@ -35,8 +35,16 @@ export default function ExplorationStartedScreen() {
   const weekCurrent = exploration.weekCurrent ?? 1;
   const weeksTotal = exploration.weeksTotal ?? exploration.duration?.match(/\d+/)?.[0] ?? "?";
 
-  function goToHome() {
-    navigation.navigate("MainTabs", { screen: "Home", params: { openLog: true } });
+  async function goToHome() {
+    try {
+      await refetchHome();
+    } catch {
+      // proceed with navigation even if home refresh fails
+    }
+    navigation.navigate("MainTabs", {
+      screen: "Home",
+      params: { openLog: true, explorationId }
+    });
     posthog?.capture("exploration joined");
   }
 
