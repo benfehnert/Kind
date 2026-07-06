@@ -1,34 +1,117 @@
-import React from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable, Linking } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { View, ScrollView, StyleSheet, Text, Pressable, Linking, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
+import { get } from "../lib/api";
+import { evidenceExplorationId } from "../utils/explorationIds";
 import { colors, fontFamily } from "../theme/colors";
 
+function resolveExplorationMeta(id, { explorations, explorePage }) {
+  if (!id) return null;
+
+  if (explorations?.[id]) {
+    return { ...explorations[id], id };
+  }
+
+  const fromExplore = [
+    explorePage?.activeExploration,
+    ...(explorePage?.availableExplorations ?? []),
+    ...(explorePage?.recommendedExplorations ?? [])
+  ].find((entry) => entry?.id === id);
+
+  if (fromExplore) return fromExplore;
+
+  const shortId = id.endsWith("-short") ? id : `${id}-short`;
+  if (explorations?.[shortId]) {
+    return { ...explorations[shortId], id: shortId };
+  }
+
+  const parentId = evidenceExplorationId(id);
+  if (parentId !== id && explorations?.[parentId]) {
+    return { ...explorations[parentId], id: parentId };
+  }
+
+  return null;
+}
+
 export default function EvidenceScreen() {
-  const { explorationEvidence, explorations } = useData();
+  const { explorationEvidence, explorations, explorePage } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
-  const exp = id ? explorations[id] : null;
-  const evidenceId =
-    exp?.evidenceId ?? (id?.endsWith("-short") ? id.replace(/-short$/, "") : id);
-  const ev = evidenceId ? explorationEvidence[evidenceId] : null;
+
+  const exp = useMemo(
+    () => resolveExplorationMeta(id, { explorations, explorePage }),
+    [id, explorations, explorePage]
+  );
+
+  const evidenceId = exp?.evidenceId ?? evidenceExplorationId(id);
+  const cachedEv = evidenceId ? explorationEvidence?.[evidenceId] : null;
+
+  const [fetchedEv, setFetchedEv] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
+
+  useEffect(() => {
+    setFetchedEv(null);
+    setFetchFailed(false);
+
+    if (!id || cachedEv) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+
+    get(`/explorations/${encodeURIComponent(id)}/evidence`)
+      .then((data) => {
+        if (!cancelled) setFetchedEv(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFetchFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, cachedEv]);
+
+  const ev = cachedEv ?? fetchedEv;
 
   const table = ev?.summaryTable || [];
   const colKeys = table.length ? Object.keys(table[0]) : [];
   const summaryHeaders =
-    ev?.summaryHeaders?.length === colKeys.length ? ev.summaryHeaders : colKeys.map((k) => k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+    ev?.summaryHeaders?.length === colKeys.length
+      ? ev.summaryHeaders
+      : colKeys.map((k) => k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
 
-  if (!ev || !exp) {
+  if (loading && !ev) {
     return (
-      <View style={{ flex: 1, padding: 20 }}>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.greenDark} />
+      </View>
+    );
+  }
+
+  if (!ev) {
+    return (
+      <View style={styles.centered}>
         <Text>Evidence not found</Text>
+        {fetchFailed ? (
+          <Text style={styles.muted}>Could not load evidence for this exploration.</Text>
+        ) : null}
         <Pressable onPress={() => navigation.goBack()}>
-          <Text>Back</Text>
+          <Text style={styles.backLink}>Back</Text>
         </Pressable>
       </View>
     );
   }
+
+  const category = exp?.category ?? "";
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -39,7 +122,7 @@ export default function EvidenceScreen() {
         <Text style={styles.hdr}>Evidence</Text>
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
-        <Text style={styles.small}>{exp.category}</Text>
+        {category ? <Text style={styles.small}>{category}</Text> : null}
         <Text style={styles.title}>{ev.docTitle}</Text>
         <Text style={styles.sub}>{ev.docSubtitle}</Text>
         <ScrollView horizontal style={{ marginVertical: 10 }} showsHorizontalScrollIndicator={false}>
@@ -122,6 +205,9 @@ export default function EvidenceScreen() {
 }
 
 const styles = StyleSheet.create({
+  centered: { flex: 1, padding: 20, justifyContent: "center", backgroundColor: colors.bg },
+  muted: { color: colors.textMuted, marginTop: 8, marginBottom: 8 },
+  backLink: { color: colors.greenDark, fontWeight: "600", marginTop: 12 },
   top: {
     flexDirection: "row",
     alignItems: "center",
