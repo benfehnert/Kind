@@ -8,7 +8,7 @@ import {
   Pressable,
   ActivityIndicator
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
 import { useExplorationStart } from "../hooks/useUserExplorations";
@@ -34,9 +34,22 @@ export default function ExploreScreen() {
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
   const navigation = useNavigation();
+  const route = useRoute();
   const [q, setQ] = useState("");
   const [chat, setChat] = useState(null);
+  const scrollRef = useRef(null);
+  const searchRef = useRef(null);
   const timer = useRef(null);
+
+  useEffect(() => {
+    if (!route.params?.focusSearch) return;
+    const frame = requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+      searchRef.current?.focus();
+    });
+    navigation.setParams({ focusSearch: undefined });
+    return () => cancelAnimationFrame(frame);
+  }, [route.params?.focusSearch, navigation]);
 
   const explorationsForChat = useMemo(() => {
     const map = {};
@@ -90,7 +103,7 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={styles.pad}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.pad}>
         <SectionTitle>{exploreCopy.title}</SectionTitle>
         <SectionSub>{exploreCopy.subtitle}</SectionSub>
         <View style={styles.searchWrap}>
@@ -98,6 +111,7 @@ export default function ExploreScreen() {
             <SearchGlassIcon size={16} color={colors.textMuted} />
           </View>
           <TextInput
+            ref={searchRef}
             style={styles.search}
             placeholder={exploreCopy.searchPlaceholder}
             placeholderTextColor={colors.textMuted}

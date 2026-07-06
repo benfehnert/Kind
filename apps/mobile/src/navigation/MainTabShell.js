@@ -39,7 +39,7 @@ export default function MainTabShell() {
         <KindNavBar
           profile={navProfile}
           onLogo={() => tabChrome?.navigation.navigate("Home")}
-          onSearch={() => tabChrome?.navigation.navigate("Exploration")}
+          onSearch={() => tabChrome?.navigation.navigate("Exploration", { focusSearch: true })}
           onAvatar={() => tabChrome?.navigation.navigate("Profile")}
         />
         {tabChrome ? <KindTabBar {...tabChrome} /> : null}
