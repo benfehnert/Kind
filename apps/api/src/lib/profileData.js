@@ -1,5 +1,6 @@
 import { query } from "../db.js";
 import profileMock from "../mocks/profile.json" with { type: "json" };
+import { SHORT_EXPLORATION_IDS } from "./centShort/index.js";
 import { fetchActiveRun } from "./homeData.js";
 
 function avatarKeyFromImageId(imageId) {
@@ -16,17 +17,18 @@ function formatEnergy(value) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-async function fetchAvailableExplorationCount() {
-  const { rows } = await query(`SELECT COUNT(*)::int AS count FROM explorations`);
-  return rows[0]?.count ?? 0;
+function fetchAvailableExplorationCount() {
+  return SHORT_EXPLORATION_IDS.length;
 }
 
 async function fetchUserActiveExplorationCount(individualId) {
   const { rows } = await query(
     `SELECT COUNT(*)::int AS count
      FROM user_explorations
-     WHERE individual_id = $1 AND is_active = TRUE`,
-    [individualId]
+     WHERE individual_id = $1
+       AND exploration_id = ANY($2::text[])
+       AND status = 'active'`,
+    [individualId, SHORT_EXPLORATION_IDS]
   );
   return rows[0]?.count ?? 0;
 }

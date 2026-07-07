@@ -1,0 +1,598 @@
+{
+  "explorationId": "relaxation-short",
+  "studyStart": "2026-06-01",
+  "daysLogged": 6,
+  "maxStudyDay": 6,
+  "validDays": 6,
+  "analysisReports": [
+    "BASELINE_SUMMARY",
+    "INTERVENTION_INTERIM",
+    "OPTIMISE_COMPLETION",
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON"
+  ],
+  "finalReportType": "FINAL_STUDY_COMPLETE",
+  "tiles": [
+    {
+      "label": "Stress level",
+      "value": "6.2 → 4.8",
+      "delta": "-1.4 pts"
+    },
+    {
+      "label": "Composure",
+      "value": "5.5 → 6.7",
+      "delta": "+1.2 pts"
+    }
+  ],
+  "phaseChart": [
+    {
+      "label": "Baseline",
+      "v": 5.5
+    },
+    {
+      "label": "Practices",
+      "v": 6.2
+    },
+    {
+      "label": "Week 6",
+      "v": 7.4
+    }
+  ],
+  "keepList": [
+    "Vagal breathing",
+    "Short nature walk"
+  ],
+  "finalMobileReport": {
+    "explorationName": "Relaxation practices & composure",
+    "explorationLabel": "Health exploration",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Mental Health",
+    "subMeta": "Anna · 1 Jun 2026 – 6 Jun 2026 · 100% of days logged",
+    "lede": "Here's what your own data over this exploration suggests about relaxation practices and your composure.",
+    "tiles": [
+      {
+        "label": "Stress level",
+        "value": "6.2 → 4.8",
+        "delta": "-1.4 pts"
+      },
+      {
+        "label": "Composure",
+        "value": "5.5 → 6.7",
+        "delta": "+1.2 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Composure by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.5
+        },
+        {
+          "label": "Practices",
+          "v": 6.2
+        },
+        {
+          "label": "Week 6",
+          "v": 7.4
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Lower stress on days you used each practice.",
+      "rows": [
+        {
+          "icon": "🌬️",
+          "label": "Vagal breathing",
+          "value": -1.5,
+          "width": 100,
+          "bar": "#534AB7",
+          "badge": "Moderate–strong · 50% of days",
+          "badgeBg": "#EEEDFE",
+          "badgeText": "#534AB7"
+        },
+        {
+          "icon": "💪",
+          "label": "Progressive muscle relaxation",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Insufficient data",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        },
+        {
+          "icon": "🌿",
+          "label": "Short nature walk",
+          "value": 0,
+          "width": 10,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 25% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🧘",
+          "label": "Meditation / visualisation",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Insufficient data",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "Anxiety through the week",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 50,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 0,
+          "c": "#FAC775"
+        },
+        {
+          "w": 50,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 0,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 0,
+          "c": "#FAC775"
+        },
+        {
+          "w": 100,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "High (7–10)"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "Moderate (5–6)"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Mild (3–4)"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Calm (1–2)"
+        }
+      ]
+    },
+    "keepList": {
+      "title": "Your keep list",
+      "items": [
+        "Vagal breathing",
+        "Short nature walk"
+      ],
+      "body": "Breathing gave you the fastest drop in stress; nature walks sustained composure through the afternoon. PMR helped on high-stress days — worth keeping both core habits."
+    },
+    "compare": {
+      "title": "How you compare",
+      "body": "Explorers logging 4+ practice days per week reduced mean stress by about 1.3 points. Your -1.4 stress shift and +1.2 composure gain are above the group average — and you logged more consistently as most (100% vs ~78%)."
+    },
+    "disclaimer": "Self-reported stress and anxiety aren't clinical measures. This report reflects a short six-day alpha exploration, so treat it as an early personal reflection, not a diagnosis. If you're struggling, professional support matters.",
+    "disclaimerInfo": {
+      "title": "Hold this lightly",
+      "body": "Self-reported stress and anxiety aren't clinical measures. This report reflects a short six-day alpha exploration, so treat it as an early personal reflection, not a diagnosis. If you're struggling, professional support matters."
+    },
+    "limitations": [
+      "These results describe your experience only — they are not medical evidence and may not apply to others.",
+      "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+      "Sleep, workload, and life events also shape stress and composure — this exploration cannot isolate every factor.",
+      "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+      "Practice quality and duration were not logged — only whether each practice was done that day."
+    ],
+    "generalisabilityNote": "These findings reflect your individual response over this short 6-day alpha exploration. With so few days the signal is preliminary and may differ if repeated over a longer period. They are early personal insights, not medical conclusions.",
+    "practice_composure_chart": {
+      "title": "Practice count and composure",
+      "subtitle": "How your composure varied with the number of relaxation practices logged each day",
+      "yAxisLabel": "Average composure (0–10 scale)",
+      "xAxisLabel": "Practices per day",
+      "baselineReference": 5.5,
+      "points": [
+        {
+          "label": "No practices",
+          "bucketKey": "none",
+          "composure": 6,
+          "changeFromBaseline": 0.5,
+          "daysLogged": 1
+        },
+        {
+          "label": "1 practice",
+          "bucketKey": "one",
+          "composure": 6.9,
+          "changeFromBaseline": 1.4,
+          "daysLogged": 3
+        }
+      ]
+    },
+    "habit_stress_chart": {
+      "title": "Each practice and your stress level",
+      "subtitle": "Change in stress on days you used each practice compared with days you did not",
+      "yAxisLabel": "Change in stress (points on 0–10 scale; lower is better)",
+      "points": [
+        {
+          "habit": "vagal_breathing",
+          "label": "Vagal breathing",
+          "status": "valid",
+          "changeInStress": -1.5,
+          "daysFollowed": 2,
+          "daysNotFollowed": 2
+        },
+        {
+          "habit": "nature_walk",
+          "label": "Short nature walk",
+          "status": "valid",
+          "changeInStress": 0.6,
+          "daysFollowed": 1,
+          "daysNotFollowed": 3
+        }
+      ]
+    },
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on vagal breathing and short nature walk."
+    },
+    "_cent": {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:35.236Z",
+      "study_summary": {
+        "total_days_logged": 6,
+        "baseline_days_logged": 2,
+        "practices_days_logged": 2,
+        "optimise_days_logged": 1,
+        "output_days_logged": 1
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 2,
+          "mean": 5.5,
+          "sd": 0,
+          "median": 5.5,
+          "distribution": null
+        },
+        "active": {
+          "n": 4,
+          "mean": 6.699999999999999,
+          "sd": 0.6582805886043833,
+          "median": 6.699999999999999,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "composure",
+          "status": "insufficient_data"
+        }
+      },
+      "stress_outcome": {
+        "baseline": {
+          "n": 2,
+          "mean": 6.2,
+          "sd": 0,
+          "median": 6.2,
+          "distribution": null
+        },
+        "active": {
+          "n": 4,
+          "mean": 4.824999999999999,
+          "sd": 0.8616843969807044,
+          "median": 4.699999999999999,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "stress",
+          "status": "insufficient_data"
+        }
+      },
+      "secondary_outcomes": {
+        "stress": {
+          "baseline": {
+            "n": 2,
+            "mean": 6.2,
+            "sd": 0,
+            "median": 6.2,
+            "distribution": null
+          },
+          "active": {
+            "n": 4,
+            "mean": 4.824999999999999,
+            "sd": 0.8616843969807044,
+            "median": 4.699999999999999,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "stress",
+            "status": "insufficient_data"
+          }
+        },
+        "anxiety": {
+          "baseline": {
+            "n": 2,
+            "mean": 3.75,
+            "sd": 2.4748737341529163,
+            "median": 3.75,
+            "distribution": {
+              "high": 0,
+              "moderate": 0.5,
+              "mild": 0,
+              "calm": 0.5
+            }
+          },
+          "active": {
+            "n": 4,
+            "mean": 4.05,
+            "sd": 1.427118308573843,
+            "median": 4.1,
+            "distribution": {
+              "high": 0,
+              "moderate": 0.25,
+              "mild": 0.5,
+              "calm": 0.25
+            }
+          },
+          "effect": {
+            "outcome": "anxiety",
+            "status": "insufficient_data"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "vagal_breathing": {
+          "stress": {
+            "habit": "vagal_breathing",
+            "rule": "vagal_breathing",
+            "outcome": "stress",
+            "followed_n": 2,
+            "not_followed_n": 2,
+            "mean_followed": 4.1,
+            "mean_not_followed": 5.55,
+            "difference": -1.4500000000000002,
+            "beneficial": true,
+            "abs_effect": 1.4500000000000002,
+            "status": "valid"
+          },
+          "composure": {
+            "habit": "vagal_breathing",
+            "rule": "vagal_breathing",
+            "outcome": "composure",
+            "followed_n": 2,
+            "not_followed_n": 2,
+            "mean_followed": 6.85,
+            "mean_not_followed": 6.55,
+            "difference": 0.2999999999999998,
+            "beneficial": true,
+            "abs_effect": 0.2999999999999998,
+            "status": "valid"
+          }
+        },
+        "pmr": {
+          "stress": {
+            "habit": "pmr",
+            "outcome": "stress",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          },
+          "composure": {
+            "habit": "pmr",
+            "outcome": "composure",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          }
+        },
+        "nature_walk": {
+          "stress": {
+            "habit": "nature_walk",
+            "rule": "nature_walk",
+            "outcome": "stress",
+            "followed_n": 1,
+            "not_followed_n": 3,
+            "mean_followed": 5.3,
+            "mean_not_followed": 4.666666666666666,
+            "difference": 0.6333333333333337,
+            "beneficial": false,
+            "abs_effect": 0.6333333333333337,
+            "status": "valid"
+          },
+          "composure": {
+            "habit": "nature_walk",
+            "rule": "nature_walk",
+            "outcome": "composure",
+            "followed_n": 1,
+            "not_followed_n": 3,
+            "mean_followed": 7.1,
+            "mean_not_followed": 6.566666666666667,
+            "difference": 0.5333333333333323,
+            "beneficial": true,
+            "abs_effect": 0.5333333333333323,
+            "status": "valid"
+          }
+        },
+        "meditation": {
+          "stress": {
+            "habit": "meditation",
+            "outcome": "stress",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          },
+          "composure": {
+            "habit": "meditation",
+            "outcome": "composure",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          }
+        }
+      },
+      "stacking_final": {
+        "none": {
+          "n": 1,
+          "mean": 6,
+          "label": "No practices"
+        },
+        "one": {
+          "n": 3,
+          "mean": 6.933333333333333,
+          "label": "1 practice"
+        },
+        "two": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "2 practices"
+        },
+        "three_plus": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "3+ practices"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 1,
+          "mean": 5.5,
+          "sd": null,
+          "median": 5.5,
+          "distribution": null
+        },
+        "2": {
+          "n": 1,
+          "mean": 5.5,
+          "sd": null,
+          "median": 5.5,
+          "distribution": null
+        },
+        "3": {
+          "n": 1,
+          "mean": 6.3,
+          "sd": null,
+          "median": 6.3,
+          "distribution": null
+        },
+        "4": {
+          "n": 1,
+          "mean": 6,
+          "sd": null,
+          "median": 6,
+          "distribution": null
+        },
+        "5": {
+          "n": 1,
+          "mean": 7.1,
+          "sd": null,
+          "median": 7.1,
+          "distribution": null
+        },
+        "6": {
+          "n": 1,
+          "mean": 7.4,
+          "sd": null,
+          "median": 7.4,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": false,
+        "reason": "insufficient_data"
+      },
+      "personalised_findings": [
+        {
+          "habit": "vagal_breathing",
+          "label": "Vagal breathing",
+          "stress_reduction": 1.5,
+          "composure_uplift": 0.3
+        }
+      ],
+      "overall_verdict": "INCONCLUSIVE",
+      "practice_composure_chart": {
+        "title": "Practice count and composure",
+        "subtitle": "How your composure varied with the number of relaxation practices logged each day",
+        "yAxisLabel": "Average composure (0–10 scale)",
+        "xAxisLabel": "Practices per day",
+        "baselineReference": 5.5,
+        "points": [
+          {
+            "label": "No practices",
+            "bucketKey": "none",
+            "composure": 6,
+            "changeFromBaseline": 0.5,
+            "daysLogged": 1
+          },
+          {
+            "label": "1 practice",
+            "bucketKey": "one",
+            "composure": 6.9,
+            "changeFromBaseline": 1.4,
+            "daysLogged": 3
+          }
+        ]
+      },
+      "habit_stress_chart": {
+        "title": "Each practice and your stress level",
+        "subtitle": "Change in stress on days you used each practice compared with days you did not",
+        "yAxisLabel": "Change in stress (points on 0–10 scale; lower is better)",
+        "points": [
+          {
+            "habit": "vagal_breathing",
+            "label": "Vagal breathing",
+            "status": "valid",
+            "changeInStress": -1.5,
+            "daysFollowed": 2,
+            "daysNotFollowed": 2
+          },
+          {
+            "habit": "nature_walk",
+            "label": "Short nature walk",
+            "status": "valid",
+            "changeInStress": 0.6,
+            "daysFollowed": 1,
+            "daysNotFollowed": 3
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Sleep, workload, and life events also shape stress and composure — this exploration cannot isolate every factor.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Practice quality and duration were not logged — only whether each practice was done that day."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this short 6-day alpha exploration. With so few days the signal is preliminary and may differ if repeated over a longer period. They are early personal insights, not medical conclusions."
+    }
+  }
+}

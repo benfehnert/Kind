@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { colors, fontFamily } from "../theme/colors";
+import { PRIVACY_POLICY_URL } from "../data/explorerOnboarding";
 
 function CheckRow({ checked, onToggle, label, sub, required }) {
   return (
@@ -122,7 +123,13 @@ export default function OnboardingConsentScreen() {
 
             {step.footnote ? <Text style={styles.foot}>{step.footnote}</Text> : null}
             {step.linkLabel ? (
-              <Pressable onPress={() => showToast("Prototype: opens " + step.linkLabel + ".")}>
+              <Pressable
+                onPress={() =>
+                  step.linkLabel.includes("Privacy Policy")
+                    ? Linking.openURL(PRIVACY_POLICY_URL)
+                    : showToast("Prototype: opens " + step.linkLabel + ".")
+                }
+              >
                 <Text style={styles.link}>{step.linkLabel} ›</Text>
               </Pressable>
             ) : null}

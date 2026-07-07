@@ -1,0 +1,1607 @@
+{
+  "participant": "Anna",
+  "studyStart": "2026-02-01",
+  "daysLogged": 37,
+  "validDays": 37,
+  "analysisReports": [
+    "BASELINE_SUMMARY",
+    "INTERVENTION_INTERIM",
+    "OPTIMISE_COMPLETION",
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON"
+  ],
+  "triggeredReports": [
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON"
+  ],
+  "metrics": {
+    "moodDelta": "+1.6 pts",
+    "upfDelta": "-26.7 pts",
+    "phaseChart": [
+      {
+        "label": "Baseline",
+        "v": 5.6
+      },
+      {
+        "label": "Reduction",
+        "v": 6.3
+      },
+      {
+        "label": "Week 6",
+        "v": 7.2
+      }
+    ],
+    "keepList": [
+      "Whole-food breakfast",
+      "Unprocessed snacks"
+    ],
+    "distributionBefore": [
+      {
+        "w": 58,
+        "c": "#E24B4A"
+      },
+      {
+        "w": 17,
+        "c": "#EF9F27"
+      },
+      {
+        "w": 25,
+        "c": "#5DCAA5"
+      }
+    ],
+    "distributionAfter": [
+      {
+        "w": 0,
+        "c": "#E24B4A"
+      },
+      {
+        "w": 60,
+        "c": "#EF9F27"
+      },
+      {
+        "w": 40,
+        "c": "#5DCAA5"
+      }
+    ]
+  },
+  "finalMobileReport": {
+    "explorationName": "UPF reduction & mood",
+    "explorationLabel": "Health exploration",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Diet & Nutrition",
+    "subMeta": "Anna · 1 Feb 2026 – 14 Mar 2026 · 88.1% of days logged",
+    "lede": "Swapping ultra-processed foods for whole alternatives shifted your daily mood. Here's how your UPF intake tracked with how you felt.",
+    "tiles": [
+      {
+        "label": "Daily mood",
+        "value": "5.6 → 7.2",
+        "delta": "+1.6 pts"
+      },
+      {
+        "label": "UPF share of diet",
+        "value": "58% → 31%",
+        "delta": "-26.7 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Daily mood by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.6
+        },
+        {
+          "label": "Reduction",
+          "v": 6.3
+        },
+        {
+          "label": "Week 6",
+          "v": 7.2
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Higher mood on days with lower UPF and these swaps.",
+      "rows": [
+        {
+          "icon": "🥣",
+          "label": "Whole-food breakfast swap",
+          "value": "+0.5",
+          "width": 100,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 72% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🥜",
+          "label": "Unprocessed snacks",
+          "value": "+0.5",
+          "width": 100,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 72% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🍳",
+          "label": "Home-cooked main meals",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Mild · partial adherence",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        },
+        {
+          "icon": "🥗",
+          "label": "Whole-food lunch swap",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Mild · partial adherence",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "UPF share of daily diet",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 58,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 17,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 25,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 60,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 40,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "50%+ UPF"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "30–50% UPF"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Under 30% UPF"
+        }
+      ]
+    },
+    "keepList": {
+      "title": "Your keep list",
+      "items": [
+        "Whole-food breakfast",
+        "Unprocessed snacks"
+      ],
+      "body": "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
+    },
+    "compare": {
+      "title": "How you compare",
+      "body": "Explorers cutting UPF by 15+ percentage points reported about +0.9 mood points by week 5. Your -26.7 UPF drop and +1.3 mood gain are among the clearest signals in this cohort — and you logged more consistently as most (88.1% vs ~78%). The swap most followed across the community is Whole-food breakfast swap."
+    },
+    "disclaimer": "Diet and mood interact with sleep, stress and social context. This is your personal log over six weeks — informative, not medical advice.",
+    "disclaimerInfo": {
+      "title": "Hold this lightly",
+      "body": "Diet and mood interact with sleep, stress and social context. This is your personal log over six weeks — informative, not medical advice."
+    },
+    "limitations": [
+      "These results describe your experience only — they are not medical evidence and may not apply to others.",
+      "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+      "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+      "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+      "Sweetened drinks and other UPF categories were not tracked separately in this exploration.",
+      "Your mood scores improved steadily over time, so some of the change may reflect natural drift rather than UPF reduction alone."
+    ],
+    "generalisabilityNote": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions.",
+    "upf_mood_chart": {
+      "title": "UPF share and daily mood",
+      "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+      "yAxisLabel": "Average daily mood (0–10 scale)",
+      "xAxisLabel": "UPF share of diet",
+      "baselineReference": 5.6,
+      "points": [
+        {
+          "label": "30–50% UPF",
+          "bucketKey": "medium",
+          "dailyMood": 6.7,
+          "changeFromBaseline": 1.1,
+          "daysLogged": 16
+        },
+        {
+          "label": "Under 30% UPF",
+          "bucketKey": "low",
+          "dailyMood": 7.2,
+          "changeFromBaseline": 1.6,
+          "daysLogged": 9
+        }
+      ]
+    },
+    "habit_uplift_chart": {
+      "title": "Each swap habit and your daily mood",
+      "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+      "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+      "points": [
+        {
+          "habit": "breakfast_swap",
+          "label": "Whole-food breakfast swap",
+          "status": "valid",
+          "changeInDailyMood": 0.5,
+          "daysFollowed": 18,
+          "daysNotFollowed": 7
+        },
+        {
+          "habit": "snack_swap",
+          "label": "Unprocessed snacks",
+          "status": "valid",
+          "changeInDailyMood": 0.5,
+          "daysFollowed": 18,
+          "daysNotFollowed": 7
+        },
+        {
+          "habit": "dinner_swap",
+          "label": "Home-cooked main meals",
+          "status": "valid",
+          "changeInDailyMood": -0.1,
+          "daysFollowed": 5,
+          "daysNotFollowed": 20
+        },
+        {
+          "habit": "lunch_swap",
+          "label": "Whole-food lunch swap",
+          "status": "valid",
+          "changeInDailyMood": -0.4,
+          "daysFollowed": 5,
+          "daysNotFollowed": 20
+        }
+      ]
+    },
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on whole-food breakfast and unprocessed snacks."
+    },
+    "_cent": {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.897Z",
+      "study_summary": {
+        "total_days_logged": 37,
+        "baseline_days_logged": 12,
+        "reduction_days_logged": 13,
+        "sustained_days_logged": 7,
+        "output_days_logged": 5
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 12,
+          "mean": 5.591666666666668,
+          "sd": 0.06685579234215216,
+          "median": 5.6,
+          "distribution": null
+        },
+        "active": {
+          "n": 25,
+          "mean": 6.888,
+          "sd": 0.6747345156924067,
+          "median": 6.5,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "daily_mood",
+          "mean_diff": 1.2963333333333322,
+          "ci_low": 1.017967900717147,
+          "ci_high": 1.5746987659495175,
+          "df": 24,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "upf_pct": {
+        "baseline_pct": 57.5,
+        "active_pct": 31.92,
+        "effect": {
+          "outcome": "upf_pct",
+          "mean_diff": -25.58,
+          "ci_low": -40.057837266269495,
+          "ci_high": -11.102162733730502,
+          "df": 11,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "secondary_outcomes": {
+        "upf_pct": {
+          "baseline": {
+            "n": 12,
+            "mean": 57.5,
+            "sd": 23.28284581168954,
+            "median": 51,
+            "distribution": {
+              "high": 0.5833333333333334,
+              "medium": 0.16666666666666666,
+              "low": 0.25
+            }
+          },
+          "active": {
+            "n": 25,
+            "mean": 31.92,
+            "sd": 4.957485921983709,
+            "median": 31,
+            "distribution": {
+              "high": 0,
+              "medium": 0.64,
+              "low": 0.36
+            }
+          },
+          "effect": {
+            "outcome": "upf_pct",
+            "mean_diff": -25.58,
+            "ci_low": -40.057837266269495,
+            "ci_high": -11.102162733730502,
+            "df": 11,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "upf_energy": {
+          "baseline": {
+            "n": 12,
+            "mean": 5.408333333333332,
+            "sd": 0.06685579234215216,
+            "median": 5.4,
+            "distribution": null
+          },
+          "active": {
+            "n": 25,
+            "mean": 6.432,
+            "sd": 0.36482872693909413,
+            "median": 6.2,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "upf_energy",
+            "mean_diff": 1.023666666666668,
+            "ci_low": 0.8695467285375301,
+            "ci_high": 1.177786604795806,
+            "df": 27,
+            "direction": "improved",
+            "status": "valid"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "breakfast_swap": {
+          "mood": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "daily_mood",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 7.033333333333334,
+            "mean_not_followed": 6.514285714285713,
+            "difference": 0.5190476190476208,
+            "beneficial": true,
+            "abs_effect": 0.5190476190476208,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "upf_pct",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 32.111111111111114,
+            "mean_not_followed": 31.428571428571427,
+            "difference": 0.6825396825396872,
+            "beneficial": false,
+            "abs_effect": 0.6825396825396872,
+            "status": "valid"
+          }
+        },
+        "snack_swap": {
+          "mood": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "daily_mood",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 7.033333333333335,
+            "mean_not_followed": 6.514285714285714,
+            "difference": 0.5190476190476208,
+            "beneficial": true,
+            "abs_effect": 0.5190476190476208,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "upf_pct",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 31.333333333333332,
+            "mean_not_followed": 33.42857142857143,
+            "difference": -2.0952380952380985,
+            "beneficial": true,
+            "abs_effect": 2.0952380952380985,
+            "status": "valid"
+          }
+        },
+        "dinner_swap": {
+          "mood": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "daily_mood",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 6.82,
+            "mean_not_followed": 6.905000000000001,
+            "difference": -0.08500000000000085,
+            "beneficial": false,
+            "abs_effect": 0.08500000000000085,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "upf_pct",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 28.8,
+            "mean_not_followed": 32.7,
+            "difference": -3.900000000000002,
+            "beneficial": true,
+            "abs_effect": 3.900000000000002,
+            "status": "valid"
+          }
+        },
+        "lunch_swap": {
+          "mood": {
+            "habit": "lunch_swap",
+            "rule": "lunch_swap",
+            "outcome": "daily_mood",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 6.56,
+            "mean_not_followed": 6.970000000000001,
+            "difference": -0.41000000000000103,
+            "beneficial": false,
+            "abs_effect": 0.41000000000000103,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "lunch_swap",
+            "rule": "lunch_swap",
+            "outcome": "upf_pct",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 31,
+            "mean_not_followed": 32.15,
+            "difference": -1.1499999999999986,
+            "beneficial": true,
+            "abs_effect": 1.1499999999999986,
+            "status": "valid"
+          }
+        }
+      },
+      "stacking_final": {
+        "high": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "50%+ UPF"
+        },
+        "medium": {
+          "n": 16,
+          "mean": 6.706250000000001,
+          "label": "30–50% UPF"
+        },
+        "low": {
+          "n": 9,
+          "mean": 7.21111111111111,
+          "label": "Under 30% UPF"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.6000000000000005,
+          "sd": 0.06324555320336764,
+          "median": 5.6,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.583333333333333,
+          "sd": 0.07527726527090811,
+          "median": 5.6,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.328571428571428,
+          "sd": 0.1704336206492694,
+          "median": 6.4,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.3,
+          "sd": 0.15491933384829681,
+          "median": 6.300000000000001,
+          "distribution": null
+        },
+        "5": {
+          "n": 7,
+          "mean": 7.7142857142857135,
+          "sd": 0.4140393356054127,
+          "median": 7.9,
+          "distribution": null
+        },
+        "6": {
+          "n": 5,
+          "mean": 7.220000000000001,
+          "sd": 0.044721359549995635,
+          "median": 7.2,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0593,
+        "r_squared": 0.736,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "personalised_findings": [
+        {
+          "habit": "breakfast_swap",
+          "label": "Whole-food breakfast swap",
+          "mood_uplift": 0.5,
+          "upf_change": 0.7
+        },
+        {
+          "habit": "snack_swap",
+          "label": "Unprocessed snacks",
+          "mood_uplift": 0.5,
+          "upf_change": -2.1
+        }
+      ],
+      "overall_verdict": "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT",
+      "upf_mood_chart": {
+        "title": "UPF share and daily mood",
+        "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+        "yAxisLabel": "Average daily mood (0–10 scale)",
+        "xAxisLabel": "UPF share of diet",
+        "baselineReference": 5.6,
+        "points": [
+          {
+            "label": "30–50% UPF",
+            "bucketKey": "medium",
+            "dailyMood": 6.7,
+            "changeFromBaseline": 1.1,
+            "daysLogged": 16
+          },
+          {
+            "label": "Under 30% UPF",
+            "bucketKey": "low",
+            "dailyMood": 7.2,
+            "changeFromBaseline": 1.6,
+            "daysLogged": 9
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each swap habit and your daily mood",
+        "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+        "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "breakfast_swap",
+            "label": "Whole-food breakfast swap",
+            "status": "valid",
+            "changeInDailyMood": 0.5,
+            "daysFollowed": 18,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "snack_swap",
+            "label": "Unprocessed snacks",
+            "status": "valid",
+            "changeInDailyMood": 0.5,
+            "daysFollowed": 18,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "dinner_swap",
+            "label": "Home-cooked main meals",
+            "status": "valid",
+            "changeInDailyMood": -0.1,
+            "daysFollowed": 5,
+            "daysNotFollowed": 20
+          },
+          {
+            "habit": "lunch_swap",
+            "label": "Whole-food lunch swap",
+            "status": "valid",
+            "changeInDailyMood": -0.4,
+            "daysFollowed": 5,
+            "daysNotFollowed": 20
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Sweetened drinks and other UPF categories were not tracked separately in this exploration.",
+        "Your mood scores improved steadily over time, so some of the change may reflect natural drift rather than UPF reduction alone."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions."
+    }
+  },
+  "reports": [
+    {
+      "type": "BASELINE_SUMMARY",
+      "reportTitle": "Baseline summary report",
+      "phaseLabel": "Baseline",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.894Z",
+      "primary_baseline": {
+        "n": 12,
+        "mean": 5.591666666666668,
+        "sd": 0.06685579234215216,
+        "median": 5.6,
+        "distribution": null
+      },
+      "sec_baselines": {
+        "upf_pct": {
+          "n": 12,
+          "mean": 57.5,
+          "sd": 23.28284581168954,
+          "median": 51,
+          "distribution": {
+            "high": 0.5833333333333334,
+            "medium": 0.16666666666666666,
+            "low": 0.25
+          }
+        },
+        "upf_energy": {
+          "n": 12,
+          "mean": 5.408333333333332,
+          "sd": 0.06685579234215216,
+          "median": 5.4,
+          "distribution": null
+        }
+      },
+      "upf_pct_mean": 57.5,
+      "week_1_mood": {
+        "n": 6,
+        "mean": 5.6000000000000005,
+        "sd": 0.06324555320336764,
+        "median": 5.6,
+        "distribution": null
+      },
+      "week_2_mood": {
+        "n": 6,
+        "mean": 5.583333333333333,
+        "sd": 0.07527726527090811,
+        "median": 5.6,
+        "distribution": null
+      },
+      "adherence": {
+        "logging_pct": 85.7,
+        "rule_adherence_pct": null,
+        "intervention_adherence_pct": null,
+        "days_logged": 12,
+        "days_elapsed": 14,
+        "current_streak": 2,
+        "longest_streak": 6,
+        "low_adherence_flag": false
+      },
+      "data_sufficient": true,
+      "quality_warnings": [],
+      "headline": "Over your 12-day baseline, you averaged 5.6/10 daily mood with about 58% of your diet from ultra-processed foods. This is your personal starting point for the health exploration.",
+      "phase_b_guidance": "Starting next week you enter the gradual reduction phase of your health exploration. Log your estimated UPF %, daily mood, energy, and any whole-food swaps each day."
+    },
+    {
+      "type": "INTERVENTION_INTERIM",
+      "reportTitle": "Health exploration interim report",
+      "phaseLabel": "Gradual reduction",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.895Z",
+      "primary_effect": {
+        "outcome": "daily_mood",
+        "mean_diff": 0.7237179487179484,
+        "ci_low": 0.6242039898682119,
+        "ci_high": 0.8232319075676848,
+        "df": 16,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "upf_effect": {
+        "outcome": "upf_pct",
+        "mean_diff": -23.346153846153847,
+        "ci_low": -38.02995966358954,
+        "ci_high": -8.66234802871816,
+        "df": 12,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "secondary_effects": {
+        "upf_energy": {
+          "outcome": "upf_energy",
+          "mean_diff": 0.7070512820512826,
+          "ci_low": 0.6426788223493478,
+          "ci_high": 0.7714237417532175,
+          "df": 22,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "habit_mood": {
+        "breakfast_swap": {
+          "habit": "breakfast_swap",
+          "rule": "breakfast_swap",
+          "outcome": "daily_mood",
+          "followed_n": 8,
+          "not_followed_n": 5,
+          "mean_followed": 6.3999999999999995,
+          "mean_not_followed": 6.18,
+          "difference": 0.21999999999999975,
+          "beneficial": true,
+          "abs_effect": 0.21999999999999975,
+          "status": "valid"
+        },
+        "snack_swap": {
+          "habit": "snack_swap",
+          "rule": "snack_swap",
+          "outcome": "daily_mood",
+          "followed_n": 8,
+          "not_followed_n": 5,
+          "mean_followed": 6.4,
+          "mean_not_followed": 6.180000000000001,
+          "difference": 0.21999999999999975,
+          "beneficial": true,
+          "abs_effect": 0.21999999999999975,
+          "status": "valid"
+        },
+        "dinner_swap": {
+          "habit": "dinner_swap",
+          "outcome": "daily_mood",
+          "status": "insufficient_data",
+          "followed_n": 2,
+          "not_followed_n": 11
+        },
+        "lunch_swap": {
+          "habit": "lunch_swap",
+          "outcome": "daily_mood",
+          "status": "insufficient_data",
+          "followed_n": 3,
+          "not_followed_n": 10
+        }
+      },
+      "upf_mood_chart": {
+        "title": "UPF share and daily mood",
+        "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+        "yAxisLabel": "Average daily mood (0–10 scale)",
+        "xAxisLabel": "UPF share of diet",
+        "baselineReference": 5.6,
+        "points": [
+          {
+            "label": "30–50% UPF",
+            "bucketKey": "medium",
+            "dailyMood": 6.3,
+            "changeFromBaseline": 0.7,
+            "daysLogged": 10
+          },
+          {
+            "label": "Under 30% UPF",
+            "bucketKey": "low",
+            "dailyMood": 6.3,
+            "changeFromBaseline": 0.7,
+            "daysLogged": 3
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each swap habit and your daily mood",
+        "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+        "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "breakfast_swap",
+            "label": "Whole-food breakfast swap",
+            "status": "valid",
+            "changeInDailyMood": 0.2,
+            "daysFollowed": 8,
+            "daysNotFollowed": 5
+          },
+          {
+            "habit": "snack_swap",
+            "label": "Unprocessed snacks",
+            "status": "valid",
+            "changeInDailyMood": 0.2,
+            "daysFollowed": 8,
+            "daysNotFollowed": 5
+          }
+        ]
+      },
+      "weekly_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.6000000000000005,
+          "sd": 0.06324555320336764,
+          "median": 5.6,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.583333333333333,
+          "sd": 0.07527726527090811,
+          "median": 5.6,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.328571428571428,
+          "sd": 0.1704336206492694,
+          "median": 6.4,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.3,
+          "sd": 0.15491933384829681,
+          "median": 6.300000000000001,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0376,
+        "r_squared": 0.65,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "adherence": {
+        "logging_pct": 89.3,
+        "rule_adherence_pct": 23.1,
+        "intervention_adherence_pct": 23.1,
+        "days_logged": 25,
+        "days_elapsed": 28,
+        "current_streak": 5,
+        "longest_streak": 10,
+        "low_adherence_flag": false
+      },
+      "optimise_habits": [
+        "breakfast_swap",
+        "snack_swap"
+      ],
+      "optimise_habit_labels": [
+        "Whole-food breakfast swap",
+        "Unprocessed snacks"
+      ],
+      "optimise_guidance": "Based on your gradual reduction phase data, focus on Whole-food breakfast swap and Unprocessed snacks during the sustained lower-UPF week. These swaps showed the strongest association with higher daily mood for you.",
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Sweetened drinks and other UPF categories were not tracked separately in this exploration.",
+        "Your mood scores improved steadily over time, so some of the change may reflect natural drift rather than UPF reduction alone."
+      ],
+      "headline": "Your daily mood rose by 0.7 points on average during the reduction phases compared with Baseline. Your UPF share of diet fell by 23.3 percentage points compared with Baseline. Whole-food breakfast swap showed the strongest link with higher daily mood for you.",
+      "summary_tiles": [
+        {
+          "label": "Daily mood change",
+          "value": "+0.7 points",
+          "note": "Compared with Baseline average"
+        },
+        {
+          "label": "UPF share change",
+          "value": "-23.3 pts",
+          "note": "Baseline avg 58% → reduction phase 34%"
+        }
+      ]
+    },
+    {
+      "type": "OPTIMISE_COMPLETION",
+      "reportTitle": "Sustained lower UPF completion report",
+      "phaseLabel": "Sustained lower UPF",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.896Z",
+      "optimise_mood": {
+        "n": 7,
+        "mean": 7.7142857142857135,
+        "sd": 0.4140393356054127,
+        "median": 7.9,
+        "distribution": null
+      },
+      "reduction_mood": {
+        "n": 13,
+        "mean": 6.315384615384616,
+        "sd": 0.1573009527739415,
+        "median": 6.4,
+        "distribution": null
+      },
+      "output_mood": {
+        "n": 5,
+        "mean": 7.220000000000001,
+        "sd": 0.044721359549995635,
+        "median": 7.2,
+        "distribution": null
+      },
+      "confirmed_keep_habits": [
+        "breakfast_swap",
+        "snack_swap"
+      ],
+      "confirmed_keep_labels": [
+        "Whole-food breakfast",
+        "Unprocessed snacks"
+      ],
+      "keep_list": {
+        "title": "Your keep list",
+        "items": [
+          "Whole-food breakfast",
+          "Unprocessed snacks"
+        ],
+        "body": "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
+      },
+      "primary_effect_vs_baseline": {
+        "outcome": "daily_mood",
+        "mean_diff": 2.122619047619046,
+        "ci_low": 1.7367816102787,
+        "ci_high": 2.508456484959392,
+        "df": 6,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "secondary_effects": {
+        "upf_pct": {
+          "outcome": "upf_pct",
+          "mean_diff": -28.928571428571427,
+          "ci_low": -43.40799740648279,
+          "ci_high": -14.449145450660062,
+          "df": 11,
+          "direction": "improved",
+          "status": "valid"
+        },
+        "upf_energy": {
+          "outcome": "upf_energy",
+          "mean_diff": 1.2630952380952394,
+          "ci_low": 1.0900951920128126,
+          "ci_high": 1.4360952841776662,
+          "df": 6,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "adherence": {
+        "logging_pct": 105.7,
+        "rule_adherence_pct": 35,
+        "intervention_adherence_pct": 35,
+        "days_logged": 37,
+        "days_elapsed": 35,
+        "current_streak": 12,
+        "longest_streak": 14,
+        "low_adherence_flag": false
+      },
+      "headline": "During the sustained lower-UPF week, your daily mood averaged 7.7/10. Keep focusing on Whole-food breakfast and Unprocessed snacks.",
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Sweetened drinks and other UPF categories were not tracked separately in this exploration."
+      ]
+    },
+    {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.897Z",
+      "study_summary": {
+        "total_days_logged": 37,
+        "baseline_days_logged": 12,
+        "reduction_days_logged": 13,
+        "sustained_days_logged": 7,
+        "output_days_logged": 5
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 12,
+          "mean": 5.591666666666668,
+          "sd": 0.06685579234215216,
+          "median": 5.6,
+          "distribution": null
+        },
+        "active": {
+          "n": 25,
+          "mean": 6.888,
+          "sd": 0.6747345156924067,
+          "median": 6.5,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "daily_mood",
+          "mean_diff": 1.2963333333333322,
+          "ci_low": 1.017967900717147,
+          "ci_high": 1.5746987659495175,
+          "df": 24,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "upf_pct": {
+        "baseline_pct": 57.5,
+        "active_pct": 31.92,
+        "effect": {
+          "outcome": "upf_pct",
+          "mean_diff": -25.58,
+          "ci_low": -40.057837266269495,
+          "ci_high": -11.102162733730502,
+          "df": 11,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "secondary_outcomes": {
+        "upf_pct": {
+          "baseline": {
+            "n": 12,
+            "mean": 57.5,
+            "sd": 23.28284581168954,
+            "median": 51,
+            "distribution": {
+              "high": 0.5833333333333334,
+              "medium": 0.16666666666666666,
+              "low": 0.25
+            }
+          },
+          "active": {
+            "n": 25,
+            "mean": 31.92,
+            "sd": 4.957485921983709,
+            "median": 31,
+            "distribution": {
+              "high": 0,
+              "medium": 0.64,
+              "low": 0.36
+            }
+          },
+          "effect": {
+            "outcome": "upf_pct",
+            "mean_diff": -25.58,
+            "ci_low": -40.057837266269495,
+            "ci_high": -11.102162733730502,
+            "df": 11,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "upf_energy": {
+          "baseline": {
+            "n": 12,
+            "mean": 5.408333333333332,
+            "sd": 0.06685579234215216,
+            "median": 5.4,
+            "distribution": null
+          },
+          "active": {
+            "n": 25,
+            "mean": 6.432,
+            "sd": 0.36482872693909413,
+            "median": 6.2,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "upf_energy",
+            "mean_diff": 1.023666666666668,
+            "ci_low": 0.8695467285375301,
+            "ci_high": 1.177786604795806,
+            "df": 27,
+            "direction": "improved",
+            "status": "valid"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "breakfast_swap": {
+          "mood": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "daily_mood",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 7.033333333333334,
+            "mean_not_followed": 6.514285714285713,
+            "difference": 0.5190476190476208,
+            "beneficial": true,
+            "abs_effect": 0.5190476190476208,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "upf_pct",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 32.111111111111114,
+            "mean_not_followed": 31.428571428571427,
+            "difference": 0.6825396825396872,
+            "beneficial": false,
+            "abs_effect": 0.6825396825396872,
+            "status": "valid"
+          }
+        },
+        "snack_swap": {
+          "mood": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "daily_mood",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 7.033333333333335,
+            "mean_not_followed": 6.514285714285714,
+            "difference": 0.5190476190476208,
+            "beneficial": true,
+            "abs_effect": 0.5190476190476208,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "upf_pct",
+            "followed_n": 18,
+            "not_followed_n": 7,
+            "mean_followed": 31.333333333333332,
+            "mean_not_followed": 33.42857142857143,
+            "difference": -2.0952380952380985,
+            "beneficial": true,
+            "abs_effect": 2.0952380952380985,
+            "status": "valid"
+          }
+        },
+        "dinner_swap": {
+          "mood": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "daily_mood",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 6.82,
+            "mean_not_followed": 6.905000000000001,
+            "difference": -0.08500000000000085,
+            "beneficial": false,
+            "abs_effect": 0.08500000000000085,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "upf_pct",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 28.8,
+            "mean_not_followed": 32.7,
+            "difference": -3.900000000000002,
+            "beneficial": true,
+            "abs_effect": 3.900000000000002,
+            "status": "valid"
+          }
+        },
+        "lunch_swap": {
+          "mood": {
+            "habit": "lunch_swap",
+            "rule": "lunch_swap",
+            "outcome": "daily_mood",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 6.56,
+            "mean_not_followed": 6.970000000000001,
+            "difference": -0.41000000000000103,
+            "beneficial": false,
+            "abs_effect": 0.41000000000000103,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "lunch_swap",
+            "rule": "lunch_swap",
+            "outcome": "upf_pct",
+            "followed_n": 5,
+            "not_followed_n": 20,
+            "mean_followed": 31,
+            "mean_not_followed": 32.15,
+            "difference": -1.1499999999999986,
+            "beneficial": true,
+            "abs_effect": 1.1499999999999986,
+            "status": "valid"
+          }
+        }
+      },
+      "stacking_final": {
+        "high": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "50%+ UPF"
+        },
+        "medium": {
+          "n": 16,
+          "mean": 6.706250000000001,
+          "label": "30–50% UPF"
+        },
+        "low": {
+          "n": 9,
+          "mean": 7.21111111111111,
+          "label": "Under 30% UPF"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.6000000000000005,
+          "sd": 0.06324555320336764,
+          "median": 5.6,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.583333333333333,
+          "sd": 0.07527726527090811,
+          "median": 5.6,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.328571428571428,
+          "sd": 0.1704336206492694,
+          "median": 6.4,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.3,
+          "sd": 0.15491933384829681,
+          "median": 6.300000000000001,
+          "distribution": null
+        },
+        "5": {
+          "n": 7,
+          "mean": 7.7142857142857135,
+          "sd": 0.4140393356054127,
+          "median": 7.9,
+          "distribution": null
+        },
+        "6": {
+          "n": 5,
+          "mean": 7.220000000000001,
+          "sd": 0.044721359549995635,
+          "median": 7.2,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0593,
+        "r_squared": 0.736,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "personalised_findings": [
+        {
+          "habit": "breakfast_swap",
+          "label": "Whole-food breakfast swap",
+          "mood_uplift": 0.5,
+          "upf_change": 0.7
+        },
+        {
+          "habit": "snack_swap",
+          "label": "Unprocessed snacks",
+          "mood_uplift": 0.5,
+          "upf_change": -2.1
+        }
+      ],
+      "overall_verdict": "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT",
+      "upf_mood_chart": {
+        "title": "UPF share and daily mood",
+        "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+        "yAxisLabel": "Average daily mood (0–10 scale)",
+        "xAxisLabel": "UPF share of diet",
+        "baselineReference": 5.6,
+        "points": [
+          {
+            "label": "30–50% UPF",
+            "bucketKey": "medium",
+            "dailyMood": 6.7,
+            "changeFromBaseline": 1.1,
+            "daysLogged": 16
+          },
+          {
+            "label": "Under 30% UPF",
+            "bucketKey": "low",
+            "dailyMood": 7.2,
+            "changeFromBaseline": 1.6,
+            "daysLogged": 9
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each swap habit and your daily mood",
+        "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+        "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "breakfast_swap",
+            "label": "Whole-food breakfast swap",
+            "status": "valid",
+            "changeInDailyMood": 0.5,
+            "daysFollowed": 18,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "snack_swap",
+            "label": "Unprocessed snacks",
+            "status": "valid",
+            "changeInDailyMood": 0.5,
+            "daysFollowed": 18,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "dinner_swap",
+            "label": "Home-cooked main meals",
+            "status": "valid",
+            "changeInDailyMood": -0.1,
+            "daysFollowed": 5,
+            "daysNotFollowed": 20
+          },
+          {
+            "habit": "lunch_swap",
+            "label": "Whole-food lunch swap",
+            "status": "valid",
+            "changeInDailyMood": -0.4,
+            "daysFollowed": 5,
+            "daysNotFollowed": 20
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Sweetened drinks and other UPF categories were not tracked separately in this exploration.",
+        "Your mood scores improved steadily over time, so some of the change may reflect natural drift rather than UPF reduction alone."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 2,
+      "kind_community_size": 22,
+      "adherence_comparison": {
+        "your_logging_percentage": 88.1,
+        "your_upf_adherence_percentage": 35,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.6000000000000005,
+            "kind_community_mean": 5.58,
+            "kind_community_25th_percentile": 4.92,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.583333333333333,
+            "kind_community_mean": 5.760000000000001,
+            "kind_community_25th_percentile": 5.04,
+            "kind_community_75th_percentile": 6.4,
+            "relative": "average"
+          }
+        },
+        "current_week": {
+          "user_mean": 5.583333333333333,
+          "kind_community_mean": 5.760000000000001,
+          "kind_community_25th_percentile": 5.04,
+          "kind_community_75th_percentile": 6.4,
+          "relative": "average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "breakfast_swap",
+        "kind_community_top_habit_label": "Whole-food breakfast swap",
+        "your_top_habit": "breakfast_swap",
+        "your_top_habit_label": "Whole-food breakfast swap",
+        "alignment": true,
+        "kind_community_stacking": {
+          "mean_mood_under_30_upf": 6.24,
+          "mean_mood_over_50_upf": 5.36
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily mood is in line with the kind community average. Your most effective habit — Whole-food breakfast swap — matches the habit most followed by the kind community (Whole-food breakfast swap)."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 4,
+      "kind_community_size": 22,
+      "adherence_comparison": {
+        "your_logging_percentage": 88.1,
+        "your_upf_adherence_percentage": 35,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.6000000000000005,
+            "kind_community_mean": 5.58,
+            "kind_community_25th_percentile": 4.92,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.583333333333333,
+            "kind_community_mean": 5.760000000000001,
+            "kind_community_25th_percentile": 5.04,
+            "kind_community_75th_percentile": 6.4,
+            "relative": "average"
+          },
+          "3": {
+            "user_mean": 6.328571428571428,
+            "kind_community_mean": 5.94,
+            "kind_community_25th_percentile": 5.16,
+            "kind_community_75th_percentile": 6.6,
+            "relative": "average"
+          },
+          "4": {
+            "user_mean": 6.3,
+            "kind_community_mean": 6.12,
+            "kind_community_25th_percentile": 5.279999999999999,
+            "kind_community_75th_percentile": 6.8,
+            "relative": "average"
+          }
+        },
+        "current_week": {
+          "user_mean": 6.3,
+          "kind_community_mean": 6.12,
+          "kind_community_25th_percentile": 5.279999999999999,
+          "kind_community_75th_percentile": 6.8,
+          "relative": "average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "breakfast_swap",
+        "kind_community_top_habit_label": "Whole-food breakfast swap",
+        "your_top_habit": "breakfast_swap",
+        "your_top_habit_label": "Whole-food breakfast swap",
+        "alignment": true,
+        "kind_community_stacking": {
+          "mean_mood_under_30_upf": 6.68,
+          "mean_mood_over_50_upf": 5.5200000000000005
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily mood is in line with the kind community average. Your most effective habit — Whole-food breakfast swap — matches the habit most followed by the kind community (Whole-food breakfast swap)."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 6,
+      "kind_community_size": 22,
+      "adherence_comparison": {
+        "your_logging_percentage": 88.1,
+        "your_upf_adherence_percentage": 35,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.6000000000000005,
+            "kind_community_mean": 5.58,
+            "kind_community_25th_percentile": 4.92,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.583333333333333,
+            "kind_community_mean": 5.760000000000001,
+            "kind_community_25th_percentile": 5.04,
+            "kind_community_75th_percentile": 6.4,
+            "relative": "average"
+          },
+          "3": {
+            "user_mean": 6.328571428571428,
+            "kind_community_mean": 5.94,
+            "kind_community_25th_percentile": 5.16,
+            "kind_community_75th_percentile": 6.6,
+            "relative": "average"
+          },
+          "4": {
+            "user_mean": 6.3,
+            "kind_community_mean": 6.12,
+            "kind_community_25th_percentile": 5.279999999999999,
+            "kind_community_75th_percentile": 6.8,
+            "relative": "average"
+          },
+          "5": {
+            "user_mean": 7.7142857142857135,
+            "kind_community_mean": 6.300000000000001,
+            "kind_community_25th_percentile": 5.3999999999999995,
+            "kind_community_75th_percentile": 7,
+            "relative": "above_average"
+          },
+          "6": {
+            "user_mean": 7.220000000000001,
+            "kind_community_mean": 6.48,
+            "kind_community_25th_percentile": 5.52,
+            "kind_community_75th_percentile": 7.2,
+            "relative": "above_average"
+          }
+        },
+        "current_week": {
+          "user_mean": 7.220000000000001,
+          "kind_community_mean": 6.48,
+          "kind_community_25th_percentile": 5.52,
+          "kind_community_75th_percentile": 7.2,
+          "relative": "above_average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "breakfast_swap",
+        "kind_community_top_habit_label": "Whole-food breakfast swap",
+        "your_top_habit": "breakfast_swap",
+        "your_top_habit_label": "Whole-food breakfast swap",
+        "alignment": true,
+        "kind_community_stacking": {
+          "mean_mood_under_30_upf": 7.12,
+          "mean_mood_over_50_upf": 5.68
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily mood this week is tracking above the kind community range. Your most effective habit — Whole-food breakfast swap — matches the habit most followed by the kind community (Whole-food breakfast swap)."
+    }
+  ]
+}

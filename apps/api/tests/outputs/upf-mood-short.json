@@ -1,0 +1,600 @@
+{
+  "explorationId": "upf-mood-short",
+  "studyStart": "2026-06-01",
+  "daysLogged": 6,
+  "maxStudyDay": 6,
+  "validDays": 6,
+  "analysisReports": [
+    "BASELINE_SUMMARY",
+    "INTERVENTION_INTERIM",
+    "OPTIMISE_COMPLETION",
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON"
+  ],
+  "finalReportType": "FINAL_STUDY_COMPLETE",
+  "tiles": [
+    {
+      "label": "Daily mood",
+      "value": "5.6 → 7.2",
+      "delta": "+1.6 pts"
+    },
+    {
+      "label": "UPF share of diet",
+      "value": "40% → 27%",
+      "delta": "-12.5 pts"
+    }
+  ],
+  "phaseChart": [
+    {
+      "label": "Baseline",
+      "v": 5.6
+    },
+    {
+      "label": "Reduction",
+      "v": 6.4
+    },
+    {
+      "label": "Week 6",
+      "v": 7.2
+    }
+  ],
+  "keepList": [
+    "Unprocessed snacks",
+    "Home-cooked main meals"
+  ],
+  "finalMobileReport": {
+    "explorationName": "UPF reduction & mood",
+    "explorationLabel": "Health exploration",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Diet & Nutrition",
+    "subMeta": "Anna · 1 Jun 2026 – 6 Jun 2026 · 100% of days logged",
+    "lede": "Here's what your own data over this exploration suggests about UPF reduction and your daily mood.",
+    "tiles": [
+      {
+        "label": "Daily mood",
+        "value": "5.6 → 7.2",
+        "delta": "+1.6 pts"
+      },
+      {
+        "label": "UPF share of diet",
+        "value": "40% → 27%",
+        "delta": "-12.5 pts"
+      }
+    ],
+    "phaseChart": {
+      "title": "Daily mood by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.6
+        },
+        {
+          "label": "Reduction",
+          "v": 6.4
+        },
+        {
+          "label": "Week 6",
+          "v": 7.2
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Higher mood on days with lower UPF and these swaps.",
+      "rows": [
+        {
+          "icon": "🥜",
+          "label": "Unprocessed snacks",
+          "value": "+0.8",
+          "width": 100,
+          "bar": "#EF9F27",
+          "badge": "Moderate · 75% of days",
+          "badgeBg": "#FAEEDA",
+          "badgeText": "#854F0B"
+        },
+        {
+          "icon": "🍳",
+          "label": "Home-cooked main meals",
+          "value": "+0.3",
+          "width": 39,
+          "bar": "#888780",
+          "badge": "Mild · partial adherence",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        },
+        {
+          "icon": "🥣",
+          "label": "Whole-food breakfast swap",
+          "value": 0,
+          "width": 10,
+          "bar": "#3B6D11",
+          "badge": "Moderate–strong · 75% of days",
+          "badgeBg": "#EAF3DE",
+          "badgeText": "#3B6D11"
+        },
+        {
+          "icon": "🥗",
+          "label": "Whole-food lunch swap",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Insufficient data",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "UPF share of daily diet",
+      "beforeLabel": "Baseline (wks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 50,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 0,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 50,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 0,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 100,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "50%+ UPF"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "30–50% UPF"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Under 30% UPF"
+        }
+      ]
+    },
+    "keepList": {
+      "title": "Your keep list",
+      "items": [
+        "Unprocessed snacks",
+        "Home-cooked main meals"
+      ],
+      "body": "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
+    },
+    "compare": {
+      "title": "How you compare",
+      "body": "Explorers cutting UPF by 15+ percentage points reported about +0.9 mood points by week 5. Your -12.5 UPF drop and +1.4 mood gain are among the clearest signals in this cohort — and you logged more consistently as most (100% vs ~78%). The swap most followed across the community is Whole-food breakfast swap."
+    },
+    "disclaimer": "Diet and mood interact with sleep, stress and social context. This is your personal log over a short six-day alpha exploration — an early hint, not medical advice.",
+    "disclaimerInfo": {
+      "title": "Hold this lightly",
+      "body": "Diet and mood interact with sleep, stress and social context. This is your personal log over a short six-day alpha exploration — an early hint, not medical advice."
+    },
+    "limitations": [
+      "These results describe your experience only — they are not medical evidence and may not apply to others.",
+      "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+      "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+      "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+      "Sweetened drinks and other UPF categories were not tracked separately in this exploration."
+    ],
+    "generalisabilityNote": "These findings reflect your individual response over this short 6-day alpha exploration. With so few days the signal is preliminary and may differ if repeated over a longer period. They are early personal insights, not medical conclusions.",
+    "upf_mood_chart": {
+      "title": "UPF share and daily mood",
+      "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+      "yAxisLabel": "Average daily mood (0–10 scale)",
+      "xAxisLabel": "UPF share of diet",
+      "baselineReference": 5.6,
+      "points": [
+        {
+          "label": "30–50% UPF",
+          "bucketKey": "medium",
+          "dailyMood": 6.4,
+          "changeFromBaseline": 0.8,
+          "daysLogged": 1
+        },
+        {
+          "label": "Under 30% UPF",
+          "bucketKey": "low",
+          "dailyMood": 7.2,
+          "changeFromBaseline": 1.6,
+          "daysLogged": 3
+        }
+      ]
+    },
+    "habit_uplift_chart": {
+      "title": "Each swap habit and your daily mood",
+      "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+      "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+      "points": [
+        {
+          "habit": "breakfast_swap",
+          "label": "Whole-food breakfast swap",
+          "status": "valid",
+          "changeInDailyMood": -1.2,
+          "daysFollowed": 3,
+          "daysNotFollowed": 1
+        },
+        {
+          "habit": "snack_swap",
+          "label": "Unprocessed snacks",
+          "status": "valid",
+          "changeInDailyMood": 0.8,
+          "daysFollowed": 3,
+          "daysNotFollowed": 1
+        },
+        {
+          "habit": "dinner_swap",
+          "label": "Home-cooked main meals",
+          "status": "valid",
+          "changeInDailyMood": 0.3,
+          "daysFollowed": 1,
+          "daysNotFollowed": 3
+        }
+      ]
+    },
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on unprocessed snacks and home-cooked main meals."
+    },
+    "_cent": {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:35.337Z",
+      "study_summary": {
+        "total_days_logged": 6,
+        "baseline_days_logged": 2,
+        "reduction_days_logged": 2,
+        "sustained_days_logged": 1,
+        "output_days_logged": 1
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 2,
+          "mean": 5.6,
+          "sd": 0,
+          "median": 5.6,
+          "distribution": null
+        },
+        "active": {
+          "n": 4,
+          "mean": 6.9750000000000005,
+          "sd": 0.722841614740048,
+          "median": 6.800000000000001,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "daily_mood",
+          "status": "insufficient_data"
+        }
+      },
+      "upf_pct": {
+        "baseline_pct": 39.5,
+        "active_pct": 28,
+        "effect": {
+          "outcome": "upf_pct",
+          "status": "insufficient_data"
+        }
+      },
+      "secondary_outcomes": {
+        "upf_pct": {
+          "baseline": {
+            "n": 2,
+            "mean": 39.5,
+            "sd": 17.67766952966369,
+            "median": 39.5,
+            "distribution": {
+              "high": 0.5,
+              "medium": 0,
+              "low": 0.5
+            }
+          },
+          "active": {
+            "n": 4,
+            "mean": 28,
+            "sd": 3.4641016151377544,
+            "median": 27,
+            "distribution": {
+              "high": 0,
+              "medium": 0.25,
+              "low": 0.75
+            }
+          },
+          "effect": {
+            "outcome": "upf_pct",
+            "status": "insufficient_data"
+          }
+        },
+        "upf_energy": {
+          "baseline": {
+            "n": 2,
+            "mean": 5.45,
+            "sd": 0.0707106781186545,
+            "median": 5.45,
+            "distribution": null
+          },
+          "active": {
+            "n": 4,
+            "mean": 6.525,
+            "sd": 0.37749172176353746,
+            "median": 6.5,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "upf_energy",
+            "status": "insufficient_data"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "breakfast_swap": {
+          "mood": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "daily_mood",
+            "followed_n": 3,
+            "not_followed_n": 1,
+            "mean_followed": 6.666666666666667,
+            "mean_not_followed": 7.9,
+            "difference": -1.2333333333333334,
+            "beneficial": false,
+            "abs_effect": 1.2333333333333334,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "breakfast_swap",
+            "rule": "breakfast_swap",
+            "outcome": "upf_pct",
+            "followed_n": 3,
+            "not_followed_n": 1,
+            "mean_followed": 29,
+            "mean_not_followed": 25,
+            "difference": 4,
+            "beneficial": false,
+            "abs_effect": 4,
+            "status": "valid"
+          }
+        },
+        "snack_swap": {
+          "mood": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "daily_mood",
+            "followed_n": 3,
+            "not_followed_n": 1,
+            "mean_followed": 7.166666666666667,
+            "mean_not_followed": 6.4,
+            "difference": 0.7666666666666666,
+            "beneficial": true,
+            "abs_effect": 0.7666666666666666,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "snack_swap",
+            "rule": "snack_swap",
+            "outcome": "upf_pct",
+            "followed_n": 3,
+            "not_followed_n": 1,
+            "mean_followed": 26.333333333333332,
+            "mean_not_followed": 33,
+            "difference": -6.666666666666668,
+            "beneficial": true,
+            "abs_effect": 6.666666666666668,
+            "status": "valid"
+          }
+        },
+        "dinner_swap": {
+          "mood": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "daily_mood",
+            "followed_n": 1,
+            "not_followed_n": 3,
+            "mean_followed": 7.2,
+            "mean_not_followed": 6.900000000000001,
+            "difference": 0.29999999999999893,
+            "beneficial": true,
+            "abs_effect": 0.29999999999999893,
+            "status": "valid"
+          },
+          "upf": {
+            "habit": "dinner_swap",
+            "rule": "dinner_swap",
+            "outcome": "upf_pct",
+            "followed_n": 1,
+            "not_followed_n": 3,
+            "mean_followed": 27,
+            "mean_not_followed": 28.333333333333332,
+            "difference": -1.3333333333333321,
+            "beneficial": true,
+            "abs_effect": 1.3333333333333321,
+            "status": "valid"
+          }
+        },
+        "lunch_swap": {
+          "mood": {
+            "habit": "lunch_swap",
+            "outcome": "daily_mood",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          },
+          "upf": {
+            "habit": "lunch_swap",
+            "outcome": "upf_pct",
+            "status": "insufficient_data",
+            "followed_n": 0,
+            "not_followed_n": 4
+          }
+        }
+      },
+      "stacking_final": {
+        "high": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "50%+ UPF"
+        },
+        "medium": {
+          "n": 1,
+          "mean": 6.4,
+          "label": "30–50% UPF"
+        },
+        "low": {
+          "n": 3,
+          "mean": 7.166666666666667,
+          "label": "Under 30% UPF"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 1,
+          "mean": 5.6,
+          "sd": null,
+          "median": 5.6,
+          "distribution": null
+        },
+        "2": {
+          "n": 1,
+          "mean": 5.6,
+          "sd": null,
+          "median": 5.6,
+          "distribution": null
+        },
+        "3": {
+          "n": 1,
+          "mean": 6.4,
+          "sd": null,
+          "median": 6.4,
+          "distribution": null
+        },
+        "4": {
+          "n": 1,
+          "mean": 6.4,
+          "sd": null,
+          "median": 6.4,
+          "distribution": null
+        },
+        "5": {
+          "n": 1,
+          "mean": 7.9,
+          "sd": null,
+          "median": 7.9,
+          "distribution": null
+        },
+        "6": {
+          "n": 1,
+          "mean": 7.2,
+          "sd": null,
+          "median": 7.2,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": false,
+        "reason": "insufficient_data"
+      },
+      "personalised_findings": [
+        {
+          "habit": "snack_swap",
+          "label": "Unprocessed snacks",
+          "mood_uplift": 0.8,
+          "upf_change": -6.7
+        },
+        {
+          "habit": "dinner_swap",
+          "label": "Home-cooked main meals",
+          "mood_uplift": 0.3,
+          "upf_change": -1.3
+        }
+      ],
+      "overall_verdict": "INCONCLUSIVE",
+      "upf_mood_chart": {
+        "title": "UPF share and daily mood",
+        "subtitle": "How your daily mood varied with your estimated UPF intake each day",
+        "yAxisLabel": "Average daily mood (0–10 scale)",
+        "xAxisLabel": "UPF share of diet",
+        "baselineReference": 5.6,
+        "points": [
+          {
+            "label": "30–50% UPF",
+            "bucketKey": "medium",
+            "dailyMood": 6.4,
+            "changeFromBaseline": 0.8,
+            "daysLogged": 1
+          },
+          {
+            "label": "Under 30% UPF",
+            "bucketKey": "low",
+            "dailyMood": 7.2,
+            "changeFromBaseline": 1.6,
+            "daysLogged": 3
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each swap habit and your daily mood",
+        "subtitle": "Change in daily mood on days you made each swap compared with days you did not",
+        "yAxisLabel": "Change in daily mood (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "breakfast_swap",
+            "label": "Whole-food breakfast swap",
+            "status": "valid",
+            "changeInDailyMood": -1.2,
+            "daysFollowed": 3,
+            "daysNotFollowed": 1
+          },
+          {
+            "habit": "snack_swap",
+            "label": "Unprocessed snacks",
+            "status": "valid",
+            "changeInDailyMood": 0.8,
+            "daysFollowed": 3,
+            "daysNotFollowed": 1
+          },
+          {
+            "habit": "dinner_swap",
+            "label": "Home-cooked main meals",
+            "status": "valid",
+            "changeInDailyMood": 0.3,
+            "daysFollowed": 1,
+            "daysNotFollowed": 3
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, stress, or season may also have affected your daily mood and energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Sweetened drinks and other UPF categories were not tracked separately in this exploration."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this short 6-day alpha exploration. With so few days the signal is preliminary and may differ if repeated over a longer period. They are early personal insights, not medical conclusions."
+    }
+  }
+}

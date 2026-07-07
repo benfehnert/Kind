@@ -1,4 +1,4 @@
-export const PRIVACY_POLICY_URL = "https://kind-health.app";
+export const PRIVACY_POLICY_URL = "https://kind-health.app/privacy-policy";
 
 export const ONBOARDING_STEPS = [
   {
@@ -251,24 +251,6 @@ export const ONBOARDING_STEPS = [
     continueLabel: "Continue"
   },
   {
-    id: "reminders",
-    type: "reminders",
-    showProgress: true,
-    answerKey: "remindersEnabled",
-    title: "Set reminders",
-    body: "Would you like daily reminders to help you stay on track with your explorations? If yes, we'll help you turn on notifications on your device next.",
-    continueLabel: "Continue"
-  },
-  {
-    id: "notifications",
-    type: "notifications",
-    showProgress: true,
-    answerKey: "notificationsSetup",
-    title: "Turn on notifications",
-    body: "Kind sends a gentle daily reminder to log your exploration data and keep your streak going. Allow notifications on your device to receive them.",
-    continueLabel: "Continue"
-  },
-  {
     id: "finish",
     type: "finish",
     showProgress: false,
@@ -284,9 +266,6 @@ export function getVisibleSteps(answers, { isAuthenticated = false } = {}) {
   return ONBOARDING_STEPS.filter((step) => {
     if (step.id === "signup" || step.id === "login" || step.id === "auth-choice") {
       return !isAuthenticated;
-    }
-    if (step.id === "notifications") {
-      return answers.remindersEnabled === true;
     }
     return true;
   });
@@ -348,12 +327,6 @@ export function validateStep(step, answers) {
       if (step.requireSelection === false) return true;
       return arr.length > 0;
     }
-
-    case "reminders":
-      return answers[step.answerKey] !== null && answers[step.answerKey] !== undefined;
-
-    case "notifications":
-      return answers[step.answerKey] != null;
 
     default:
       return true;

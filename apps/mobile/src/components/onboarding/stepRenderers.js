@@ -5,7 +5,6 @@ import { PRIVACY_POLICY_URL } from "../../data/explorerOnboarding";
 import { SelectionCard, YesNoCards } from "./SelectionCard";
 import { KindBlob, ShieldIcon } from "./KindBlob";
 import { ValuePropIcon } from "./ValuePropIcon";
-import { NotificationsOnboardingStep } from "./NotificationsOnboardingStep";
 import { AccountOnboardingStep } from "./AccountOnboardingStep";
 
 function openPrivacyPolicy() {
@@ -211,36 +210,6 @@ export function renderMultiSelectStep(step, answers, onChange) {
         ))}
       </View>
     </View>
-  );
-}
-
-export function renderRemindersStep(step, answers, onChange) {
-  const value = answers[step.answerKey];
-  return (
-    <View>
-      <Text style={styles.title}>{step.title}</Text>
-      {step.body ? <Text style={styles.body}>{step.body}</Text> : null}
-      <YesNoCards
-        value={value}
-        onChange={(v) => onChange(step.answerKey, v)}
-        yesSub={
-          value === true
-            ? "Great — on the next step we'll help you turn on notifications on your device."
-            : undefined
-        }
-        noSub={value === false ? "No worries — you can turn reminders on later in your profile." : undefined}
-      />
-    </View>
-  );
-}
-
-export function renderNotificationsStep(step, answers, onChange) {
-  return (
-    <NotificationsOnboardingStep
-      step={step}
-      status={answers[step.answerKey]}
-      onChange={onChange}
-    />
   );
 }
 

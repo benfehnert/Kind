@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
-import { useRoute, useFocusEffect } from "@react-navigation/native";
+import { useRoute, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { colors, heights, radius, spacing } from "../theme/colors";
@@ -37,6 +37,7 @@ function InsightIcon({ variant }) {
 
 export default function InsightScreen() {
   const posthog = usePostHog();
+  const navigation = useNavigation();
   const { insight, refetchInsight } = useData();
   const route = useRoute();
   const [tab, setTab] = useState(route.params?.community ? 1 : 0);
@@ -228,12 +229,21 @@ export default function InsightScreen() {
             <Card style={{ marginTop: 4 }}>
               <Text style={styles.cardEyebrow}>{insight.communityFindingsTitle}</Text>
               {(insight.communityInsights || []).map((c, i) => (
-                <View
+                <Pressable
                   key={c.id ?? i}
-                  style={[
+                  disabled={!c.explorationId}
+                  onPress={() => {
+                    if (!c.explorationId) return;
+                    posthog?.capture("opened evidence from community insight", {
+                      explorationId: c.explorationId
+                    });
+                    navigation.navigate("Evidence", { id: c.explorationId });
+                  }}
+                  style={({ pressed }) => [
                     styles.cRow,
                     highlightFeedItemId && c.id === highlightFeedItemId && styles.cRowHighlight,
-                    i === insight.communityInsights.length - 1 && { borderBottomWidth: 0 }
+                    i === insight.communityInsights.length - 1 && { borderBottomWidth: 0 },
+                    pressed && c.explorationId && { opacity: 0.7 }
                   ]}
                 >
                   <View style={[styles.cIco, { backgroundColor: colors.amberBg }]}>
@@ -254,7 +264,7 @@ export default function InsightScreen() {
                       />
                     </View>
                   </View>
-                </View>
+                </Pressable>
               ))}
             </Card>
 

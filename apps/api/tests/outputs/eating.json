@@ -1,0 +1,1555 @@
+{
+  "participant": "Anna",
+  "studyStart": "2026-03-03",
+  "daysLogged": 38,
+  "validDays": 38,
+  "analysisReports": [
+    "BASELINE_SUMMARY",
+    "INTERVENTION_INTERIM",
+    "OPTIMISE_COMPLETION",
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON",
+    "KIND_COMPARISON"
+  ],
+  "triggeredReports": [
+    "FINAL_STUDY_COMPLETE",
+    "KIND_COMPARISON"
+  ],
+  "metrics": {
+    "energyDelta": "+1.7 pts",
+    "windowDelta": "-4 hrs",
+    "phaseChart": [
+      {
+        "label": "Baseline",
+        "v": 5.2
+      },
+      {
+        "label": "10-hour",
+        "v": 6.5
+      },
+      {
+        "label": "Week 6",
+        "v": 7.6
+      }
+    ],
+    "keepList": [
+      "First meal ~8am",
+      "10-hour eating window"
+    ]
+  },
+  "finalMobileReport": {
+    "explorationName": "Time-restricted eating",
+    "explorationLabel": "Health exploration",
+    "reportTitleLabel": "Personalised trial final report",
+    "category": "Metabolic Health",
+    "subMeta": "Anna · 3 Mar 2026 – 13 Apr 2026 · 90.5% of days logged",
+    "lede": "Compressing your eating window shifted your daily energy curve. Here's what your logs suggest about timing — not calories — for you.",
+    "tiles": [
+      {
+        "label": "Daily energy",
+        "value": "5.2 → 6.9",
+        "delta": "+1.7 pts"
+      },
+      {
+        "label": "Eating window",
+        "value": "14h → 10h",
+        "delta": "-4 hrs"
+      }
+    ],
+    "phaseChart": {
+      "title": "Daily energy by phase",
+      "min": 4,
+      "max": 8,
+      "points": [
+        {
+          "label": "Baseline",
+          "v": 5.2
+        },
+        {
+          "label": "10-hour",
+          "v": 6.5
+        },
+        {
+          "label": "Week 6",
+          "v": 7.6
+        }
+      ]
+    },
+    "factors": {
+      "title": "What worked for you",
+      "sub": "Extra daily energy linked to each timing habit.",
+      "rows": [
+        {
+          "icon": "🌅",
+          "label": "Fixed first meal (~8am)",
+          "value": "+1.4",
+          "width": 100,
+          "bar": "#8A4A1A",
+          "badge": "Moderate–strong · 77% of days",
+          "badgeBg": "#FDF0E4",
+          "badgeText": "#8A4A1A"
+        },
+        {
+          "icon": "🕐",
+          "label": "Consistent 10-hour window",
+          "value": "+1.2",
+          "width": 84,
+          "bar": "#8A4A1A",
+          "badge": "Moderate–strong · 73% of days",
+          "badgeBg": "#FDF0E4",
+          "badgeText": "#8A4A1A"
+        },
+        {
+          "icon": "🌙",
+          "label": "Last meal before 6pm",
+          "value": 0,
+          "width": 10,
+          "bar": "#888780",
+          "badge": "Unclear · too inconsistent",
+          "badgeBg": "#F1EFE8",
+          "badgeText": "#444441",
+          "valColor": "#5F6B5C"
+        }
+      ]
+    },
+    "distribution": {
+      "title": "Hunger comfort through the day",
+      "beforeLabel": "Baseline (weeks 1–2)",
+      "afterLabel": "Week 6",
+      "before": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 67,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 33,
+          "c": "#FAC775"
+        },
+        {
+          "w": 0,
+          "c": "#5DCAA5"
+        }
+      ],
+      "after": [
+        {
+          "w": 0,
+          "c": "#E24B4A"
+        },
+        {
+          "w": 0,
+          "c": "#EF9F27"
+        },
+        {
+          "w": 50,
+          "c": "#FAC775"
+        },
+        {
+          "w": 50,
+          "c": "#5DCAA5"
+        }
+      ],
+      "legend": [
+        {
+          "c": "#E24B4A",
+          "label": "Very hungry"
+        },
+        {
+          "c": "#EF9F27",
+          "label": "Hungry"
+        },
+        {
+          "c": "#FAC775",
+          "label": "Manageable"
+        },
+        {
+          "c": "#5DCAA5",
+          "label": "Comfortable"
+        }
+      ]
+    },
+    "keepList": {
+      "title": "Your keep list",
+      "items": [
+        "First meal ~8am",
+        "10-hour eating window"
+      ],
+      "body": "Your clearest gains came from a stable window rather than pushing to 8 hours. Hunger comfort normalised by week 4 — worth keeping the rhythm you found."
+    },
+    "compare": {
+      "title": "How you compare",
+      "body": "Kind explorers improved daily energy by about 1.6 points on average. Your +1.7 puts you a little ahead of the community — and you logged more consistently as most (90.5% vs ~78%). The timing habit most followed across the community is Consistent 10-hour window."
+    },
+    "disclaimer": "This reflects your experience over six weeks — not a medical diagnosis. Sleep, stress, and everyday life shape energy too. Treat these findings as a personal hint about what may help you, not proof.",
+    "disclaimerInfo": {
+      "title": "Hold this lightly",
+      "body": "This reflects your experience over six weeks — not a medical diagnosis. Sleep, stress, and everyday life shape energy too. Treat these findings as a personal hint about what may help you, not proof."
+    },
+    "limitations": [
+      "These results describe your experience only — they are not medical evidence and may not apply to others.",
+      "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+      "Other changes in sleep, diet, stress, or season may also have affected your daily energy.",
+      "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+      "Water intake outside the eating window was not logged in this exploration and is not included in the analysis.",
+      "Your scores improved steadily over time, so some of the change may reflect natural drift rather than the eating window alone."
+    ],
+    "generalisabilityNote": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions.",
+    "window_energy_chart": {
+      "title": "Eating window and daily energy",
+      "subtitle": "How your daily energy varied with your eating window width each day",
+      "yAxisLabel": "Average daily energy (0–10 scale)",
+      "xAxisLabel": "Eating window width",
+      "baselineReference": 5.2,
+      "points": [
+        {
+          "label": "10 hours",
+          "bucketKey": "10",
+          "dailyEnergy": 7.4,
+          "changeFromBaseline": 2.2,
+          "daysLogged": 16
+        }
+      ]
+    },
+    "habit_uplift_chart": {
+      "title": "Each timing habit and your daily energy",
+      "subtitle": "Change in daily energy on days you followed each habit compared with days you did not",
+      "yAxisLabel": "Change in daily energy (points on 0–10 scale)",
+      "points": [
+        {
+          "habit": "window_10h_or_less",
+          "label": "Consistent 10-hour window",
+          "status": "valid",
+          "changeInDailyEnergy": 1.2,
+          "daysFollowed": 19,
+          "daysNotFollowed": 7
+        },
+        {
+          "habit": "first_meal_around_8am",
+          "label": "Fixed first meal (~8am)",
+          "status": "valid",
+          "changeInDailyEnergy": 1.4,
+          "daysFollowed": 20,
+          "daysNotFollowed": 6
+        },
+        {
+          "habit": "last_meal_before_6pm",
+          "label": "Last meal before 6pm",
+          "status": "valid",
+          "changeInDailyEnergy": -0.1,
+          "daysFollowed": 6,
+          "daysNotFollowed": 20
+        }
+      ]
+    },
+    "cta": {
+      "label": "Run a 4-week re-check on your keep-list  →",
+      "toast": "Setting up a focused 4-week re-check on first meal ~8am and 10-hour eating window."
+    },
+    "_cent": {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.675Z",
+      "study_summary": {
+        "total_days_logged": 38,
+        "baseline_days_logged": 12,
+        "ten_hour_days_logged": 13,
+        "eight_hour_days_logged": 7,
+        "output_days_logged": 6
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 12,
+          "mean": 5.200000000000001,
+          "sd": 9.276721042310028e-16,
+          "median": 5.2,
+          "distribution": null
+        },
+        "active": {
+          "n": 26,
+          "mean": 6.915384615384614,
+          "sd": 0.7692553842215509,
+          "median": 7.3,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "daily_energy",
+          "mean_diff": 1.7153846153846128,
+          "ci_low": 1.4073215671077879,
+          "ci_high": 2.023447663661438,
+          "df": 25,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "eating_window": {
+        "baseline_hours": 14,
+        "active_hours": 9.961538461538462,
+        "effect": {
+          "outcome": "eating_window_hours",
+          "mean_diff": -4.038461538461538,
+          "ci_low": -4.418055075047386,
+          "ci_high": -3.6588680018756903,
+          "df": 25,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "secondary_outcomes": {
+        "hunger_comfort": {
+          "baseline": {
+            "n": 12,
+            "mean": 4.491666666666667,
+            "sd": 0.19752253419585197,
+            "median": 4.5,
+            "distribution": {
+              "very_hungry": 0,
+              "hungry": 0.6666666666666666,
+              "manageable": 0.3333333333333333,
+              "comfortable": 0
+            }
+          },
+          "active": {
+            "n": 26,
+            "mean": 6.06923076923077,
+            "sd": 0.9298469683853279,
+            "median": 6.5,
+            "distribution": {
+              "very_hungry": 0,
+              "hungry": 0.15384615384615385,
+              "manageable": 0.7307692307692307,
+              "comfortable": 0.11538461538461539
+            }
+          },
+          "effect": {
+            "outcome": "hunger_comfort",
+            "mean_diff": 1.5775641025641027,
+            "ci_low": 1.1874100871761308,
+            "ci_high": 1.9677181179520746,
+            "df": 29,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "mood": {
+          "baseline": {
+            "n": 12,
+            "mean": 5,
+            "sd": 0,
+            "median": 5,
+            "distribution": null
+          },
+          "active": {
+            "n": 26,
+            "mean": 6.384615384615385,
+            "sd": 0.7524319545007684,
+            "median": 7,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "mood",
+            "mean_diff": 1.384615384615385,
+            "ci_low": 1.083289600904475,
+            "ci_high": 1.685941168326295,
+            "df": 25,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "eating_window_hours": {
+          "baseline": {
+            "n": 12,
+            "mean": 14,
+            "sd": 0,
+            "median": 14,
+            "distribution": null
+          },
+          "active": {
+            "n": 26,
+            "mean": 9.961538461538462,
+            "sd": 0.9478721108153455,
+            "median": 10,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "eating_window_hours",
+            "mean_diff": -4.038461538461538,
+            "ci_low": -4.418055075047386,
+            "ci_high": -3.6588680018756903,
+            "df": 25,
+            "direction": "improved",
+            "status": "valid"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "window_10h_or_less": {
+          "energy": {
+            "habit": "window_10h_or_less",
+            "rule": "window_10h_or_less",
+            "outcome": "daily_energy",
+            "followed_n": 19,
+            "not_followed_n": 7,
+            "mean_followed": 7.242105263157893,
+            "mean_not_followed": 6.028571428571428,
+            "difference": 1.2135338345864657,
+            "beneficial": true,
+            "abs_effect": 1.2135338345864657,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "window_10h_or_less",
+            "rule": "window_10h_or_less",
+            "outcome": "eating_window_hours",
+            "followed_n": 19,
+            "not_followed_n": 7,
+            "mean_followed": 9.578947368421053,
+            "mean_not_followed": 11,
+            "difference": -1.421052631578947,
+            "beneficial": true,
+            "abs_effect": 1.421052631578947,
+            "status": "valid"
+          }
+        },
+        "first_meal_around_8am": {
+          "energy": {
+            "habit": "first_meal_around_8am",
+            "rule": "first_meal_around_8am",
+            "outcome": "daily_energy",
+            "followed_n": 20,
+            "not_followed_n": 6,
+            "mean_followed": 7.249999999999998,
+            "mean_not_followed": 5.800000000000001,
+            "difference": 1.4499999999999975,
+            "beneficial": true,
+            "abs_effect": 1.4499999999999975,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "first_meal_around_8am",
+            "rule": "first_meal_around_8am",
+            "outcome": "eating_window_hours",
+            "followed_n": 20,
+            "not_followed_n": 6,
+            "mean_followed": 10,
+            "mean_not_followed": 9.833333333333334,
+            "difference": 0.16666666666666607,
+            "beneficial": false,
+            "abs_effect": 0.16666666666666607,
+            "status": "valid"
+          }
+        },
+        "last_meal_before_6pm": {
+          "energy": {
+            "habit": "last_meal_before_6pm",
+            "rule": "last_meal_before_6pm",
+            "outcome": "daily_energy",
+            "followed_n": 6,
+            "not_followed_n": 20,
+            "mean_followed": 6.800000000000001,
+            "mean_not_followed": 6.949999999999998,
+            "difference": -0.1499999999999977,
+            "beneficial": false,
+            "abs_effect": 0.1499999999999977,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "last_meal_before_6pm",
+            "rule": "last_meal_before_6pm",
+            "outcome": "eating_window_hours",
+            "followed_n": 6,
+            "not_followed_n": 20,
+            "mean_followed": 8.666666666666666,
+            "mean_not_followed": 10.35,
+            "difference": -1.6833333333333336,
+            "beneficial": true,
+            "abs_effect": 1.6833333333333336,
+            "status": "valid"
+          }
+        }
+      },
+      "stacking_final": {
+        "9": {
+          "n": 1,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "9 hours"
+        },
+        "10": {
+          "n": 16,
+          "mean": 7.3562499999999975,
+          "label": "10 hours"
+        },
+        "gt12": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "More than 12 hours"
+        },
+        "11_12": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "11–12 hours"
+        },
+        "lt9": {
+          "n": 2,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "Less than 9 hours"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.285714285714286,
+          "sd": 0.6414269805898184,
+          "median": 6.5,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.75,
+          "sd": 1.0616025621672167,
+          "median": 7.25,
+          "distribution": null
+        },
+        "5": {
+          "n": 7,
+          "mean": 7.1,
+          "sd": 0.3415650255319867,
+          "median": 7.3,
+          "distribution": null
+        },
+        "6": {
+          "n": 6,
+          "mean": 7.6000000000000005,
+          "sd": 9.729507111180987e-16,
+          "median": 7.6,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0712,
+        "r_squared": 0.721,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "personalised_findings": [
+        {
+          "habit": "first_meal_around_8am",
+          "label": "Fixed first meal (~8am)",
+          "energy_uplift": 1.4,
+          "window_change": 0.2
+        },
+        {
+          "habit": "window_10h_or_less",
+          "label": "Consistent 10-hour window",
+          "energy_uplift": 1.2,
+          "window_change": -1.4
+        }
+      ],
+      "overall_verdict": "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT",
+      "window_energy_chart": {
+        "title": "Eating window and daily energy",
+        "subtitle": "How your daily energy varied with your eating window width each day",
+        "yAxisLabel": "Average daily energy (0–10 scale)",
+        "xAxisLabel": "Eating window width",
+        "baselineReference": 5.2,
+        "points": [
+          {
+            "label": "10 hours",
+            "bucketKey": "10",
+            "dailyEnergy": 7.4,
+            "changeFromBaseline": 2.2,
+            "daysLogged": 16
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each timing habit and your daily energy",
+        "subtitle": "Change in daily energy on days you followed each habit compared with days you did not",
+        "yAxisLabel": "Change in daily energy (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "window_10h_or_less",
+            "label": "Consistent 10-hour window",
+            "status": "valid",
+            "changeInDailyEnergy": 1.2,
+            "daysFollowed": 19,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "first_meal_around_8am",
+            "label": "Fixed first meal (~8am)",
+            "status": "valid",
+            "changeInDailyEnergy": 1.4,
+            "daysFollowed": 20,
+            "daysNotFollowed": 6
+          },
+          {
+            "habit": "last_meal_before_6pm",
+            "label": "Last meal before 6pm",
+            "status": "valid",
+            "changeInDailyEnergy": -0.1,
+            "daysFollowed": 6,
+            "daysNotFollowed": 20
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, diet, stress, or season may also have affected your daily energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Water intake outside the eating window was not logged in this exploration and is not included in the analysis.",
+        "Your scores improved steadily over time, so some of the change may reflect natural drift rather than the eating window alone."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions."
+    }
+  },
+  "reports": [
+    {
+      "type": "BASELINE_SUMMARY",
+      "reportTitle": "Baseline summary report",
+      "phaseLabel": "Baseline",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.672Z",
+      "primary_baseline": {
+        "n": 12,
+        "mean": 5.200000000000001,
+        "sd": 9.276721042310028e-16,
+        "median": 5.2,
+        "distribution": null
+      },
+      "sec_baselines": {
+        "hunger_comfort": {
+          "n": 12,
+          "mean": 4.491666666666667,
+          "sd": 0.19752253419585197,
+          "median": 4.5,
+          "distribution": {
+            "very_hungry": 0,
+            "hungry": 0.6666666666666666,
+            "manageable": 0.3333333333333333,
+            "comfortable": 0
+          }
+        },
+        "mood": {
+          "n": 12,
+          "mean": 5,
+          "sd": 0,
+          "median": 5,
+          "distribution": null
+        },
+        "eating_window_hours": {
+          "n": 12,
+          "mean": 14,
+          "sd": 0,
+          "median": 14,
+          "distribution": null
+        }
+      },
+      "eating_window_mean_hours": 14,
+      "week_1_energy": {
+        "n": 6,
+        "mean": 5.2,
+        "sd": 0,
+        "median": 5.2,
+        "distribution": null
+      },
+      "week_2_energy": {
+        "n": 6,
+        "mean": 5.2,
+        "sd": 0,
+        "median": 5.2,
+        "distribution": null
+      },
+      "adherence": {
+        "logging_pct": 85.7,
+        "rule_adherence_pct": null,
+        "intervention_adherence_pct": null,
+        "days_logged": 12,
+        "days_elapsed": 14,
+        "current_streak": 2,
+        "longest_streak": 6,
+        "low_adherence_flag": false
+      },
+      "data_sufficient": true,
+      "quality_warnings": [],
+      "headline": "Over your 12-day baseline, you averaged 5.2/10 daily energy with a typical eating window of 14 hours. This is your personal starting point for the health exploration.",
+      "phase_b_guidance": "Starting next week you enter the 10-hour window phase of your health exploration. Log your first and last meal times each day and rate your daily energy and hunger comfort."
+    },
+    {
+      "type": "INTERVENTION_INTERIM",
+      "reportTitle": "Health exploration interim report",
+      "phaseLabel": "10-hour window",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.673Z",
+      "primary_effect": {
+        "outcome": "daily_energy",
+        "mean_diff": 1.299999999999999,
+        "ci_low": 0.793869526297559,
+        "ci_high": 1.8061304737024388,
+        "df": 12,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "window_effect": {
+        "outcome": "eating_window_hours",
+        "mean_diff": -3.6923076923076916,
+        "ci_low": -4.19755254770488,
+        "ci_high": -3.1870628369105036,
+        "df": 12,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "secondary_effects": {
+        "hunger_comfort": {
+          "outcome": "hunger_comfort",
+          "mean_diff": 1.0237179487179482,
+          "ci_low": 0.43752855080585207,
+          "ci_high": 1.6099073466300444,
+          "df": 13,
+          "direction": "improved",
+          "status": "valid"
+        },
+        "mood": {
+          "outcome": "mood",
+          "mean_diff": 0.9230769230769234,
+          "ci_low": 0.47415508844480453,
+          "ci_high": 1.3719987577090422,
+          "df": 12,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "habit_energy": {
+        "window_10h_or_less": {
+          "habit": "window_10h_or_less",
+          "rule": "window_10h_or_less",
+          "outcome": "daily_energy",
+          "followed_n": 6,
+          "not_followed_n": 7,
+          "mean_followed": 7.050000000000001,
+          "mean_not_followed": 6.028571428571428,
+          "difference": 1.0214285714285731,
+          "beneficial": true,
+          "abs_effect": 1.0214285714285731,
+          "status": "valid"
+        },
+        "first_meal_around_8am": {
+          "habit": "first_meal_around_8am",
+          "outcome": "daily_energy",
+          "status": "insufficient_data",
+          "followed_n": 9,
+          "not_followed_n": 4
+        },
+        "last_meal_before_6pm": {
+          "habit": "last_meal_before_6pm",
+          "outcome": "daily_energy",
+          "status": "insufficient_data",
+          "followed_n": 4,
+          "not_followed_n": 9
+        }
+      },
+      "window_energy_chart": {
+        "title": "Eating window and daily energy",
+        "subtitle": "How your daily energy varied with your eating window width each day",
+        "yAxisLabel": "Average daily energy (0–10 scale)",
+        "xAxisLabel": "Eating window width",
+        "baselineReference": 5.2,
+        "points": [
+          {
+            "label": "10 hours",
+            "bucketKey": "10",
+            "dailyEnergy": 7.1,
+            "changeFromBaseline": 1.9,
+            "daysLogged": 5
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each timing habit and your daily energy",
+        "subtitle": "Change in daily energy on days you followed each habit compared with days you did not",
+        "yAxisLabel": "Change in daily energy (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "window_10h_or_less",
+            "label": "Consistent 10-hour window",
+            "status": "valid",
+            "changeInDailyEnergy": 1,
+            "daysFollowed": 6,
+            "daysNotFollowed": 7
+          }
+        ]
+      },
+      "weekly_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.285714285714286,
+          "sd": 0.6414269805898184,
+          "median": 6.5,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.75,
+          "sd": 1.0616025621672167,
+          "median": 7.25,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0761,
+        "r_squared": 0.496,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "adherence": {
+        "logging_pct": 89.3,
+        "rule_adherence_pct": 46.2,
+        "intervention_adherence_pct": 46.2,
+        "days_logged": 25,
+        "days_elapsed": 28,
+        "current_streak": 5,
+        "longest_streak": 10,
+        "low_adherence_flag": false
+      },
+      "optimise_habits": [
+        "window_10h_or_less"
+      ],
+      "optimise_habit_labels": [
+        "Consistent 10-hour window"
+      ],
+      "optimise_guidance": "Based on your 10-hour window phase data, focus on Consistent 10-hour window during the optional 8-hour trial. These habits showed the strongest association with higher daily energy for you.",
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, diet, stress, or season may also have affected your daily energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Water intake outside the eating window was not logged in this exploration and is not included in the analysis.",
+        "Your scores improved steadily over time, so some of the change may reflect natural drift rather than the eating window alone."
+      ],
+      "headline": "Your daily energy rose by 1.3 points on average during the 10-hour window phase compared with Baseline. Your eating window narrowed by 3.7 hours compared with Baseline. Consistent 10-hour window showed the strongest link with higher daily energy for you.",
+      "summary_tiles": [
+        {
+          "label": "Daily energy change",
+          "value": "+1.3 points",
+          "note": "Compared with Baseline average"
+        },
+        {
+          "label": "Eating window change",
+          "value": "-3.7 hours",
+          "note": "Baseline avg 14h → 10-hour phase 10.3h"
+        }
+      ]
+    },
+    {
+      "type": "OPTIMISE_COMPLETION",
+      "reportTitle": "8-hour window completion report",
+      "phaseLabel": "8-hour window",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.674Z",
+      "optimise_energy": {
+        "n": 7,
+        "mean": 7.1,
+        "sd": 0.3415650255319867,
+        "median": 7.3,
+        "distribution": null
+      },
+      "ten_hour_energy": {
+        "n": 13,
+        "mean": 6.5,
+        "sd": 0.8563488385776751,
+        "median": 6.7,
+        "distribution": null
+      },
+      "output_energy": {
+        "n": 6,
+        "mean": 7.6000000000000005,
+        "sd": 9.729507111180987e-16,
+        "median": 7.6,
+        "distribution": null
+      },
+      "confirmed_keep_habits": [
+        "first_meal_around_8am",
+        "window_10h_or_less"
+      ],
+      "confirmed_keep_labels": [
+        "First meal ~8am",
+        "10-hour eating window"
+      ],
+      "keep_list": {
+        "title": "Your keep list",
+        "items": [
+          "First meal ~8am",
+          "10-hour eating window"
+        ],
+        "body": "Continue logging to confirm which timing habits to keep."
+      },
+      "primary_effect_vs_baseline": {
+        "outcome": "daily_energy",
+        "mean_diff": 1.8999999999999986,
+        "ci_low": 1.5840936583943468,
+        "ci_high": 2.2159063416056504,
+        "df": 6,
+        "direction": "improved",
+        "status": "valid"
+      },
+      "secondary_effects": {
+        "hunger_comfort": {
+          "outcome": "hunger_comfort",
+          "mean_diff": 1.8083333333333318,
+          "ci_low": 1.4828854913470384,
+          "ci_high": 2.1337811753196254,
+          "df": 8,
+          "direction": "improved",
+          "status": "valid"
+        },
+        "mood": {
+          "outcome": "mood",
+          "mean_diff": 1.7142857142857144,
+          "ci_low": 1.262990940563355,
+          "ci_high": 2.165580488008074,
+          "df": 6,
+          "direction": "improved",
+          "status": "valid"
+        },
+        "eating_window_hours": {
+          "outcome": "eating_window_hours",
+          "mean_diff": -4.7142857142857135,
+          "ci_low": -5.842522648591612,
+          "ci_high": -3.586048779979815,
+          "df": 6,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "adherence": {
+        "logging_pct": 108.6,
+        "rule_adherence_pct": 65,
+        "intervention_adherence_pct": 65,
+        "days_logged": 38,
+        "days_elapsed": 35,
+        "current_streak": 12,
+        "longest_streak": 14,
+        "low_adherence_flag": false
+      },
+      "headline": "During the optional 8-hour trial, your daily energy averaged 7.1/10. Keep focusing on First meal ~8am and 10-hour eating window.",
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, diet, stress, or season may also have affected your daily energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Water intake outside the eating window was not logged in this exploration and is not included in the analysis."
+      ]
+    },
+    {
+      "type": "FINAL_STUDY_COMPLETE",
+      "reportTitle": "Personalised trial final report",
+      "explorationLabel": "Health exploration",
+      "generated": "2026-07-07T08:57:34.675Z",
+      "study_summary": {
+        "total_days_logged": 38,
+        "baseline_days_logged": 12,
+        "ten_hour_days_logged": 13,
+        "eight_hour_days_logged": 7,
+        "output_days_logged": 6
+      },
+      "primary_outcome": {
+        "baseline": {
+          "n": 12,
+          "mean": 5.200000000000001,
+          "sd": 9.276721042310028e-16,
+          "median": 5.2,
+          "distribution": null
+        },
+        "active": {
+          "n": 26,
+          "mean": 6.915384615384614,
+          "sd": 0.7692553842215509,
+          "median": 7.3,
+          "distribution": null
+        },
+        "effect": {
+          "outcome": "daily_energy",
+          "mean_diff": 1.7153846153846128,
+          "ci_low": 1.4073215671077879,
+          "ci_high": 2.023447663661438,
+          "df": 25,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "eating_window": {
+        "baseline_hours": 14,
+        "active_hours": 9.961538461538462,
+        "effect": {
+          "outcome": "eating_window_hours",
+          "mean_diff": -4.038461538461538,
+          "ci_low": -4.418055075047386,
+          "ci_high": -3.6588680018756903,
+          "df": 25,
+          "direction": "improved",
+          "status": "valid"
+        }
+      },
+      "secondary_outcomes": {
+        "hunger_comfort": {
+          "baseline": {
+            "n": 12,
+            "mean": 4.491666666666667,
+            "sd": 0.19752253419585197,
+            "median": 4.5,
+            "distribution": {
+              "very_hungry": 0,
+              "hungry": 0.6666666666666666,
+              "manageable": 0.3333333333333333,
+              "comfortable": 0
+            }
+          },
+          "active": {
+            "n": 26,
+            "mean": 6.06923076923077,
+            "sd": 0.9298469683853279,
+            "median": 6.5,
+            "distribution": {
+              "very_hungry": 0,
+              "hungry": 0.15384615384615385,
+              "manageable": 0.7307692307692307,
+              "comfortable": 0.11538461538461539
+            }
+          },
+          "effect": {
+            "outcome": "hunger_comfort",
+            "mean_diff": 1.5775641025641027,
+            "ci_low": 1.1874100871761308,
+            "ci_high": 1.9677181179520746,
+            "df": 29,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "mood": {
+          "baseline": {
+            "n": 12,
+            "mean": 5,
+            "sd": 0,
+            "median": 5,
+            "distribution": null
+          },
+          "active": {
+            "n": 26,
+            "mean": 6.384615384615385,
+            "sd": 0.7524319545007684,
+            "median": 7,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "mood",
+            "mean_diff": 1.384615384615385,
+            "ci_low": 1.083289600904475,
+            "ci_high": 1.685941168326295,
+            "df": 25,
+            "direction": "improved",
+            "status": "valid"
+          }
+        },
+        "eating_window_hours": {
+          "baseline": {
+            "n": 12,
+            "mean": 14,
+            "sd": 0,
+            "median": 14,
+            "distribution": null
+          },
+          "active": {
+            "n": 26,
+            "mean": 9.961538461538462,
+            "sd": 0.9478721108153455,
+            "median": 10,
+            "distribution": null
+          },
+          "effect": {
+            "outcome": "eating_window_hours",
+            "mean_diff": -4.038461538461538,
+            "ci_low": -4.418055075047386,
+            "ci_high": -3.6588680018756903,
+            "df": 25,
+            "direction": "improved",
+            "status": "valid"
+          }
+        }
+      },
+      "full_habit_analysis": {
+        "window_10h_or_less": {
+          "energy": {
+            "habit": "window_10h_or_less",
+            "rule": "window_10h_or_less",
+            "outcome": "daily_energy",
+            "followed_n": 19,
+            "not_followed_n": 7,
+            "mean_followed": 7.242105263157893,
+            "mean_not_followed": 6.028571428571428,
+            "difference": 1.2135338345864657,
+            "beneficial": true,
+            "abs_effect": 1.2135338345864657,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "window_10h_or_less",
+            "rule": "window_10h_or_less",
+            "outcome": "eating_window_hours",
+            "followed_n": 19,
+            "not_followed_n": 7,
+            "mean_followed": 9.578947368421053,
+            "mean_not_followed": 11,
+            "difference": -1.421052631578947,
+            "beneficial": true,
+            "abs_effect": 1.421052631578947,
+            "status": "valid"
+          }
+        },
+        "first_meal_around_8am": {
+          "energy": {
+            "habit": "first_meal_around_8am",
+            "rule": "first_meal_around_8am",
+            "outcome": "daily_energy",
+            "followed_n": 20,
+            "not_followed_n": 6,
+            "mean_followed": 7.249999999999998,
+            "mean_not_followed": 5.800000000000001,
+            "difference": 1.4499999999999975,
+            "beneficial": true,
+            "abs_effect": 1.4499999999999975,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "first_meal_around_8am",
+            "rule": "first_meal_around_8am",
+            "outcome": "eating_window_hours",
+            "followed_n": 20,
+            "not_followed_n": 6,
+            "mean_followed": 10,
+            "mean_not_followed": 9.833333333333334,
+            "difference": 0.16666666666666607,
+            "beneficial": false,
+            "abs_effect": 0.16666666666666607,
+            "status": "valid"
+          }
+        },
+        "last_meal_before_6pm": {
+          "energy": {
+            "habit": "last_meal_before_6pm",
+            "rule": "last_meal_before_6pm",
+            "outcome": "daily_energy",
+            "followed_n": 6,
+            "not_followed_n": 20,
+            "mean_followed": 6.800000000000001,
+            "mean_not_followed": 6.949999999999998,
+            "difference": -0.1499999999999977,
+            "beneficial": false,
+            "abs_effect": 0.1499999999999977,
+            "status": "valid"
+          },
+          "window": {
+            "habit": "last_meal_before_6pm",
+            "rule": "last_meal_before_6pm",
+            "outcome": "eating_window_hours",
+            "followed_n": 6,
+            "not_followed_n": 20,
+            "mean_followed": 8.666666666666666,
+            "mean_not_followed": 10.35,
+            "difference": -1.6833333333333336,
+            "beneficial": true,
+            "abs_effect": 1.6833333333333336,
+            "status": "valid"
+          }
+        }
+      },
+      "stacking_final": {
+        "9": {
+          "n": 1,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "9 hours"
+        },
+        "10": {
+          "n": 16,
+          "mean": 7.3562499999999975,
+          "label": "10 hours"
+        },
+        "gt12": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "More than 12 hours"
+        },
+        "11_12": {
+          "n": 0,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "11–12 hours"
+        },
+        "lt9": {
+          "n": 2,
+          "mean": null,
+          "status": "insufficient_data",
+          "label": "Less than 9 hours"
+        }
+      },
+      "weekly_6_trend": {
+        "1": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "2": {
+          "n": 6,
+          "mean": 5.2,
+          "sd": 0,
+          "median": 5.2,
+          "distribution": null
+        },
+        "3": {
+          "n": 7,
+          "mean": 6.285714285714286,
+          "sd": 0.6414269805898184,
+          "median": 6.5,
+          "distribution": null
+        },
+        "4": {
+          "n": 6,
+          "mean": 6.75,
+          "sd": 1.0616025621672167,
+          "median": 7.25,
+          "distribution": null
+        },
+        "5": {
+          "n": 7,
+          "mean": 7.1,
+          "sd": 0.3415650255319867,
+          "median": 7.3,
+          "distribution": null
+        },
+        "6": {
+          "n": 6,
+          "mean": 7.6000000000000005,
+          "sd": 9.729507111180987e-16,
+          "median": 7.6,
+          "distribution": null
+        }
+      },
+      "period_effect": {
+        "detectable": true,
+        "slope": 0.0712,
+        "r_squared": 0.721,
+        "p_value": 0,
+        "significant": true,
+        "improving_over_time": true
+      },
+      "personalised_findings": [
+        {
+          "habit": "first_meal_around_8am",
+          "label": "Fixed first meal (~8am)",
+          "energy_uplift": 1.4,
+          "window_change": 0.2
+        },
+        {
+          "habit": "window_10h_or_less",
+          "label": "Consistent 10-hour window",
+          "energy_uplift": 1.2,
+          "window_change": -1.4
+        }
+      ],
+      "overall_verdict": "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT",
+      "window_energy_chart": {
+        "title": "Eating window and daily energy",
+        "subtitle": "How your daily energy varied with your eating window width each day",
+        "yAxisLabel": "Average daily energy (0–10 scale)",
+        "xAxisLabel": "Eating window width",
+        "baselineReference": 5.2,
+        "points": [
+          {
+            "label": "10 hours",
+            "bucketKey": "10",
+            "dailyEnergy": 7.4,
+            "changeFromBaseline": 2.2,
+            "daysLogged": 16
+          }
+        ]
+      },
+      "habit_uplift_chart": {
+        "title": "Each timing habit and your daily energy",
+        "subtitle": "Change in daily energy on days you followed each habit compared with days you did not",
+        "yAxisLabel": "Change in daily energy (points on 0–10 scale)",
+        "points": [
+          {
+            "habit": "window_10h_or_less",
+            "label": "Consistent 10-hour window",
+            "status": "valid",
+            "changeInDailyEnergy": 1.2,
+            "daysFollowed": 19,
+            "daysNotFollowed": 7
+          },
+          {
+            "habit": "first_meal_around_8am",
+            "label": "Fixed first meal (~8am)",
+            "status": "valid",
+            "changeInDailyEnergy": 1.4,
+            "daysFollowed": 20,
+            "daysNotFollowed": 6
+          },
+          {
+            "habit": "last_meal_before_6pm",
+            "label": "Last meal before 6pm",
+            "status": "valid",
+            "changeInDailyEnergy": -0.1,
+            "daysFollowed": 6,
+            "daysNotFollowed": 20
+          }
+        ]
+      },
+      "limitations": [
+        "These results describe your experience only — they are not medical evidence and may not apply to others.",
+        "All outcomes are self-reported and can be influenced by mood, expectations, or knowing which phase you are in.",
+        "Other changes in sleep, diet, stress, or season may also have affected your daily energy.",
+        "Without a return-to-baseline phase, timing effects cannot be fully separated from gradual change over time.",
+        "Water intake outside the eating window was not logged in this exploration and is not included in the analysis.",
+        "Your scores improved steadily over time, so some of the change may reflect natural drift rather than the eating window alone."
+      ],
+      "generalisability_note": "These findings reflect your individual response over this 6-week period. Results may differ in other seasons, life phases, or if repeated. They are personal insights, not medical conclusions."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 2,
+      "kind_community_size": 64,
+      "adherence_comparison": {
+        "your_logging_percentage": 90.5,
+        "your_window_adherence_percentage": 65,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.22,
+            "kind_community_25th_percentile": 4.45,
+            "kind_community_75th_percentile": 5.95,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.44,
+            "kind_community_25th_percentile": 4.6,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          }
+        },
+        "current_week": {
+          "user_mean": 5.2,
+          "kind_community_mean": 5.44,
+          "kind_community_25th_percentile": 4.6,
+          "kind_community_75th_percentile": 6.2,
+          "relative": "average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "window_10h_or_less",
+        "kind_community_top_habit_label": "Consistent 10-hour window",
+        "your_top_habit": "first_meal_around_8am",
+        "your_top_habit_label": "Fixed first meal (~8am)",
+        "alignment": false,
+        "kind_community_stacking": {
+          "mean_energy_10h_or_less": 6.1,
+          "mean_energy_wider_window": 5.140000000000001
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily energy is in line with the kind community average. Your most effective habit is Fixed first meal (~8am). The kind community's most followed habit is Consistent 10-hour window — individual responses often differ, and that is normal."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 4,
+      "kind_community_size": 64,
+      "adherence_comparison": {
+        "your_logging_percentage": 90.5,
+        "your_window_adherence_percentage": 65,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.22,
+            "kind_community_25th_percentile": 4.45,
+            "kind_community_75th_percentile": 5.95,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.44,
+            "kind_community_25th_percentile": 4.6,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          },
+          "3": {
+            "user_mean": 6.285714285714286,
+            "kind_community_mean": 5.66,
+            "kind_community_25th_percentile": 4.75,
+            "kind_community_75th_percentile": 6.45,
+            "relative": "average"
+          },
+          "4": {
+            "user_mean": 6.75,
+            "kind_community_mean": 5.88,
+            "kind_community_25th_percentile": 4.8999999999999995,
+            "kind_community_75th_percentile": 6.7,
+            "relative": "above_average"
+          }
+        },
+        "current_week": {
+          "user_mean": 6.75,
+          "kind_community_mean": 5.88,
+          "kind_community_25th_percentile": 4.8999999999999995,
+          "kind_community_75th_percentile": 6.7,
+          "relative": "above_average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "window_10h_or_less",
+        "kind_community_top_habit_label": "Consistent 10-hour window",
+        "your_top_habit": "first_meal_around_8am",
+        "your_top_habit_label": "Fixed first meal (~8am)",
+        "alignment": false,
+        "kind_community_stacking": {
+          "mean_energy_10h_or_less": 6.6,
+          "mean_energy_wider_window": 5.380000000000001
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily energy this week is tracking above the kind community range. Your most effective habit is Fixed first meal (~8am). The kind community's most followed habit is Consistent 10-hour window — individual responses often differ, and that is normal."
+    },
+    {
+      "type": "KIND_COMPARISON",
+      "reportTitle": "Kind comparison",
+      "explorationLabel": "Health exploration",
+      "week": 6,
+      "kind_community_size": 64,
+      "adherence_comparison": {
+        "your_logging_percentage": 90.5,
+        "your_window_adherence_percentage": 65,
+        "logging_percentile": 67,
+        "narrative": "Your logging consistency is around the 67th percentile for kind explorers at this stage."
+      },
+      "outcome_comparison": {
+        "by_week": {
+          "1": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.22,
+            "kind_community_25th_percentile": 4.45,
+            "kind_community_75th_percentile": 5.95,
+            "relative": "average"
+          },
+          "2": {
+            "user_mean": 5.2,
+            "kind_community_mean": 5.44,
+            "kind_community_25th_percentile": 4.6,
+            "kind_community_75th_percentile": 6.2,
+            "relative": "average"
+          },
+          "3": {
+            "user_mean": 6.285714285714286,
+            "kind_community_mean": 5.66,
+            "kind_community_25th_percentile": 4.75,
+            "kind_community_75th_percentile": 6.45,
+            "relative": "average"
+          },
+          "4": {
+            "user_mean": 6.75,
+            "kind_community_mean": 5.88,
+            "kind_community_25th_percentile": 4.8999999999999995,
+            "kind_community_75th_percentile": 6.7,
+            "relative": "above_average"
+          },
+          "5": {
+            "user_mean": 7.1,
+            "kind_community_mean": 6.1,
+            "kind_community_25th_percentile": 5.05,
+            "kind_community_75th_percentile": 6.95,
+            "relative": "above_average"
+          },
+          "6": {
+            "user_mean": 7.6000000000000005,
+            "kind_community_mean": 6.32,
+            "kind_community_25th_percentile": 5.199999999999999,
+            "kind_community_75th_percentile": 7.2,
+            "relative": "above_average"
+          }
+        },
+        "current_week": {
+          "user_mean": 7.6000000000000005,
+          "kind_community_mean": 6.32,
+          "kind_community_25th_percentile": 5.199999999999999,
+          "kind_community_75th_percentile": 7.2,
+          "relative": "above_average"
+        }
+      },
+      "habit_comparison": {
+        "kind_community_top_habit": "window_10h_or_less",
+        "kind_community_top_habit_label": "Consistent 10-hour window",
+        "your_top_habit": "first_meal_around_8am",
+        "your_top_habit_label": "Fixed first meal (~8am)",
+        "alignment": false,
+        "kind_community_stacking": {
+          "mean_energy_10h_or_less": 7.1,
+          "mean_energy_wider_window": 5.62
+        }
+      },
+      "summary": "Your logging consistency is around average for kind explorers at this stage. Your daily energy this week is tracking above the kind community range. Your most effective habit is Fixed first meal (~8am). The kind community's most followed habit is Consistent 10-hour window — individual responses often differ, and that is normal."
+    }
+  ]
+}

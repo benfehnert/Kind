@@ -34,6 +34,7 @@
     "cent:upf-mood:analysis": "node apps/api/scripts/run-cent-upf-mood-analysis.mjs --pretty",
     "cent:upf-mood:export-csv": "node apps/api/scripts/export-cent-six-week-csv.mjs upf-mood",
     "cent:upf-mood:reports-pdf": "node apps/api/scripts/generate-cent-six-week-reports-pdf.mjs upf-mood",
+    "test:api": "npm --prefix apps/api test",
     "release:staging": "node scripts/release.mjs staging",
     "release:main": "node scripts/release.mjs main"
   }

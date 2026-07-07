@@ -87,7 +87,8 @@ Onboarding answers map to stored privacy prefs:
 | `consentPrivacy` | `globalConsent` |
 | `consentCitizenScience` | `science` |
 | `consentDiscoverable` | `visible` |
-| `remindersEnabled` | `reminders` |
+
+Daily reminders (`privacyPrefs.reminders`) are set via the Profile screen, not during onboarding.
 
 **`normalizePrefs`:** Merges with defaults; migrates legacy `consent` → `globalConsent`.
 
@@ -370,7 +371,7 @@ Prefer locally stored scene/photo avatar over API pravatar; display name from AP
 **Locations:** `data/explorerOnboarding.js`, `ExplorerOnboardingScreen.js`, `components/onboarding/OnboardingProgressBar.js`
 
 ### Visible steps (`getVisibleSteps`)
-Skip the `"notifications"` step unless `remindersEnabled === true`.
+Hide auth steps (`signup`, `login`, `auth-choice`) when the user is already authenticated.
 
 ### Progress bar
 - Fill width = `(current / total) * 100%`, capped at 100%.
@@ -387,14 +388,9 @@ Skip the `"notifications"` step unless `remindersEnabled === true`.
 | year | integer 1920 … (current year − 13) |
 | singleSelect | non-null selection |
 | multiSelect | array length > 0 |
-| reminders | not null/undefined |
-| notifications | not null |
 
 ### Stage clamp
-When visible steps shrink (e.g. reminders turned off), `stage = min(stage, visibleSteps.length − 1)`.
-
-### Reminders side effect
-Setting `remindersEnabled !== true` clears `notificationsSetup`.
+When visible steps shrink (e.g. user becomes authenticated), `stage = min(stage, visibleSteps.length − 1)`.
 
 ### App entry gate (`AppNavigator`)
 Show `ExplorerOnboarding` if onboarding not completed; else `MainTabs`.
@@ -423,28 +419,15 @@ Show `ExplorerOnboarding` if onboarding not completed; else `MainTabs`.
 
 ## 18. Notification permission gating
 
-**Locations:** `lib/notifications.js`, `components/onboarding/NotificationsOnboardingStep.js`, `ProfileScreen.js`
+**Locations:** `lib/notifications.js`, `ProfileScreen.js`
 
-**Permission request (Android / profile):** On web → unavailable; if already granted → skip; else request OS permission via `requestDailyReminderPermission()`.
-
-**Onboarding notifications step (iOS):** When the user opts into reminders and lands on the notifications step, `promptForDailyRemindersOnIos()` runs once on mount:
-
-1. If already granted → set `notificationsSetup = granted`
-2. If undetermined → show the system permission dialog first (required so the Notifications toggle appears in iOS Settings)
-3. If still not granted → open the app’s Settings page via `Linking.openSettings()`
-4. On `AppState` return to `active` → re-check permission and update `notificationsSetup` to `granted` or `denied`
-
-The primary button on iOS is **Open Settings** (retry). **Not now** remains available until the user grants notifications or skips.
-
-**Onboarding notifications step (Android / web):** Unchanged — **Allow notifications** requests OS permission; **Open device settings** appears only after denial.
-
-**Onboarding notifications step states:** `granted`, `denied`, `skipped`, `web_unavailable` — mapped to user-facing copy.
+**Permission request (profile):** On web → unavailable; if already granted → skip; else request OS permission via `requestDailyReminderPermission()`.
 
 **Profile reminders toggle:** On native, turning reminders on requests permission; if denied, show toast and **do not** update the pref.
 
 **Note:** There is no client-side notification **scheduling** (no cron or trigger times) — only permission gating.
 
-**Inputs:** Platform, permission API, user actions, AppState  
+**Inputs:** Platform, permission API, user actions  
 **Outputs:** Permission status strings, pref updates
 
 ---

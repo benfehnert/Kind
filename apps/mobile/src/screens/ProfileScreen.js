@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable, Platform } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, Platform, Linking } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
@@ -18,6 +18,7 @@ import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
+import { PRIVACY_POLICY_URL } from "../data/explorerOnboarding";
 
 export default function ProfileScreen() {
   const posthog = usePostHog();
@@ -253,7 +254,7 @@ export default function ProfileScreen() {
         </Pressable>
 
         <View style={styles.legalLinks}>
-          <Pressable onPress={() => navigation.navigate("PrivacyPolicy")}>
+          <Pressable onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}>
             <Text style={styles.legalLink}>Privacy policy</Text>
           </Pressable>
           <Text style={styles.legalSep}>·</Text>

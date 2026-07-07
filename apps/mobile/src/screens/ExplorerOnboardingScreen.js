@@ -24,8 +24,6 @@ import {
   renderYearStep,
   renderSingleSelectStep,
   renderMultiSelectStep,
-  renderRemindersStep,
-  renderNotificationsStep,
   renderFinishStep
 } from "../components/onboarding/stepRenderers";
 
@@ -78,10 +76,6 @@ export default function ExplorerOnboardingScreen() {
     (key, value) => {
       if (key === "signupEmail" || key === "signupPassword") {
         setSignupError("");
-      }
-      if (key === "remindersEnabled" && value !== true) {
-        updateAnswers({ [key]: value, notificationsSetup: null });
-        return;
       }
       if (value === true && answers[key] !== true) {
         if (key === "consentPrivacy") posthog?.capture("onboarding master consent");
@@ -204,10 +198,6 @@ export default function ExplorerOnboardingScreen() {
         return renderSingleSelectStep(step, answers, handleChange);
       case "multiSelect":
         return renderMultiSelectStep(step, answers, handleChange);
-      case "reminders":
-        return renderRemindersStep(step, answers, handleChange);
-      case "notifications":
-        return renderNotificationsStep(step, answers, handleChange);
       case "finish":
         return renderFinishStep(step, answers);
       default:

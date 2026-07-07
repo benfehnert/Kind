@@ -27,9 +27,7 @@ export const defaultAnswers = {
   kindHelp: [],
   healthApproach: null,
   recentHealthActivities: [],
-  longevityImportance: null,
-  remindersEnabled: null,
-  notificationsSetup: null
+  longevityImportance: null
 };
 
 const OnboardingContext = createContext(null);

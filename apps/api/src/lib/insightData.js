@@ -1,5 +1,5 @@
 import { query } from "../db.js";
-import { isAnnaDemoIndividual } from "./demoAccount.js";
+import explorationEvidence from "../mocks/explorationEvidence.json" with { type: "json" };
 import {
   fetchActiveRun,
   fetchFallbackExplorationId,
@@ -8,6 +8,7 @@ import {
 import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js";
 import { buildEatingInsights } from "./cent/timeRestrictedEating/insightAdapter.js";
 import { loadDayEntries as loadEatingEntries } from "./cent/timeRestrictedEating/normalize.js";
+import { SHORT_EXPLORATION_IDS, evidenceExplorationId } from "./centShort/index.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
 
@@ -392,33 +393,24 @@ function buildAdherence(logs, run) {
   };
 }
 
-async function fetchCommunityInsights(explorationId) {
-  const { rows } = explorationId
-    ? await query(
-        `SELECT id, headline, body, highlight, published_at
-         FROM feed_items
-         WHERE exploration_id = $1 AND feed_type IN ('insight', 'science')
-         ORDER BY sort_order, published_at DESC
-         LIMIT 6`,
-        [explorationId]
-      )
-    : await query(
-        `SELECT id, headline, body, highlight, published_at
-         FROM feed_items
-         WHERE feed_type IN ('insight', 'science')
-         ORDER BY sort_order, published_at DESC
-         LIMIT 6`
-      );
+function buildShortExplorationEvidenceInsights() {
+  return SHORT_EXPLORATION_IDS.flatMap((shortId, i) => {
+    const evidenceKey = evidenceExplorationId(shortId);
+    const doc = explorationEvidence[evidenceKey];
+    if (!doc?.summaryShort) return [];
 
-  if (!rows.length) return [];
-
-  return rows.map((row, i) => ({
-    id: row.id,
-    iconTone: ICON_TONES[i % ICON_TONES.length],
-    title: titleFromFeedRow(row),
-    body: row.body ?? "",
-    pillText: row.highlight ? `<strong>${stripHtml(row.highlight)}</strong>` : ""
-  }));
+    const feedLabel = EXPLORATION_FEED_LABELS[shortId] || shortId;
+    return [
+      {
+        id: `${shortId}:evidence-summary`,
+        explorationId: shortId,
+        iconTone: ICON_TONES[i % ICON_TONES.length],
+        title: doc.docTitle ?? feedLabel,
+        body: doc.summaryShort,
+        pillText: `<strong>${feedLabel}</strong> · Evidence summary`
+      }
+    ];
+  });
 }
 
 async function buildPublications(explorationId, explorationTitle, participantCount) {
@@ -579,49 +571,33 @@ function buildPersonalInsights(explorationId, logs, run) {
   };
 }
 
-async function buildCommunitySection(explorationId, individualId) {
-  const showExampleCommunityInsights = await isAnnaDemoIndividual(individualId);
-
-  if (!showExampleCommunityInsights) {
-    return {
-      showCommunityInsights: false,
-      communityIntro: {
-        title: "From the kind community",
-        sub: explorationId
-          ? "Community findings will appear here as more explorers contribute data."
-          : "Join an exploration to see findings alongside your own data."
-      },
-      communityInsights: [],
-      publications: []
-    };
-  }
+async function buildCommunitySection(explorationId) {
+  const communityInsights = buildShortExplorationEvidenceInsights();
 
   if (!explorationId) {
     return {
       showCommunityInsights: true,
       communityIntro: {
         title: "From the kind community",
-        sub: "Join an exploration to see findings alongside your own data."
+        sub: "Evidence-backed findings from the Short explorations available on kind."
       },
-      communityInsights: await fetchCommunityInsights(null),
+      communityInsights,
       publications: []
     };
   }
 
-  const [{ rows: expRows }, participantCount, communityInsights] = await Promise.all([
+  const [{ rows: expRows }, participantCount] = await Promise.all([
     query(`SELECT title FROM explorations WHERE id = $1`, [explorationId]),
-    fetchParticipantCount(explorationId),
-    fetchCommunityInsights(explorationId)
+    fetchParticipantCount(explorationId)
   ]);
   const explorationTitle = expRows[0]?.title ?? explorationId;
-  const feedLabel = EXPLORATION_FEED_LABELS[explorationId] || explorationTitle;
   const publications = await buildPublications(explorationId, explorationTitle, participantCount);
 
   return {
     showCommunityInsights: true,
     communityIntro: {
       title: "From the kind community",
-      sub: `Derived from ${participantCount} active participant${participantCount === 1 ? "" : "s"} in the ${feedLabel} exploration.`
+      sub: "Evidence-backed findings from the Short explorations available on kind."
     },
     communityInsights,
     publications
@@ -650,7 +626,7 @@ export async function buildInsightPayload(individualId, { communityExplorationId
 
   if (!explorationId) {
     const communityScopeId = communityExplorationId ?? null;
-    const community = await buildCommunitySection(communityScopeId, individualId);
+    const community = await buildCommunitySection(communityScopeId);
     return {
       ...STATIC_COPY,
       ...emptyPersonalInsights(null),
@@ -661,7 +637,7 @@ export async function buildInsightPayload(individualId, { communityExplorationId
   const communityScopeId = communityExplorationId ?? explorationId;
   const [logs, community] = await Promise.all([
     fetchExplorationLogs(individualId, explorationId),
-    buildCommunitySection(communityScopeId, individualId)
+    buildCommunitySection(communityScopeId)
   ]);
 
   const personal = buildPersonalInsights(explorationId, logs, activeRun);

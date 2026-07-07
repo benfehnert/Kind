@@ -324,8 +324,7 @@ export const ANNA_DEMO_ONBOARDING = {
   kindHelp: ["trials", "explore", "insight"],
   healthApproach: "actively_exploring",
   recentHealthActivities: ["tracked_metrics", "science_content", "fitness_tracker"],
-  longevityImportance: "matters",
-  remindersEnabled: true
+  longevityImportance: "matters"
 };
 
 export { trialReports, EXPLORATION_WEEKS };

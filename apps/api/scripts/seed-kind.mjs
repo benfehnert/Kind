@@ -344,8 +344,7 @@ const ANNA_ONBOARDING = {
   kindHelp: ["trials", "explore", "insight"],
   healthApproach: "actively_exploring",
   recentHealthActivities: ["tracked_metrics", "science_content", "fitness_tracker"],
-  longevityImportance: "matters",
-  remindersEnabled: true
+  longevityImportance: "matters"
 };
 const EXPLORATION_WEEKS = {
   "morning-rules": 8,
