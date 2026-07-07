@@ -35,6 +35,14 @@ import {
 
 const REMINDER_DISMISS_KEY = "@kind/reminder_banner_dismissed";
 const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
+const HOME_FEED_TAB_EVENT_MAP = {
+  all: "viewed all feed",
+  milestone: "viewed milestone feed",
+  insight: "viewed insights feed",
+  activity: "viewed activity feed",
+  science: "viewed science feed",
+  tip: "viewed tips feed"
+};
 
 function todayDateString() {
   return new Date().toISOString().slice(0, 10);
@@ -368,6 +376,17 @@ export default function HomeScreen() {
   const showLogLinkInFeedEmpty =
     logExplorations.length > 0 || (starterMode && logExplorations.length === 0);
 
+  const handleChipChange = useCallback(
+    (nextChip) => {
+      if (nextChip !== chip) {
+        const eventName = HOME_FEED_TAB_EVENT_MAP[nextChip];
+        if (eventName) posthog?.capture(eventName);
+      }
+      setChip(nextChip);
+    },
+    [chip, posthog]
+  );
+
   async function handleSaveLogs() {
     if (saving || logExplorations.length === 0) return;
     setSaving(true);
@@ -563,7 +582,7 @@ export default function HomeScreen() {
           </Card>
         )}
 
-        <ChipRow chips={homeFeed.chips || []} value={chip} onChange={setChip} />
+        <ChipRow chips={homeFeed.chips || []} value={chip} onChange={handleChipChange} />
 
         {showFeedFilterEmpty ? (
           <FeedFilterEmptyState

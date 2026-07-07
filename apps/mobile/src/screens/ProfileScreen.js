@@ -68,6 +68,17 @@ export default function ProfileScreen() {
     updatePrivacyPref(key, next);
     if (key === "globalConsent" || key === "science" || key === "visible") {
       posthog?.capture("updated data controls");
+      if (key === "globalConsent") {
+        posthog?.capture(next ? "turned global consent on" : "turned global consent off");
+      }
+      if (key === "science") {
+        posthog?.capture(
+          next ? "turned citizen science consent on" : "turned citizen science consent off"
+        );
+      }
+      if (key === "visible") {
+        posthog?.capture(next ? "turned community visibility on" : "turned community visibility off");
+      }
     }
   };
 

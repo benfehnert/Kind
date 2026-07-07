@@ -59,7 +59,10 @@ export function FollowProvider({ children }) {
             wasFollowing ? { unfollowSlug: userId } : { followSlug: userId }
           );
         }
-        if (!wasFollowing) posthog?.capture("followed a community member");
+        if (!wasFollowing) {
+          posthog?.capture("followed a community member");
+          posthog?.capture("followed an explorer");
+        }
       } catch {
         setFollowing((prev) => {
           const n = new Set(prev);
@@ -76,10 +79,13 @@ export function FollowProvider({ children }) {
     setFollowingResearchers((prev) => {
       const n = new Set(prev);
       if (n.has(rid)) n.delete(rid);
-      else n.add(rid);
+      else {
+        n.add(rid);
+        posthog?.capture("followed a researcher");
+      }
       return n;
     });
-  }, []);
+  }, [posthog]);
 
   const isFollowing = useCallback((userId) => following.has(userId), [following]);
 
