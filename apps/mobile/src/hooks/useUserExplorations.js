@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { computeExplorationProgress } from "../utils/explorationProgress";
+import { isShortExploration } from "../utils/explorationIds";
 
 function isExplorationActive(id, activeExplorationId, run) {
   return activeExplorationId === id || run?.isActive === true;
@@ -46,10 +47,12 @@ export function useUserExplorations() {
         Number(ex.duration?.match(/\d+/)?.[0]) ??
         null;
       const streakDays = run?.streakDays ?? 0;
+      const isShort = isShortExploration(id);
       const progress = computeExplorationProgress({
         startedAt: run?.startedAt,
         weeksTotal,
-        weekCurrent
+        weekCurrent,
+        isShort
       });
 
       merged[id] = {
@@ -64,7 +67,9 @@ export function useUserExplorations() {
         streak: streakDays,
         progress,
         statusBadge:
-          weekCurrent && weeksTotal ? `Week ${weekCurrent} of ${weeksTotal}` : null
+          weekCurrent && weeksTotal
+            ? `${isShort ? "Day" : "Week"} ${weekCurrent} of ${weeksTotal}`
+            : null
       };
     }
     return merged;
@@ -99,6 +104,7 @@ export function listConsentedExplorations(explorations, explorationConsents, act
       const run = explorationRuns[id];
       const weeksTotal = run?.weeksTotal ?? Number(ex?.duration?.match(/\d+/)?.[0]) ?? null;
       const weekCurrent = run?.weekCurrent ?? 1;
+      const isShort = isShortExploration(id);
       return {
         id,
         title: ex?.feedLabel || ex?.title || id,
@@ -116,7 +122,8 @@ export function listConsentedExplorations(explorations, explorationConsents, act
         progress: computeExplorationProgress({
           startedAt: run?.startedAt,
           weeksTotal,
-          weekCurrent
+          weekCurrent,
+          isShort
         })
       };
     });

@@ -75,17 +75,49 @@ export function FollowProvider({ children }) {
     [isSelf, applySocialFollows, updateSocialFollows, socialMeta, posthog]
   );
 
-  const toggleResearcherFollow = useCallback((rid) => {
-    setFollowingResearchers((prev) => {
-      const n = new Set(prev);
-      if (n.has(rid)) n.delete(rid);
-      else {
-        n.add(rid);
-        posthog?.capture("followed a researcher");
+  const toggleResearcherFollow = useCallback(
+    async (rid) => {
+      if (!rid) return;
+
+      let wasFollowing = false;
+      setFollowingResearchers((prev) => {
+        wasFollowing = prev.has(rid);
+        const n = new Set(prev);
+        if (wasFollowing) n.delete(rid);
+        else n.add(rid);
+        return n;
+      });
+
+      try {
+        const result = await patch(
+          "/social/follows",
+          wasFollowing ? { unfollowResearcherId: rid } : { followResearcherId: rid }
+        );
+        if (result?.followingResearcherIds) {
+          applySocialFollows?.({
+            ...(socialMeta || {}),
+            followingExplorerIds: result.followingExplorerIds ?? socialMeta?.followingExplorerIds ?? [],
+            followingResearcherIds: result.followingResearcherIds
+          });
+        } else {
+          updateSocialFollows?.(
+            wasFollowing ? { unfollowResearcherId: rid } : { followResearcherId: rid }
+          );
+        }
+        if (!wasFollowing) {
+          posthog?.capture("followed a researcher");
+        }
+      } catch {
+        setFollowingResearchers((prev) => {
+          const n = new Set(prev);
+          if (wasFollowing) n.add(rid);
+          else n.delete(rid);
+          return n;
+        });
       }
-      return n;
-    });
-  }, [posthog]);
+    },
+    [applySocialFollows, updateSocialFollows, socialMeta, posthog]
+  );
 
   const isFollowing = useCallback((userId) => following.has(userId), [following]);
 
@@ -93,7 +125,7 @@ export function FollowProvider({ children }) {
     () => ({
       selfSlug,
       following,
-      followingCount: following.size,
+      followingCount: following.size + followingResearchers.size,
       toggleFollow,
       isFollowing,
       isSelf,

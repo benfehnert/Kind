@@ -33,6 +33,7 @@ import {
   fetchActivityMessageSummary,
   toggleActivityMessageReaction
 } from "../lib/activityMessageData.js";
+import { fetchActivityPostDetail } from "../lib/activityDetailData.js";
 import meRouter from "./me.js";
 import {
   isAnnaDemoIndividual,
@@ -670,6 +671,17 @@ router.patch("/social/follows", async (c) => {
 // ---------------------------------------------------------------------------
 // Activity nices
 // ---------------------------------------------------------------------------
+
+router.get("/activity-posts/:id", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  if (!viewerId) return c.json({ error: "Individual not found" }, 404);
+
+  const postId = c.req.param("id");
+  const detail = await fetchActivityPostDetail(postId, viewerId);
+  if (!detail) return c.json({ error: "Activity not found" }, 404);
+
+  return c.json(detail);
+});
 
 router.patch("/activity-posts/:id/nice", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);

@@ -11,8 +11,12 @@ import {
 } from "./onboardingRecommendations.js";
 import { computeExplorationProgress } from "./explorationProgress.js";
 import { stripCatalogProgressFields } from "./explorationCatalog.js";
-import { evidenceExplorationId } from "./centShort/index.js";
+import { evidenceExplorationId, isShortExploration } from "./centShort/index.js";
 import { resolveActiveExplorationId } from "./meData.js";
+
+export function isExplorationStarted(userConsented, run) {
+  return Boolean(userConsented && run && run.status !== "complete");
+}
 
 function applyUserPhaseStatus(phases, weekCurrent, weeksTotal) {
   if (!phases?.length || !weekCurrent || !weeksTotal) return phases ?? [];
@@ -101,10 +105,12 @@ function mergeExploration(catalog, run, isActive, userConsented) {
   const weeksTotal =
     run?.weeks_total ?? Number(catalog.duration?.match(/\d+/)?.[0]) ?? null;
   const streakDays = run?.streak_days ?? 0;
+  const isShort = isShortExploration(catalog.id);
   const progress = computeExplorationProgress({
     startedAt: run?.started_at,
     weeksTotal,
-    weekCurrent
+    weekCurrent,
+    isShort
   });
 
   const phases =
@@ -123,7 +129,9 @@ function mergeExploration(catalog, run, isActive, userConsented) {
     progress,
     phases,
     statusBadge:
-      weekCurrent && weeksTotal ? `Week ${weekCurrent} of ${weeksTotal}` : null
+      weekCurrent && weeksTotal
+        ? `${isShort ? "Day" : "Week"} ${weekCurrent} of ${weeksTotal}`
+        : null
   };
 }
 
@@ -150,7 +158,7 @@ export async function buildExplorePayload(individualId) {
   const merged = catalogs.filter(Boolean).map((catalog) => {
     const run = runsById[catalog.id];
     const userConsented = consentedIds.has(catalog.id);
-    const isActive = catalog.id === activeExplorationId;
+    const isActive = isExplorationStarted(userConsented, run);
     return mergeExploration(catalog, run, isActive, userConsented);
   });
 
@@ -162,11 +170,16 @@ export async function buildExplorePayload(individualId) {
   const rankOrder = Object.fromEntries(ranked.map((entry, index) => [entry.id, index]));
   merged.sort((a, b) => (rankOrder[a.id] ?? 99) - (rankOrder[b.id] ?? 99));
 
-  const activeExploration = merged.find((e) => e.active) ?? null;
+  const activeExplorations = merged.filter((e) => e.active);
   const availableExplorations = merged.filter((e) => !e.active);
+  const primaryActiveId =
+    activeExplorationId && activeExplorations.some((e) => e.id === activeExplorationId)
+      ? activeExplorationId
+      : activeExplorations[0]?.id ?? null;
+  const activeExploration = activeExplorations.find((e) => e.id === primaryActiveId) ?? null;
   const catalogsById = Object.fromEntries(merged.map((e) => [e.id, e]));
   const recommendedExplorations = buildRecommendedExplorations(answers, catalogsById).filter(
-    (entry) => entry.id !== activeExplorationId
+    (entry) => !activeExplorations.some((e) => e.id === entry.id)
   );
   const activity = await buildActivityFeedItems(individualId);
   const copy = await buildExploreCopy(activeExploration, individualId);
@@ -174,10 +187,11 @@ export async function buildExplorePayload(individualId) {
   return {
     copy,
     activeExploration,
+    activeExplorations,
     availableExplorations,
     recommendedExplorations,
     explorationOrder: ranked.map((entry) => entry.id),
-    activeExplorationId,
+    activeExplorationId: primaryActiveId,
     activity
   };
 }

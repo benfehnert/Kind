@@ -1,6 +1,6 @@
 import { query } from "../db.js";
 import profileMock from "../mocks/profile.json" with { type: "json" };
-import { SHORT_EXPLORATION_IDS } from "./centShort/index.js";
+import { isShortExploration, SHORT_EXPLORATION_IDS } from "./centShort/index.js";
 import { fetchActiveRun } from "./homeData.js";
 
 function avatarKeyFromImageId(imageId) {
@@ -165,9 +165,10 @@ export async function buildProfilePayload(individualId) {
   const dynamicBadges = [...badges];
 
   if (!dynamicBadges.length && activeRun) {
+    const unitLabel = isShortExploration(activeRun.exploration_id) ? "Day" : "Week";
     dynamicBadges.push({
       variant: "amber",
-      label: `Week ${activeRun.week_current} of ${activeRun.weeks_total}`
+      label: `${unitLabel} ${activeRun.week_current} of ${activeRun.weeks_total}`
     });
     if (activeRun.streak_days > 0) {
       dynamicBadges.push({

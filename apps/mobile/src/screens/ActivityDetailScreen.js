@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,7 +11,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { get, patch, post } from "../lib/api";
 import { useData } from "../context/DataContext";
@@ -20,6 +20,8 @@ import { text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
 import { MessageReactions } from "../components/activity/MessageReactions";
+import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
+import { RichTextParts } from "../utils/RichText";
 
 function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggleReaction, togglingReaction }) {
   const showReactions = !isSelf(item.sender.slug);
@@ -60,51 +62,93 @@ function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggl
   );
 }
 
-export default function ActivityMessagesScreen() {
+export default function ActivityDetailScreen() {
   const posthog = usePostHog();
   const navigation = useNavigation();
   const { params } = useRoute();
   const { profile } = useData();
   const activityPostId = params?.activityPostId;
-  const activitySummary = params?.activitySummary;
-  const ownerName = params?.ownerName;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [mc, setMc] = useState(0);
+  const [detail, setDetail] = useState(null);
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [sending, setSending] = useState(false);
   const [togglingReaction, setTogglingReaction] = useState(null);
+  const [togglingNice, setTogglingNice] = useState(false);
   const listRef = useRef(null);
 
   const viewerSlug = profile?.viewerSlug;
 
   const load = useCallback(async () => {
     if (!activityPostId) return;
-    setLoading(true);
     setError(null);
     try {
-      const result = await get(`/activity-posts/${activityPostId}/messages`);
-      setMessages(result.messages || []);
-      setMc(result.mc ?? result.messages?.length ?? 0);
+      const result = await get(`/activity-posts/${activityPostId}`);
+      setDetail(result);
     } catch (err) {
-      setError(err.message || "Could not load messages.");
+      setError(err.message || "Could not load this activity.");
     } finally {
       setLoading(false);
     }
   }, [activityPostId]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Refetch every time this screen gains focus so nices/messages left by
+  // other people while we were away show up as soon as we look again.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
+  const messages = detail?.messages || [];
   const messageById = useMemo(() => {
     const map = new Map();
     for (const msg of messages) map.set(msg.id, msg);
     return map;
   }, [messages]);
+
+  const toggleNice = useCallback(async () => {
+    if (!activityPostId || !detail || togglingNice) return;
+    const previous = { nc: detail.nc || 0, viewerNiced: !!detail.viewerNiced };
+    const optimisticNiced = !previous.viewerNiced;
+
+    // Flip the icon/color instantly, then reconcile with the server response.
+    setDetail((prev) =>
+      prev
+        ? {
+            ...prev,
+            nc: Math.max(0, previous.nc + (optimisticNiced ? 1 : -1)),
+            viewerNiced: optimisticNiced
+          }
+        : prev
+    );
+    setTogglingNice(true);
+    try {
+      const result = await patch(`/activity-posts/${activityPostId}/nice`, {});
+      setDetail((prev) =>
+        prev
+          ? {
+              ...prev,
+              nc: result.nc,
+              viewerNiced: result.viewerNiced,
+              supporterPreview: result.supporterPreview || []
+            }
+          : prev
+      );
+    } catch (err) {
+      console.error("[ActivityDetail] toggle nice failed:", err);
+      setDetail((prev) => (prev ? { ...prev, ...previous } : prev));
+    } finally {
+      setTogglingNice(false);
+    }
+  }, [activityPostId, detail, togglingNice]);
+
+  const openSupporters = useCallback(() => {
+    if (!activityPostId || !(detail?.nc > 0)) return;
+    navigation.navigate("NiceSupporters", { activityPostId });
+  }, [navigation, activityPostId, detail?.nc]);
 
   const sendMessage = useCallback(async () => {
     const trimmed = draft.trim();
@@ -116,8 +160,15 @@ export default function ActivityMessagesScreen() {
         body: trimmed,
         parentMessageId: replyTo?.id ?? undefined
       });
-      setMessages(result.messages || []);
-      setMc(result.mc ?? result.messages?.length ?? 0);
+      setDetail((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: result.messages || [],
+              mc: result.mc ?? result.messages?.length ?? 0
+            }
+          : prev
+      );
       setDraft("");
       setReplyTo(null);
       posthog?.capture("interacted with a community post");
@@ -139,10 +190,15 @@ export default function ActivityMessagesScreen() {
           `/activity-posts/${activityPostId}/messages/${message.id}/reactions`,
           { reactionType }
         );
-        setMessages((prev) =>
-          prev.map((row) =>
-            row.id === message.id ? { ...row, reactions: result.reactions } : row
-          )
+        setDetail((prev) =>
+          prev
+            ? {
+                ...prev,
+                messages: prev.messages.map((row) =>
+                  row.id === message.id ? { ...row, reactions: result.reactions } : row
+                )
+              }
+            : prev
         );
         const viewerReacted = result.reactions?.[reactionType]?.viewerReacted;
         if (viewerReacted) posthog?.capture("interacted with a community post");
@@ -155,7 +211,8 @@ export default function ActivityMessagesScreen() {
     [activityPostId, posthog, togglingReaction]
   );
 
-  const headerLabel = mc === 1 ? "1 message" : `${mc} messages`;
+  const mc = detail?.mc ?? messages.length;
+  const messageHeaderLabel = mc === 1 ? "1 message" : `${mc} messages`;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -163,28 +220,21 @@ export default function ActivityMessagesScreen() {
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
-        <Text style={styles.hdr}>{headerLabel}</Text>
+        <Text style={styles.hdr} numberOfLines={1}>
+          {detail?.owner?.name ? `${detail.owner.name}'s activity` : "Activity"}
+        </Text>
       </View>
-
-      {activitySummary ? (
-        <View style={styles.activitySnippet}>
-          {ownerName ? <Text style={styles.activityOwner}>{ownerName}</Text> : null}
-          <Text style={styles.activityText} numberOfLines={2}>
-            {activitySummary}
-          </Text>
-        </View>
-      ) : null}
 
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
       >
-        {loading ? (
+        {loading && !detail ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={colors.greenDark} />
           </View>
-        ) : error && !messages.length ? (
+        ) : error && !detail ? (
           <View style={styles.center}>
             <Text style={styles.error}>{error}</Text>
             <Pressable onPress={load}>
@@ -197,6 +247,33 @@ export default function ActivityMessagesScreen() {
             data={messages}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <View style={styles.activityCard}>
+                {detail?.exp ? <Text style={styles.actPill}>{detail.exp}</Text> : null}
+                <Text style={styles.actText}>{detail?.t}</Text>
+                {detail?.detail ? (
+                  <View style={styles.actDetail}>
+                    <RichTextParts
+                      html={detail.detail}
+                      style={styles.actDetailText}
+                      strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
+                    />
+                  </View>
+                ) : null}
+                <View style={styles.actFoot}>
+                  <Text style={styles.actTime}>{detail?.time}</Text>
+                  <ActivityNiceBlock
+                    count={detail?.nc || 0}
+                    viewerNiced={!!detail?.viewerNiced}
+                    supporterPreview={detail?.supporterPreview || []}
+                    onToggleNice={toggleNice}
+                    onOpenSupporters={openSupporters}
+                    disabled={togglingNice}
+                  />
+                </View>
+                <Text style={styles.msgSectionLabel}>{messageHeaderLabel}</Text>
+              </View>
+            }
             ListEmptyComponent={
               <Text style={styles.empty}>Be the first to leave an encouraging message.</Text>
             }
@@ -215,7 +292,6 @@ export default function ActivityMessagesScreen() {
                 togglingReaction={togglingReaction}
               />
             )}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
           />
         )}
 
@@ -278,19 +354,52 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.text
   },
-  activitySnippet: {
-    backgroundColor: colors.greenLight,
-    paddingHorizontal: spacing.screen,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border
-  },
-  activityOwner: { ...type.captionStrong, color: colors.greenDark, marginBottom: 2 },
-  activityText: { ...text.body, color: colors.greenDark },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
   error: { color: colors.textMuted, textAlign: "center", marginBottom: 12 },
   retry: { color: colors.greenDark, fontWeight: "600" },
   listContent: { padding: spacing.screen, paddingBottom: spacing.lg, flexGrow: 1 },
+  activityCard: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.cardY,
+    paddingHorizontal: spacing.cardX,
+    marginBottom: spacing.xl,
+    backgroundColor: colors.surface
+  },
+  actPill: {
+    ...type.captionStrong,
+    color: colors.greenDark,
+    backgroundColor: colors.greenLight,
+    alignSelf: "flex-start",
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginBottom: spacing.sm
+  },
+  actText: { ...text.body },
+  actDetail: {
+    backgroundColor: colors.greenLight,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm
+  },
+  actDetailText: { ...text.exploreDesc, color: colors.greenDark },
+  actFoot: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.lg
+  },
+  actTime: { ...text.caption },
+  msgSectionLabel: {
+    ...text.uppercaseLabel,
+    marginTop: spacing.xl,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border
+  },
   empty: { color: colors.textMuted, textAlign: "center", marginTop: 24 },
   messageRow: {
     flexDirection: "row",

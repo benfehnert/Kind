@@ -7,13 +7,14 @@ import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
+import { isShortExploration } from "../utils/explorationIds";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
 
 export default function ExplorationDetailScreen() {
   const posthog = usePostHog();
-  const { community, explorePage } = useData();
+  const { community, explorePage, explorations } = useData();
   const { explorationHydrating } = useConsent();
   const userExplorations = useUserExplorations();
   const startExploration = useExplorationStart();
@@ -21,7 +22,13 @@ export default function ExplorationDetailScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
-  const e = id ? userExplorations[id] : null;
+  const ownerSlug = params?.ownerSlug;
+  const ownerName = params?.ownerName;
+  const ownerWeek = params?.ownerWeek;
+  const ownerWeeksTotal = params?.ownerWeeksTotal;
+  const ownerActive = params?.ownerActive;
+  const isOwnerView = Boolean(ownerSlug);
+  const e = isOwnerView ? (id ? explorations?.[id] : null) : id ? userExplorations[id] : null;
 
   useEffect(() => {
     if (e) posthog?.capture("exploration details opened");
@@ -40,9 +47,10 @@ export default function ExplorationDetailScreen() {
 
   const r = getResearcher(e.researcherId, community.researchers);
   const showKindResearchBox = id === "eating" || id === "relaxation";
-  const isActiveForUser =
-    e.active || explorePage?.activeExploration?.id === id;
-  const showStartButton = !explorationHydrating && !isActiveForUser;
+  const isActiveForUser = isOwnerView
+    ? ownerActive
+    : e.active || (explorePage?.activeExplorations ?? []).some((a) => a.id === id);
+  const showStartButton = !isOwnerView && !explorationHydrating && !isActiveForUser;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -111,8 +119,9 @@ export default function ExplorationDetailScreen() {
             <View
               style={[
                 styles.dot,
-                e.userConsented && ph.status === "active" && styles.dotAct,
-                e.userConsented && ph.status === "complete" && { backgroundColor: colors.borderMed }
+                (isOwnerView ? ownerActive : e.userConsented) && ph.status === "active" && styles.dotAct,
+                (isOwnerView ? ownerActive : e.userConsented) &&
+                  ph.status === "complete" && { backgroundColor: colors.borderMed }
               ]}
             />
             <View style={{ flex: 1 }}>
@@ -140,24 +149,37 @@ export default function ExplorationDetailScreen() {
           </>
         ) : null}
 
-        <Text style={[styles.sec, { marginTop: 12 }]}>Today's log</Text>
-        <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-          Exploration logging mirrors the prototype — structured fields configured per exploration JSON.
-        </Text>
+        {isOwnerView ? (
+          <View style={styles.ownerProgress}>
+            <Text style={styles.cardEyeb}>{ownerName ? `${ownerName}'s progress` : "Their progress"}</Text>
+            <Text style={styles.ownerProgressText}>
+              {ownerActive
+                ? `${isShortExploration(id) ? "Day" : "Week"} ${ownerWeek} of ${ownerWeeksTotal}`
+                : "Complete"}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <Text style={[styles.sec, { marginTop: 12 }]}>Today's log</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+              Exploration logging mirrors the prototype — structured fields configured per exploration JSON.
+            </Text>
 
-        {showStartButton ? (
-          <PrimaryButton
-            title="Start this exploration"
-            onPress={() => startExploration(navigation, id, { showToast })}
-            backgroundColor={e.text}
-            textColor="#fff"
-            style={{ marginTop: 16 }}
-          />
-        ) : isActiveForUser ? (
-          <Text style={{ marginTop: 8, fontSize: 12, color: colors.greenDark, fontWeight: "600" }}>
-            You're active · keep logging consistently.
-          </Text>
-        ) : null}
+            {showStartButton ? (
+              <PrimaryButton
+                title="Start this exploration"
+                onPress={() => startExploration(navigation, id, { showToast })}
+                backgroundColor={e.text}
+                textColor="#fff"
+                style={{ marginTop: 16 }}
+              />
+            ) : isActiveForUser ? (
+              <Text style={{ marginTop: 8, fontSize: 12, color: colors.greenDark, fontWeight: "600" }}>
+                You're active · keep logging consistently.
+              </Text>
+            ) : null}
+          </>
+        )}
 
         <Pressable style={{ marginTop: 24 }} onPress={() => navigation.navigate("ExplorersList", { explorationId: id })}>
           <Text style={styles.evL}>Browse public explorers ({e.participants})</Text>
@@ -224,5 +246,14 @@ const styles = StyleSheet.create({
   chartWrap: { flexDirection: "row", height: 100, gap: 6, alignItems: "flex-end", marginTop: 8 },
   cbar: { flex: 1, alignItems: "center", justifyContent: "flex-end", height: "100%" },
   cv: { width: "100%", borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-  clab: { fontSize: 10, color: colors.textMuted, textAlign: "center", marginTop: 6 }
+  clab: { fontSize: 10, color: colors.textMuted, textAlign: "center", marginTop: 6 },
+  ownerProgress: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12
+  },
+  ownerProgressText: { fontSize: 14, fontWeight: "600", color: colors.greenDark, marginTop: 2 }
 });

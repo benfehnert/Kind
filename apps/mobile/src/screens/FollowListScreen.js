@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { View, FlatList, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { getUserProfile } from "../data/mock";
+import { getResearcher, getUserProfile } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
@@ -13,23 +13,50 @@ export default function FollowListScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const mode = params?.mode === "followers" ? "followers" : "following";
-  const { following, followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
+  const {
+    following,
+    followerIdSet,
+    isFollowing,
+    toggleFollow,
+    isSelf,
+    followingResearchers,
+    isFollowingResearcher,
+    toggleResearcherFollow
+  } = useFollow();
 
-  const userIds = useMemo(() => {
-    if (mode === "following") return [...following];
-    return [...(community.socialMeta?.followerIdsExpanded || [])];
-  }, [mode, following, community]);
-
-  const rows = useMemo(
-    () =>
-      userIds
+  const rows = useMemo(() => {
+    if (mode === "following") {
+      const individualRows = [...following]
         .map((uid) => {
           const u = getUserProfile(uid, community, followerIdSet);
-          return u ? { uid, ...u } : null;
+          return u ? { id: uid, kind: "individual", ...u } : null;
         })
-        .filter(Boolean),
-    [userIds, followerIdSet]
-  );
+        .filter(Boolean);
+      const researcherRows = [...followingResearchers]
+        .map((researcherId) => {
+          const researcher = getResearcher(researcherId, community.researchers || []);
+          if (!researcher) return null;
+          return {
+            id: researcherId,
+            kind: "researcher",
+            name: researcher.name,
+            meta: researcher.title || researcher.org || "Researcher",
+            loc: researcher.org,
+            img: researcher.img,
+            initials: researcher.initials
+          };
+        })
+        .filter(Boolean);
+      return [...individualRows, ...researcherRows];
+    }
+
+    return [...(community.socialMeta?.followerIdsExpanded || [])]
+      .map((uid) => {
+        const u = getUserProfile(uid, community, followerIdSet);
+        return u ? { id: uid, kind: "individual", ...u } : null;
+      })
+      .filter(Boolean);
+  }, [mode, following, followingResearchers, community, followerIdSet]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -41,22 +68,45 @@ export default function FollowListScreen() {
       </View>
       <FlatList
         data={rows}
-        keyExtractor={(item) => item.uid}
+        keyExtractor={(item) => `${item.kind}:${item.id}`}
         contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
         ListEmptyComponent={<Text style={{ color: colors.textMuted }}>No profiles to show.</Text>}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <Pressable style={{ flex: 1, flexDirection: "row", gap: 12 }} onPress={() => navigation.navigate("ExplorerProfile", { userId: item.uid })}>
+            <Pressable
+              style={{ flex: 1, flexDirection: "row", gap: 12 }}
+              onPress={() =>
+                item.kind === "researcher"
+                  ? navigation.navigate("ResearcherProfile", { researcherId: item.id })
+                  : navigation.navigate("ExplorerProfile", { userId: item.id })
+              }
+            >
               <Avatar size={44} img={item.img} sceneKey={item.sceneKey} initials={item.initials} avatarUrl={item.avatarUrl} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>{item.meta || item.loc}</Text>
               </View>
             </Pressable>
-            {mode === "following" && !isSelf(item.uid) ? (
-              <Pressable style={[styles.fo, isFollowing(item.uid) && styles.fon]} onPress={() => toggleFollow(item.uid)}>
-                <Text style={[styles.ft, isFollowing(item.uid) && styles.fton]}>{isFollowing(item.uid) ? "Following" : "Follow"}</Text>
-              </Pressable>
+            {mode === "following" ? (
+              item.kind === "researcher" ? (
+                <Pressable
+                  style={[styles.fo, isFollowingResearcher(item.id) && styles.fon]}
+                  onPress={() => toggleResearcherFollow(item.id)}
+                >
+                  <Text style={[styles.ft, isFollowingResearcher(item.id) && styles.fton]}>
+                    {isFollowingResearcher(item.id) ? "Following" : "Follow"}
+                  </Text>
+                </Pressable>
+              ) : !isSelf(item.id) ? (
+                <Pressable
+                  style={[styles.fo, isFollowing(item.id) && styles.fon]}
+                  onPress={() => toggleFollow(item.id)}
+                >
+                  <Text style={[styles.ft, isFollowing(item.id) && styles.fton]}>
+                    {isFollowing(item.id) ? "Following" : "Follow"}
+                  </Text>
+                </Pressable>
+              ) : null
             ) : null}
           </View>
         )}

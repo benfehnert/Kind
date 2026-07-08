@@ -6,6 +6,7 @@ import { colors } from "../theme/colors";
 import SearchModalScreen from "../screens/SearchModalScreen";
 import NotificationsModalScreen from "../screens/NotificationsModalScreen";
 import ExplorationDetailScreen from "../screens/ExplorationDetailScreen";
+import ExplorationSummaryScreen from "../screens/ExplorationSummaryScreen";
 import EvidenceScreen from "../screens/EvidenceScreen";
 import ExplorerProfileScreen from "../screens/ExplorerProfileScreen";
 import ResearcherProfileScreen from "../screens/ResearcherProfileScreen";
@@ -13,7 +14,7 @@ import FeedBankScreen from "../screens/FeedBankScreen";
 import ExplorersListScreen from "../screens/ExplorersListScreen";
 import FollowListScreen from "../screens/FollowListScreen";
 import NiceSupportersScreen from "../screens/NiceSupportersScreen";
-import ActivityMessagesScreen from "../screens/ActivityMessagesScreen";
+import ActivityDetailScreen from "../screens/ActivityDetailScreen";
 import OnboardingConsentScreen from "../screens/OnboardingConsentScreen";
 import ConsentSummaryScreen from "../screens/ConsentSummaryScreen";
 import PrivacyPolicyScreen from "../screens/PrivacyPolicyScreen";
@@ -58,6 +59,7 @@ export default function AppNavigator() {
         options={{ presentation: "modal", animation: "slide_from_bottom" }}
       />
       <RootStack.Screen name="ExplorationDetail" component={ExplorationDetailScreen} />
+      <RootStack.Screen name="ExplorationSummary" component={ExplorationSummaryScreen} />
       <RootStack.Screen name="ExplorationConsent" component={ExplorationConsentScreen} />
       <RootStack.Screen name="ExplorationStarted" component={ExplorationStartedScreen} />
       <RootStack.Screen name="Evidence" component={EvidenceScreen} />
@@ -67,7 +69,7 @@ export default function AppNavigator() {
       <RootStack.Screen name="ExplorersList" component={ExplorersListScreen} />
       <RootStack.Screen name="FollowList" component={FollowListScreen} />
       <RootStack.Screen name="NiceSupporters" component={NiceSupportersScreen} />
-      <RootStack.Screen name="ActivityMessages" component={ActivityMessagesScreen} />
+      <RootStack.Screen name="ActivityDetail" component={ActivityDetailScreen} />
       <RootStack.Screen name="OnboardingConsent" component={OnboardingConsentScreen} />
       <RootStack.Screen name="ConsentSummary" component={ConsentSummaryScreen} />
       <RootStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

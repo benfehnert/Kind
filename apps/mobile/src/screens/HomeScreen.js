@@ -12,8 +12,7 @@ import { listConsentedExplorations } from "../hooks/useUserExplorations";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
-import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
-import { MetricGrid, MetricCard } from "../components/primitives/MetricCard";
+import { SectionTitle } from "../components/primitives/SectionTitle";
 import { PrimaryButton } from "../components/primitives/Buttons";
 import { ChipRow } from "../components/primitives/ChipRow";
 import { Card } from "../components/primitives/Card";
@@ -21,6 +20,7 @@ import { Badge } from "../components/primitives/Badge";
 import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { RichTextParts } from "../utils/RichText";
 import { ExplorationProgressSummary } from "../components/home/ExplorationProgressSummary";
+import { ActiveExplorationOutcomeCards } from "../components/home/ActiveExplorationOutcomeCards";
 import { DailyCheckinCard } from "../components/checkin/DailyCheckinCard";
 import { StarterCheckinCard } from "../components/checkin/StarterCheckinCard";
 import { FeedFilterEmptyState } from "../components/home/FeedFilterEmptyState";
@@ -468,61 +468,6 @@ export default function HomeScreen() {
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.pad}>
         <SectionTitle>{home.greeting}</SectionTitle>
-        {home.sub ? <SectionSub>{home.sub}</SectionSub> : null}
-
-        <ExplorationProgressSummary
-          explorations={progressExplorations}
-          starterMode={starterMode}
-        />
-
-        {starterMode && recommendedExploration ? (
-          <Card style={styles.recommendedCard}>
-            <Text style={styles.recommendedEyebrow}>Recommended for you</Text>
-            <Text style={styles.recommendedTitle}>
-              Start with {recommendedExploration.title}
-            </Text>
-            {personalization?.primaryMatchReason ? (
-              <Text style={styles.recommendedBody}>{personalization.primaryMatchReason}</Text>
-            ) : null}
-            <PrimaryButton
-              title="View exploration"
-              onPress={() =>
-                navigation.navigate("ExplorationDetail", { id: recommendedExplorationId })
-              }
-              style={{ marginTop: 12 }}
-            />
-          </Card>
-        ) : null}
-
-        {(home.metrics || []).length > 0 ? (
-          <MetricGrid>
-            {(home.metrics || []).map((m, i) => (
-              <MetricCard
-                key={i}
-                label={m.label}
-                value={m.value}
-                unit={m.unit}
-                sub={m.sub}
-                subTone={m.subTone}
-              />
-            ))}
-          </MetricGrid>
-        ) : null}
-
-        {showReminderBanner ? (
-          <Card style={styles.reminderBanner}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.reminderTitle}>Daily check-in</Text>
-              <Text style={styles.reminderBody}>Log your exploration data to keep your streak going.</Text>
-            </View>
-            <Pressable onPress={openCheckin} style={styles.reminderAction}>
-              <Text style={styles.reminderActionTxt}>Log now</Text>
-            </Pressable>
-            <Pressable onPress={dismissReminderBanner} hitSlop={8}>
-              <Text style={styles.reminderDismiss}>✕</Text>
-            </Pressable>
-          </Card>
-        ) : null}
 
         {starterMode && logExplorations.length === 0 && !saved && !showLog ? (
           <PrimaryButton title="Log today's data" onPress={openCheckin} style={{ marginBottom: 12 }} />
@@ -541,6 +486,21 @@ export default function HomeScreen() {
             </Text>
           </Card>
         )}
+
+        {showReminderBanner ? (
+          <Card style={styles.reminderBanner}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.reminderTitle}>Daily check-in</Text>
+              <Text style={styles.reminderBody}>Log your exploration data to keep your streak going.</Text>
+            </View>
+            <Pressable onPress={openCheckin} style={styles.reminderAction}>
+              <Text style={styles.reminderActionTxt}>Log now</Text>
+            </Pressable>
+            <Pressable onPress={dismissReminderBanner} hitSlop={8}>
+              <Text style={styles.reminderDismiss}>✕</Text>
+            </Pressable>
+          </Card>
+        ) : null}
 
         {showLog && !saved && starterMode && logExplorations.length === 0 ? (
           <StarterCheckinCard
@@ -581,6 +541,32 @@ export default function HomeScreen() {
             <Text style={styles.confirmBody}>{savedConfirmBody}</Text>
           </Card>
         )}
+
+        <ExplorationProgressSummary
+          explorations={progressExplorations}
+          starterMode={starterMode}
+        />
+
+        {starterMode && recommendedExploration ? (
+          <Card style={styles.recommendedCard}>
+            <Text style={styles.recommendedEyebrow}>Recommended for you</Text>
+            <Text style={styles.recommendedTitle}>
+              Start with {recommendedExploration.title}
+            </Text>
+            {personalization?.primaryMatchReason ? (
+              <Text style={styles.recommendedBody}>{personalization.primaryMatchReason}</Text>
+            ) : null}
+            <PrimaryButton
+              title="View exploration"
+              onPress={() =>
+                navigation.navigate("ExplorationDetail", { id: recommendedExplorationId })
+              }
+              style={{ marginTop: 12 }}
+            />
+          </Card>
+        ) : null}
+
+        <ActiveExplorationOutcomeCards cards={home.outcomeCards} />
 
         <ChipRow chips={homeFeed.chips || []} value={chip} onChange={handleChipChange} />
 

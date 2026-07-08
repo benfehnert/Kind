@@ -15,6 +15,7 @@ import {
 import { syncAllShortExplorationUpdates } from "./userExplorationUpdatesShort.js";
 import {
   feedContentExplorationId,
+  isShortExploration,
   SHORT_EXPLORATION_IDS
 } from "./centShort/index.js";
 
@@ -39,13 +40,6 @@ export const EXPLORATION_FEED_LABELS = {
   "relaxation-short": "relaxation practices (short)",
   "upf-mood-short": "ultra-processed food (short)"
 };
-
-function explorationShortLabel(explorationId, title) {
-  if (explorationId && EXPLORATION_FEED_LABELS[explorationId]) {
-    return EXPLORATION_FEED_LABELS[explorationId];
-  }
-  return (title || "exploration").toLowerCase();
-}
 
 const BADGE_MAP = {
   milestone: "amber",
@@ -120,6 +114,27 @@ export async function fetchActiveRun(individualId) {
     [individualId]
   );
   return rows[0] ?? null;
+}
+
+/**
+ * The exploration(s) the individual is actively participating in today — i.e.
+ * every exploration they're consented to and still working through (not yet
+ * completed). This mirrors the "Your health explorations" list on Home,
+ * where every entry carries an "Active" badge, rather than the single
+ * `is_active` flag used to pick which exploration's daily check-in shortcut
+ * to feature.
+ */
+export async function fetchActiveRunsForOutcomeCards(individualId) {
+  const { rows } = await query(
+    `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days
+     FROM user_explorations ue
+     JOIN exploration_consents ec
+       ON ec.individual_id = ue.individual_id AND ec.exploration_id = ue.exploration_id
+     WHERE ue.individual_id = $1 AND ec.granted = TRUE AND ue.status != 'complete'
+     ORDER BY ec.consented_at ASC NULLS LAST`,
+    [individualId]
+  );
+  return rows;
 }
 
 export async function fetchFallbackExplorationId(individualId) {
@@ -257,7 +272,12 @@ function metricFromField(field, todayValues, baselineValues) {
   };
 }
 
-export async function computeHomeMetrics(individualId, explorationId, fields, streakDays, week, weeksTotal) {
+/** The single highest-priority home metric field for an exploration (its "key outcome metric"). */
+export async function computeKeyOutcomeMetric(individualId, explorationId) {
+  const fields = await fetchHomeMetricFields(explorationId);
+  const keyField = fields[0];
+  if (!keyField) return null;
+
   const today = todayDateString();
   const { rows: todayRows } = await query(
     `SELECT field_values FROM daily_logs
@@ -266,22 +286,55 @@ export async function computeHomeMetrics(individualId, explorationId, fields, st
     [individualId, explorationId, today]
   );
   const todayValues = todayRows[0]?.field_values ?? {};
+  const baselineRaw = await fetchLogsForBaseline(individualId, explorationId, keyField.id);
+  return metricFromField(keyField, todayValues[keyField.id], baselineRaw);
+}
 
-  const metrics = [];
-  for (const field of fields) {
-    const baselineRaw = await fetchLogsForBaseline(individualId, explorationId, field.id);
-    metrics.push(metricFromField(field, todayValues[field.id], baselineRaw));
+/**
+ * Home "your active exploration" outcome cards: an Active streak card plus the
+ * key outcome metric for the exploration(s) the individual is currently active
+ * in. Nothing is returned if the individual isn't active in any exploration.
+ * If active in two explorations at once, both cards become key outcome metrics
+ * (one per exploration) instead of a shared streak card.
+ */
+export async function buildOutcomeCards(individualId, activeRuns) {
+  if (!activeRuns.length) return [];
+
+  if (activeRuns.length === 1) {
+    const run = activeRuns[0];
+    const streakDays = run.streak_days ?? 0;
+    const unitLabel = isShortExploration(run.exploration_id) ? "day" : "week";
+    const cards = [
+      {
+        label: "Active streak",
+        value: String(streakDays),
+        unit: "days",
+        sub:
+          streakDays >= 7
+            ? "personal best!"
+            : `${unitLabel} ${run.week_current ?? 1} of ${run.weeks_total ?? 8}`,
+        subTone: "green",
+        explorationId: run.exploration_id
+      }
+    ];
+    const keyMetric = await computeKeyOutcomeMetric(individualId, run.exploration_id);
+    if (keyMetric) cards.push({ ...keyMetric, explorationId: run.exploration_id });
+    return cards;
   }
 
-  metrics.push({
-    label: "Active streak",
-    value: String(streakDays ?? 0),
-    unit: "days",
-    sub: (streakDays ?? 0) >= 7 ? "personal best!" : `week ${week ?? 1} of ${weeksTotal ?? 8}`,
-    subTone: "green"
-  });
+  const cards = [];
+  for (const run of activeRuns.slice(0, 2)) {
+    const keyMetric = await computeKeyOutcomeMetric(individualId, run.exploration_id);
+    if (keyMetric) cards.push({ ...keyMetric, explorationId: run.exploration_id });
+  }
+  return cards;
+}
 
-  return metrics;
+export function buildGreeting(firstName, now = new Date()) {
+  const hour = now.getHours();
+  if (hour < 12) return `Hello, ${firstName}`;
+  if (hour < 18) return `Good afternoon, ${firstName}`;
+  return `Good evening, ${firstName}`;
 }
 
 export async function fetchConsentedExplorationIds(individualId) {
@@ -544,6 +597,9 @@ async function fetchViewerMilestones(individualId, consentedIds, explorationMeta
   for (const row of rows) {
     const feedLabel = explorationMeta[row.exploration_id]?.feedLabel || row.title;
     const sortAt = new Date(row.completed_at ?? row.updated_at).getTime();
+    const isShort = isShortExploration(row.exploration_id);
+    const unitLabel = isShort ? "day" : "week";
+    const UnitLabel = isShort ? "Day" : "Week";
 
     if (row.status === "complete") {
       items.push({
@@ -554,7 +610,7 @@ async function fetchViewerMilestones(individualId, consentedIds, explorationMeta
         badge: "amber",
         badgeLabel: "Milestone",
         time: `${formatFeedTime(row.completed_at ?? row.updated_at)} · ${feedLabel}`,
-        body: `Completed your ${feedLabel.toLowerCase()} exploration — ${row.weeks_total}-week run finished.`,
+        body: `Completed your ${feedLabel.toLowerCase()} exploration — ${row.weeks_total}-${unitLabel} run finished.`,
         highlight: `${row.streak_days}-day logging streak`,
         avatarKind: "glyph",
         glyph: "★",
@@ -575,7 +631,7 @@ async function fetchViewerMilestones(individualId, consentedIds, explorationMeta
         badgeLabel: "Milestone",
         time: `${formatFeedTime(row.updated_at)} · ${feedLabel}`,
         body: `<strong>${row.streak_days}-day streak</strong> on your ${feedLabel.toLowerCase()} exploration. Keep it up!`,
-        highlight: `Week ${row.week_current} of ${row.weeks_total}`,
+        highlight: `${UnitLabel} ${row.week_current} of ${row.weeks_total}`,
         avatarKind: "glyph",
         glyph: "★",
         avatarBg: "#E6ECD0",
@@ -591,7 +647,7 @@ async function fetchViewerMilestones(individualId, consentedIds, explorationMeta
         badge: "amber",
         badgeLabel: "Milestone",
         time: `${formatFeedTime(row.updated_at)} · ${feedLabel}`,
-        body: `Reached week ${row.week_current} of ${row.weeks_total} on your ${feedLabel.toLowerCase()} exploration.`,
+        body: `Reached ${unitLabel} ${row.week_current} of ${row.weeks_total} on your ${feedLabel.toLowerCase()} exploration.`,
         highlight: row.streak_days ? `${row.streak_days}-day streak` : "",
         avatarKind: "glyph",
         glyph: "★",
@@ -657,6 +713,49 @@ async function fetchViewerInsights(individualId, consentedIds) {
   ];
 }
 
+function truncate(text, max = 140) {
+  const value = String(text || "").trim();
+  return value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value;
+}
+
+async function fetchIncomingActivityMessages(individualId) {
+  const { rows } = await query(
+    `SELECT am.id AS message_id, am.body, am.sent_at, am.activity_post_id,
+            ap.summary, ap.exploration_label,
+            i.slug AS sender_slug, i.display_name AS sender_name,
+            i.avatar_image_id AS sender_img, i.avatar_initials AS sender_initials
+     FROM activity_messages am
+     JOIN activity_posts ap ON ap.id = am.activity_post_id
+     JOIN individuals i ON i.id = am.sender_id
+     WHERE ap.individual_id = $1 AND am.sender_id != $1
+     ORDER BY am.sent_at DESC
+     LIMIT 20`,
+    [individualId]
+  );
+
+  return rows.map((row) => {
+    const senderName = shortDisplayName(row.sender_name);
+    const expSuffix = row.exploration_label ? ` · ${row.exploration_label}` : "";
+    return {
+      id: `activity-message-${row.message_id}`,
+      type: "activity",
+      userId: row.sender_slug ?? undefined,
+      displayName: senderName,
+      badge: "purple",
+      badgeLabel: "Message",
+      time: `${formatFeedTime(row.sent_at)}${expSuffix}`,
+      body: `<strong>${senderName}</strong> left a message on your activity: "${truncate(row.body)}"`,
+      highlight: row.summary ? `Re: ${row.summary}` : "",
+      avatarKind: row.sender_img ? "image" : "initials",
+      initials: row.sender_initials ?? "?",
+      avatarKey: row.sender_img ? `pravatar-${row.sender_img}` : undefined,
+      route: "ActivityDetail",
+      routeParams: { activityPostId: row.activity_post_id },
+      _sortAt: new Date(row.sent_at).getTime()
+    };
+  });
+}
+
 function stripSortKey(item) {
   const { _sortAt, ...rest } = item;
   return rest;
@@ -689,18 +788,20 @@ export async function buildActivityFeedItems(individualId) {
   const consentedIds = await fetchConsentedExplorationIds(individualId);
   const explorationMeta = await fetchExplorationMeta(consentedIds);
 
-  const [activityPosts, viewerLogs, viewerMilestones, viewerInsights] = await Promise.all([
+  const [activityPosts, viewerLogs, viewerMilestones, viewerInsights, incomingMessages] = await Promise.all([
     fetchNetworkActivityPosts(individualId, consentedIds),
     fetchViewerLogActivity(individualId, consentedIds, explorationMeta),
     fetchViewerMilestones(individualId, consentedIds, explorationMeta),
-    fetchViewerInsights(individualId, consentedIds)
+    fetchViewerInsights(individualId, consentedIds),
+    fetchIncomingActivityMessages(individualId)
   ]);
 
   return [
     ...activityPosts.map(mapActivityPost),
     ...viewerLogs,
     ...viewerMilestones,
-    ...viewerInsights
+    ...viewerInsights,
+    ...incomingMessages
   ]
     .sort((a, b) => (b._sortAt ?? 0) - (a._sortAt ?? 0))
     .slice(0, 20)
@@ -901,63 +1002,22 @@ export async function buildHomePayload(individualId) {
   const displayName = indRows[0]?.display_name ?? "there";
   const firstName = displayName.split(" ")[0];
 
-  let activeRun = await fetchActiveRun(individualId);
-  let metricsExplorationId = activeRun?.exploration_id ?? null;
+  const activeRun = await fetchActiveRun(individualId);
+  const fallbackExplorationId = activeRun ? null : await fetchFallbackExplorationId(individualId);
 
-  if (!metricsExplorationId) {
-    metricsExplorationId = await fetchFallbackExplorationId(individualId);
-    if (metricsExplorationId && !activeRun) {
-      const { rows } = await query(
-        `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days, e.title
-         FROM user_explorations ue
-         JOIN explorations e ON e.id = ue.exploration_id
-         WHERE ue.individual_id = $1 AND ue.exploration_id = $2
-         LIMIT 1`,
-        [individualId, metricsExplorationId]
-      );
-      activeRun = rows[0] ?? null;
-    }
-  }
-
-  const streak = activeRun?.streak_days ?? 0;
-  const week = activeRun?.week_current ?? 1;
-  const weeksTotal = activeRun?.weeks_total ?? 8;
-
-  const fields = metricsExplorationId ? await fetchHomeMetricFields(metricsExplorationId) : [];
-  const metrics =
-    metricsExplorationId && fields.length
-      ? await computeHomeMetrics(individualId, metricsExplorationId, fields, streak, week, weeksTotal)
-      : streak > 0
-        ? [
-            {
-              label: "Active streak",
-              value: String(streak),
-              unit: "days",
-              sub: streak >= 7 ? "personal best!" : `week ${week} of ${weeksTotal}`,
-              subTone: "green"
-            }
-          ]
-        : [];
+  const outcomeRuns = await fetchActiveRunsForOutcomeCards(individualId);
+  const outcomeCards = await buildOutcomeCards(individualId, outcomeRuns);
 
   const { loggedExplorationIds, loggedToday } = await fetchCheckinState(individualId);
   const feed = await buildHomeFeed(individualId);
   const starterMode = feed.starterMode ?? false;
 
-  const activeTitle = explorationShortLabel(
-    activeRun?.exploration_id ?? metricsExplorationId,
-    activeRun?.title
-  );
-  const dayNum = (week - 1) * 7 + 1;
-
   return {
-    greeting: `Good morning, ${firstName}`,
-    sub: activeRun
-      ? `Day ${dayNum} of your ${activeTitle} exploration. You're doing great.`
-      : "",
-    activeExplorationId: activeRun?.exploration_id ?? metricsExplorationId ?? null,
+    greeting: buildGreeting(firstName),
+    activeExplorationId: activeRun?.exploration_id ?? fallbackExplorationId ?? null,
     loggedToday,
     loggedExplorationIds,
-    metrics,
+    outcomeCards,
     logFormTitle: "Today's log",
     starterMode,
     personalization: feed.personalization ?? null,

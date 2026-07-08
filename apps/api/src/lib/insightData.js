@@ -8,7 +8,7 @@ import {
 import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js";
 import { buildEatingInsights } from "./cent/timeRestrictedEating/insightAdapter.js";
 import { loadDayEntries as loadEatingEntries } from "./cent/timeRestrictedEating/normalize.js";
-import { SHORT_EXPLORATION_IDS, evidenceExplorationId } from "./centShort/index.js";
+import { SHORT_EXPLORATION_IDS, evidenceExplorationId, isShortExploration } from "./centShort/index.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
 
@@ -381,7 +381,9 @@ function buildAdherence(logs, run) {
   if (run?.started_at) {
     overallPct = Math.min(100, Math.round((totalDays / daysSince(run.started_at)) * 100));
   } else if (weekCurrent > 0) {
-    overallPct = Math.min(100, Math.round((totalDays / (weekCurrent * 7)) * 100));
+    // Short explorations already track elapsed days directly in weekCurrent.
+    const elapsedDays = isShortExploration(run?.exploration_id) ? weekCurrent : weekCurrent * 7;
+    overallPct = Math.min(100, Math.round((totalDays / elapsedDays) * 100));
   }
 
   return {

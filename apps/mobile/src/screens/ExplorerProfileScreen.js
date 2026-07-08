@@ -14,7 +14,7 @@ import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
 import { Badge } from "../components/primitives/Badge";
 import { BackIcon } from "../components/icons/ProtoIcons";
-import { RichTextParts } from "../utils/RichText";
+import { isShortExploration } from "../utils/explorationIds";
 
 export default function ExplorerProfileScreen() {
   const { explorations, community } = useData();
@@ -24,7 +24,6 @@ export default function ExplorerProfileScreen() {
   const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
   const u = userId ? getUserProfile(userId, community, followerIdSet) : null;
   const [acts, setActs] = useState([]);
-  const [expanded, setExpanded] = useState({});
   const [togglingNice, setTogglingNice] = useState({});
 
   const loadActs = useCallback(async () => {
@@ -46,6 +45,21 @@ export default function ExplorerProfileScreen() {
   const toggleNice = useCallback(
     async (act) => {
       if (!act?.id || togglingNice[act.id]) return;
+      const previous = { nc: act.nc || 0, viewerNiced: !!act.viewerNiced, supporterPreview: act.supporterPreview || [] };
+      const optimisticNiced = !previous.viewerNiced;
+
+      // Flip the icon/color instantly, then reconcile with the server response.
+      setActs((prev) =>
+        prev.map((row) =>
+          row.id === act.id
+            ? {
+                ...row,
+                nc: Math.max(0, previous.nc + (optimisticNiced ? 1 : -1)),
+                viewerNiced: optimisticNiced
+              }
+            : row
+        )
+      );
       setTogglingNice((prev) => ({ ...prev, [act.id]: true }));
       try {
         const result = await patch(`/activity-posts/${act.id}/nice`, {});
@@ -63,6 +77,7 @@ export default function ExplorerProfileScreen() {
         );
       } catch (err) {
         console.error("[ExplorerProfile] toggle nice failed:", err);
+        setActs((prev) => (prev.some((row) => row.id === act.id) ? prev.map((row) => (row.id === act.id ? { ...row, ...previous } : row)) : prev));
       } finally {
         setTogglingNice((prev) => ({ ...prev, [act.id]: false }));
       }
@@ -78,16 +93,12 @@ export default function ExplorerProfileScreen() {
     [navigation]
   );
 
-  const openMessages = useCallback(
+  const openActivity = useCallback(
     (act) => {
       if (!act?.id) return;
-      navigation.navigate("ActivityMessages", {
-        activityPostId: act.id,
-        activitySummary: act.t,
-        ownerName: u?.name
-      });
+      navigation.navigate("ActivityDetail", { activityPostId: act.id });
     },
-    [navigation, u?.name]
+    [navigation]
   );
 
   if (!u || !userId) {
@@ -149,14 +160,25 @@ export default function ExplorerProfileScreen() {
               <Pressable
                 key={ex.id}
                 style={styles.expRow}
-                onPress={() => navigation.navigate("ExplorationDetail", { id: ex.id })}
+                onPress={() =>
+                  navigation.navigate("ExplorationDetail", {
+                    id: ex.id,
+                    ownerSlug: userId,
+                    ownerName: u.name,
+                    ownerWeek: ex.w,
+                    ownerWeeksTotal: ex.of,
+                    ownerActive: ex.active
+                  })
+                }
               >
                 <View style={[styles.expIcon, { backgroundColor: ex.bg || colors.amberBg }]}>
                   <Text style={styles.expIconGlyph}>{ex.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.expName}>{expMeta?.feedLabel || ex.name}</Text>
-                  <Text style={styles.expProg}>{ex.active ? `Week ${ex.w} of ${ex.of}` : "Complete"}</Text>
+                  <Text style={styles.expProg}>
+                    {ex.active ? `${isShortExploration(ex.id) ? "Day" : "Week"} ${ex.w} of ${ex.of}` : "Complete"}
+                  </Text>
                 </View>
                 {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Complete</Badge>}
               </Pressable>
@@ -167,27 +189,16 @@ export default function ExplorerProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Recent activity</Text>
           {acts.map((a, i) => {
-            const isExpanded = !!expanded[i];
             const actKey = a.id || String(i);
 
             return (
               <Pressable
                 key={actKey}
-                style={[styles.actCard, isExpanded && styles.actCardExpanded]}
-                onPress={() => setExpanded((prev) => ({ ...prev, [i]: !prev[i] }))}
+                style={styles.actCard}
+                onPress={() => openActivity(a)}
               >
                 <Text style={styles.actPill}>{a.exp}</Text>
                 <Text style={styles.actText}>{a.t}</Text>
-
-                {isExpanded ? (
-                  <View style={styles.actDetail}>
-                    <RichTextParts
-                      html={a.detail || ""}
-                      style={styles.actDetailText}
-                      strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
-                    />
-                  </View>
-                ) : null}
 
                 <View style={styles.actFoot} onStartShouldSetResponder={() => true}>
                   <Text style={styles.actTime}>{a.time}</Text>
@@ -203,7 +214,7 @@ export default function ExplorerProfileScreen() {
                     <ActivityMessageBlock
                       count={a.mc || 0}
                       messagePreview={a.messagePreview || []}
-                      onOpenMessages={() => openMessages(a)}
+                      onOpenMessages={() => openActivity(a)}
                     />
                   </View>
                 </View>
@@ -288,7 +299,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.feedMb,
     backgroundColor: colors.surface
   },
-  actCardExpanded: { borderColor: colors.greenDark },
   actPill: {
     ...type.captionStrong,
     color: colors.greenDark,
@@ -300,14 +310,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm
   },
   actText: { ...text.body },
-  actDetail: {
-    backgroundColor: colors.greenLight,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.sm
-  },
-  actDetailText: { ...text.exploreDesc, color: colors.greenDark },
   actFoot: {
     flexDirection: "row",
     alignItems: "center",

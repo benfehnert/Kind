@@ -11,6 +11,7 @@ import {
   buildExplorationStartContent,
   buildLogFieldSummary
 } from "../utils/explorationStartContent";
+import { isShortExploration } from "../utils/explorationIds";
 import { colors, fontFamily, spacing } from "../theme/colors";
 
 export default function ExplorationStartedScreen() {
@@ -34,6 +35,7 @@ export default function ExplorationStartedScreen() {
   const logFields = buildLogFieldSummary(exploration);
   const weekCurrent = exploration.weekCurrent ?? 1;
   const weeksTotal = exploration.weeksTotal ?? exploration.duration?.match(/\d+/)?.[0] ?? "?";
+  const unitLabel = isShortExploration(explorationId) ? "Day" : "Week";
 
   async function goToHome() {
     try {
@@ -67,7 +69,7 @@ export default function ExplorationStartedScreen() {
               <Text style={styles.exEyebrow}>Exploration started</Text>
               <Text style={styles.exName}>{exploration.title}</Text>
               <View style={styles.badges}>
-                <Badge variant="amber">Week {weekCurrent} of {weeksTotal}</Badge>
+                <Badge variant="amber">{unitLabel} {weekCurrent} of {weeksTotal}</Badge>
                 {exploration.active ? <Badge variant="teal">Active</Badge> : null}
               </View>
             </View>

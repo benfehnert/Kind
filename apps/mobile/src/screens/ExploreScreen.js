@@ -27,7 +27,7 @@ import { RichTextParts } from "../utils/RichText";
 export default function ExploreScreen() {
   const { explorePage, refetchExplore } = useData();
   const exploreCopy = explorePage?.copy ?? {};
-  const active = explorePage?.activeExploration ?? null;
+  const activeList = explorePage?.activeExplorations ?? [];
   const available = explorePage?.availableExplorations ?? [];
   const recommended = explorePage?.recommendedExplorations ?? [];
   const activity = explorePage?.activity ?? [];
@@ -53,10 +53,10 @@ export default function ExploreScreen() {
 
   const explorationsForChat = useMemo(() => {
     const map = {};
-    if (active) map[active.id] = active;
+    for (const e of activeList) map[e.id] = e;
     for (const e of available) map[e.id] = e;
     return map;
-  }, [active, available]);
+  }, [activeList, available]);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -162,65 +162,67 @@ export default function ExploreScreen() {
         ) : null}
 
         <Text style={styles.secLabel}>{exploreCopy.activeSectionLabel}</Text>
-        {active ? (
-          <>
-            <Pressable
-              style={[styles.area, styles.areaActive]}
-              onPress={() => navigation.navigate("ExplorationDetail", { id: active.id })}
-            >
-              <View style={[styles.ico, { backgroundColor: colors.amberBg }]}>
-                <Text style={styles.icoGlyph}>{active.icon}</Text>
-              </View>
-              <View style={styles.areaBody}>
-                <Text style={styles.cat}>{active.category}</Text>
-                <Text style={styles.tit}>{active.title}</Text>
-                <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
-                  {active.duration} · {active.statusBadge}
-                </Text>
-                <View style={styles.areaMeta}>
-                  <Badge variant="amber">Active</Badge>
-                  <Badge variant="teal">{active.streak}-day streak</Badge>
+        {activeList.length > 0 ? (
+          activeList.map((item) => (
+            <React.Fragment key={item.id}>
+              <Pressable
+                style={[styles.area, styles.areaActive]}
+                onPress={() => navigation.navigate("ExplorationDetail", { id: item.id })}
+              >
+                <View style={[styles.ico, { backgroundColor: colors.amberBg }]}>
+                  <Text style={styles.icoGlyph}>{item.icon}</Text>
                 </View>
-              </View>
-              <View style={styles.areaStatus}>
-                <Text style={styles.progressVal}>{active.progress}%</Text>
-                <Text style={styles.progressLbl}>complete</Text>
-              </View>
-            </Pressable>
-
-            <View style={styles.timelineCard}>
-              <Text style={styles.cardEyebrow}>{exploreCopy.timelineCardTitle}</Text>
-              {(active.phases || []).map((ph, i) => (
-                <View key={i} style={styles.tlRow}>
-                  <View
-                    style={[
-                      styles.dot,
-                      ph.status === "active" && styles.dotOn,
-                      ph.status === "complete" && { backgroundColor: colors.borderMed }
-                    ]}
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tlName}>
-                      {ph.name}{" "}
-                      {ph.status === "complete" ? (
-                        <Badge variant="teal">Complete</Badge>
-                      ) : ph.status === "active" ? (
-                        <Badge variant="amber">Active</Badge>
-                      ) : null}
-                    </Text>
-                    <Text style={styles.tlDesc}>{ph.desc}</Text>
+                <View style={styles.areaBody}>
+                  <Text style={styles.cat}>{item.category}</Text>
+                  <Text style={styles.tit}>{item.title}</Text>
+                  <Text style={styles.desc} numberOfLines={3} ellipsizeMode="tail">
+                    {item.duration} · {item.statusBadge}
+                  </Text>
+                  <View style={styles.areaMeta}>
+                    <Badge variant="amber">Active</Badge>
+                    <Badge variant="teal">{item.streak}-day streak</Badge>
                   </View>
                 </View>
-              ))}
-            </View>
-          </>
+                <View style={styles.areaStatus}>
+                  <Text style={styles.progressVal}>{item.progress}%</Text>
+                  <Text style={styles.progressLbl}>complete</Text>
+                </View>
+              </Pressable>
+
+              <View style={styles.timelineCard}>
+                <Text style={styles.cardEyebrow}>{`Exploration — ${item.feedLabel || item.title}`}</Text>
+                {(item.phases || []).map((ph, i) => (
+                  <View key={i} style={styles.tlRow}>
+                    <View
+                      style={[
+                        styles.dot,
+                        ph.status === "active" && styles.dotOn,
+                        ph.status === "complete" && { backgroundColor: colors.borderMed }
+                      ]}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.tlName}>
+                        {ph.name}{" "}
+                        {ph.status === "complete" ? (
+                          <Badge variant="teal">Complete</Badge>
+                        ) : ph.status === "active" ? (
+                          <Badge variant="amber">Active</Badge>
+                        ) : null}
+                      </Text>
+                      <Text style={styles.tlDesc}>{ph.desc}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </React.Fragment>
+          ))
         ) : (
           <View style={[styles.area, styles.areaEmpty]}>
             <Text style={styles.emptyActiveText}>Currently no active explorations</Text>
           </View>
         )}
 
-        {!active && recommended.length > 0 ? (
+        {activeList.length === 0 && recommended.length > 0 ? (
           <View style={styles.recommendedSection}>
             <Text style={styles.secLabel}>Recommended for you</Text>
             {recommended.map((entry) => {

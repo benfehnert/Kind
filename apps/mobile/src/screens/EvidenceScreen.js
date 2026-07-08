@@ -14,7 +14,7 @@ function resolveExplorationMeta(id, { explorations, explorePage }) {
   }
 
   const fromExplore = [
-    explorePage?.activeExploration,
+    ...(explorePage?.activeExplorations ?? []),
     ...(explorePage?.availableExplorations ?? []),
     ...(explorePage?.recommendedExplorations ?? [])
   ].find((entry) => entry?.id === id);

@@ -1,3 +1,8 @@
+/** Short (alpha) explorations track progress in days, not weeks. */
+export function isShortExploration(explorationId) {
+  return typeof explorationId === "string" && explorationId.endsWith("-short");
+}
+
 /** Map a Short catalog ID to the parent ID used for evidence documents. */
 export function evidenceExplorationId(explorationId) {
   if (typeof explorationId === "string" && explorationId.endsWith("-short")) {
