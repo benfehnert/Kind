@@ -36,6 +36,13 @@ If a port is already in use, the script will ask whether to stop the existing pr
 - `npm run supabase:status` — show local URLs and API keys
 - `npm run seed:kind` — seed demo data into a running local DB
 
+### Testing
+
+- `npm run test:api` — run the API test suite (algorithm pipelines, shared stats, and snapshot tests)
+- `npm run test:api:update-snapshots` — regenerate the algorithm snapshot files in `apps/api/tests/outputs/`
+
+The snapshot tests compare the cent/centShort analysis output for every exploration against the JSON files committed in `apps/api/tests/outputs/`. If an agent changes anything under `apps/api/src/lib/cent/` or `apps/api/src/lib/centShort/`, the snapshot tests will fail; when the change is intentional, run `npm run test:api:update-snapshots`, review the git diff of `apps/api/tests/outputs/` to confirm the numbers moved as expected, and commit the updated snapshots with the code change. Never hand-edit the files in `tests/outputs/` — they are always regenerated.
+
 ### Releases
 
 - `npm run release:staging` — merge current branch → staging and push
