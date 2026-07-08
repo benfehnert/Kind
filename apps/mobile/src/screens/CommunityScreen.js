@@ -29,10 +29,18 @@ export default function CommunityScreen() {
   const [q, setQ] = useState("");
   const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
   const query = q.trim().toLowerCase();
+  const COMMUNITY_TAB_EVENT_MAP = {
+    all: "viewed all community feed",
+    individuals: "viewed individuals community feed",
+    explorations: "viewed explorations community feed",
+    researchers: "viewed researchers community feed",
+    evidence: "viewed evidence community feed"
+  };
 
   function handleSubtabPress(key) {
     if (tab !== key) {
-      posthog?.capture("explored community");
+      const eventName = COMMUNITY_TAB_EVENT_MAP[key];
+      if (eventName) posthog?.capture(eventName);
     }
     setTab(key);
   }
@@ -240,7 +248,8 @@ export default function CommunityScreen() {
         <View style={styles.commBrowse}>
           <View style={styles.commTabs}>
             {c.subTabs.map((label, i) => {
-              const key = ["all", "individuals", "explorations", "researchers"][i];
+              const key =
+                ["all", "individuals", "explorations", "researchers", "evidence"][i] || "all";
               const on = tab === key;
               return (
                 <Pressable key={key} style={[styles.csTab, on && styles.csTabOn]} onPress={() => handleSubtabPress(key)}>
