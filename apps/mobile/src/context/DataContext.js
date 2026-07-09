@@ -1,5 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, AppState, View } from "react-native";
 import { get } from "../lib/api";
 
 const DataContext = createContext(null);
@@ -106,6 +106,44 @@ export function DataProvider({ children }) {
     setData((prev) => (prev ? { ...prev, insight } : prev));
     return insight;
   }, []);
+
+  const resumeRefetchInFlightRef = useRef(false);
+  const appStateRef = useRef(AppState.currentState);
+  const hasReceivedChangeEventRef = useRef(false);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextState) => {
+      const prevState = appStateRef.current;
+      appStateRef.current = nextState;
+
+      const isFirstChangeEvent = !hasReceivedChangeEventRef.current;
+      hasReceivedChangeEventRef.current = true;
+
+      if (nextState !== "active" || prevState === "active") return;
+
+      // Some AppState implementations (and react-native-web's visibilitychange
+      // mapping in particular) can replay the current state as the very first
+      // "change" event right after subscribing, even though it isn't a real
+      // background -> foreground transition. Ignore that one so we don't
+      // immediately duplicate the mount-time fetch in loadAll(). Genuine resumes
+      // are always at least the second change event the listener observes.
+      if (isFirstChangeEvent) return;
+
+      if (resumeRefetchInFlightRef.current) return;
+      resumeRefetchInFlightRef.current = true;
+
+      Promise.all([refetchHome(), refetchInsight()])
+        .catch((err) => {
+          console.log("[DataContext] resume refetch failed:", err);
+        })
+        .finally(() => {
+          resumeRefetchInFlightRef.current = false;
+        });
+    };
+
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => subscription.remove();
+  }, [refetchHome, refetchInsight]);
 
   const refetchProfile = useCallback(async () => {
     const profile = await get("/profile");

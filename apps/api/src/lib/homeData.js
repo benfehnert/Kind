@@ -467,6 +467,7 @@ function mapActivityPost(row) {
   const expSuffix = row.exploration_label ? ` · ${row.exploration_label}` : "";
   return {
     id: `post-${row.id}`,
+    activityPostId: row.id,
     type,
     explorationId: row.exploration_id ?? undefined,
     userId: row.actor_slug ?? undefined,
@@ -479,6 +480,8 @@ function mapActivityPost(row) {
     avatarKind: row.actor_img ? "image" : "initials",
     initials: row.actor_initials ?? "?",
     avatarKey: row.actor_img ? `pravatar-${row.actor_img}` : undefined,
+    nc: Number(row.nice_count) || 0,
+    viewerNiced: !!row.viewer_niced,
     _sortAt: new Date(row.posted_at).getTime()
   };
 }
@@ -487,10 +490,16 @@ async function fetchNetworkActivityPosts(individualId, consentedIds) {
   const { rows } = await query(
     `SELECT ap.id, ap.individual_id, ap.exploration_id, ap.summary, ap.detail_metrics,
             ap.exploration_label, ap.posted_at,
+            COALESCE(anc.nice_count, ap.nice_count_base, 0)::int AS nice_count,
+            EXISTS(
+              SELECT 1 FROM activity_nices n
+              WHERE n.activity_post_id = ap.id AND n.individual_id = $1
+            ) AS viewer_niced,
             i.slug AS actor_slug, i.display_name AS actor_name,
             i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials
      FROM activity_posts ap
      JOIN individuals i ON i.id = ap.individual_id
+     LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
      WHERE ap.individual_id IN (
           SELECT followee_id FROM individual_follows WHERE follower_id = $1
         )
@@ -761,6 +770,42 @@ function stripSortKey(item) {
   return rest;
 }
 
+async function fetchAllLogFieldDefs(explorationId) {
+  const { rows } = await query(
+    `SELECT field_key AS id, field_type::text AS type, label, options AS opts
+     FROM log_field_defs
+     WHERE exploration_id = $1
+     ORDER BY sort_order`,
+    [explorationId]
+  );
+  return rows;
+}
+
+/**
+ * A full "everything recorded" breakdown of a day's log, one entry per
+ * field the individual filled in, used on the Activity Detail screen so
+ * viewers can see all of the data behind an activity — not just the
+ * one-line summary shown in the feed.
+ */
+function formatFullLogDetail(fields, fieldValues) {
+  const fv = fieldValues ?? {};
+  const parts = [];
+  for (const field of fields || []) {
+    const raw = fv[field.id];
+    if (raw === undefined || raw === null || raw === "") continue;
+    const formatted =
+      field.type === "checks"
+        ? Array.isArray(raw) && raw.length
+          ? raw.join(", ")
+          : "None"
+        : field.type === "range"
+          ? `${raw}/10`
+          : String(raw);
+    parts.push(`<strong>${field.label}:</strong> ${formatted}`);
+  }
+  return parts.join(" · ");
+}
+
 export async function recordActivityFromLog(individualId, explorationId, fieldValues, userExplorationId) {
   const { rows: expRows } = await query(
     `SELECT title FROM explorations WHERE id = $1`,
@@ -768,6 +813,8 @@ export async function recordActivityFromLog(individualId, explorationId, fieldVa
   );
   const feedLabel = EXPLORATION_FEED_LABELS[explorationId] || expRows[0]?.title || explorationId;
   const summary = formatLogSummary(explorationId, fieldValues, feedLabel);
+  const fields = await fetchAllLogFieldDefs(explorationId);
+  const detailMetrics = formatFullLogDetail(fields, fieldValues);
   const today = todayDateString();
 
   await query(
@@ -778,9 +825,16 @@ export async function recordActivityFromLog(individualId, explorationId, fieldVa
 
   await query(
     `INSERT INTO activity_posts
-       (individual_id, exploration_id, user_exploration_id, summary, exploration_label, posted_at)
-     VALUES ($1, $2, $3, $4, $5, NOW())`,
-    [individualId, explorationId, userExplorationId, summary.replace(/<[^>]+>/g, ""), feedLabel]
+       (individual_id, exploration_id, user_exploration_id, summary, detail_metrics, exploration_label, posted_at)
+     VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+    [
+      individualId,
+      explorationId,
+      userExplorationId,
+      summary.replace(/<[^>]+>/g, ""),
+      detailMetrics || null,
+      feedLabel
+    ]
   );
 }
 

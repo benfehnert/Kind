@@ -672,6 +672,14 @@ router.patch("/social/follows", async (c) => {
 // Activity nices
 // ---------------------------------------------------------------------------
 
+async function fetchActivityPostOwnerSlug(activityPostId) {
+  const { rows } = await query(
+    `SELECT i.slug FROM activity_posts ap JOIN individuals i ON i.id = ap.individual_id WHERE ap.id = $1`,
+    [activityPostId]
+  );
+  return rows[0]?.slug ?? null;
+}
+
 router.get("/activity-posts/:id", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
@@ -688,8 +696,11 @@ router.patch("/activity-posts/:id/nice", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
-  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const ownerSlug = await fetchActivityPostOwnerSlug(postId);
+  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+    return c.json({ error: "Activity not found" }, 404);
+  }
 
   const result = await toggleActivityNice(postId, viewerId);
   return c.json(result);
@@ -700,8 +711,11 @@ router.get("/activity-posts/:id/nices", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
-  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const ownerSlug = await fetchActivityPostOwnerSlug(postId);
+  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+    return c.json({ error: "Activity not found" }, 404);
+  }
 
   const supporters = await fetchActivityNiceSupporters(postId, viewerId);
   return c.json(supporters);
@@ -712,8 +726,11 @@ router.get("/activity-posts/:id/messages", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
-  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const ownerSlug = await fetchActivityPostOwnerSlug(postId);
+  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+    return c.json({ error: "Activity not found" }, 404);
+  }
 
   const [messages, summary] = await Promise.all([
     fetchActivityMessages(postId, viewerId),
@@ -728,8 +745,11 @@ router.post("/activity-posts/:id/messages", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const { rows } = await query("SELECT id FROM activity_posts WHERE id = $1", [postId]);
-  if (!rows.length) return c.json({ error: "Activity not found" }, 404);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const ownerSlug = await fetchActivityPostOwnerSlug(postId);
+  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+    return c.json({ error: "Activity not found" }, 404);
+  }
 
   const body = await c.req.json().catch(() => ({}));
 
@@ -751,6 +771,12 @@ router.patch("/activity-posts/:id/messages/:messageId/reactions", async (c) => {
 
   const postId = c.req.param("id");
   const messageId = c.req.param("messageId");
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const ownerSlug = await fetchActivityPostOwnerSlug(postId);
+  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+    return c.json({ error: "Activity not found" }, 404);
+  }
+
   const body = await c.req.json().catch(() => ({}));
 
   try {

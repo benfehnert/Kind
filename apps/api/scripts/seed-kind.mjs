@@ -547,6 +547,41 @@ async function seedUserExplorations() {
   console.log("  ✓ Anna explorations (1 active, 4 complete)");
 }
 
+/**
+ * Community members only get their `exps` mock data seeded into
+ * user_explorations here (Anna's real logged-in state is handled by
+ * seedUserExplorations above). Without this, every other individual's
+ * profile shows an empty Explorations section since ExplorerProfileScreen's
+ * exploration tap behaviour reads live from user_explorations.
+ */
+async function seedCommunityUserExplorations() {
+  console.log("Seeding community members' user explorations…");
+  const rows = [];
+
+  for (const [slug, u] of Object.entries(community.commUsers)) {
+    const individualId = INDIVIDUAL_IDS[slug];
+    if (!individualId) continue;
+
+    (u.exps ?? []).forEach((ex) => {
+      if (!ex.id) return;
+      rows.push({
+        individual_id: individualId,
+        exploration_id: ex.id,
+        week_current: ex.w ?? 1,
+        weeks_total: ex.of ?? ex.w ?? 1,
+        status: ex.active ? "active" : "complete",
+        is_active: !!ex.active
+      });
+    });
+  }
+
+  for (const row of rows) {
+    await upsert("user_explorations", row, { onConflict: "individual_id,exploration_id" });
+  }
+
+  console.log(`  ✓ ${rows.length} community user explorations`);
+}
+
 async function seedOnboardingAndConsents() {
   console.log("Seeding onboarding & consents…");
   const annaId = INDIVIDUAL_IDS[DEMO_SLUG];
@@ -953,6 +988,7 @@ async function main() {
   const annaId = await seedDemoUser();
   await seedBadges();
   await seedUserExplorations();
+  await seedCommunityUserExplorations();
   await seedDailyLogs();
   await seedAnnaExplorationLogs();
   await seedOnboardingAndConsents();

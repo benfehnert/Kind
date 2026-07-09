@@ -18,11 +18,9 @@ import { REM } from "../theme/tokens";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
-import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
-import { RichTextParts } from "../utils/RichText";
 
 export default function ExploreScreen() {
   const { explorePage, refetchExplore } = useData();
@@ -30,7 +28,6 @@ export default function ExploreScreen() {
   const activeList = explorePage?.activeExplorations ?? [];
   const available = explorePage?.availableExplorations ?? [];
   const recommended = explorePage?.recommendedExplorations ?? [];
-  const activity = explorePage?.activity ?? [];
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
   const navigation = useNavigation();
@@ -72,34 +69,6 @@ export default function ExploreScreen() {
     }, 700);
     return () => clearTimeout(timer.current);
   }, [q, explorationsForChat]);
-
-  function handleActivityPress(item) {
-    if (item.route) navigation.navigate(item.route, item.routeParams ?? {});
-    else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
-    else if (item.explorationId) navigation.navigate("ExplorationDetail", { id: item.explorationId });
-  }
-
-  function renderActivityItem(item) {
-    return (
-      <Pressable key={item.id} style={styles.activityItem} onPress={() => handleActivityPress(item)}>
-        <View style={styles.activityHead}>
-          <FeedItemAvatar item={item} />
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-              <Text style={styles.activityName}>{item.displayName}</Text>
-              {item.badge ? <Badge variant={item.badge}>{item.badgeLabel}</Badge> : null}
-            </View>
-            <Text style={styles.activityTime}>{item.time}</Text>
-          </View>
-        </View>
-        <RichTextParts
-          html={item.body}
-          style={[text.feedBody, { marginTop: spacing.xs }]}
-          strongStyle={{ color: colors.text, ...type.bodyStrong }}
-        />
-      </Pressable>
-    );
-  }
 
   return (
     <View style={styles.root}>
@@ -260,13 +229,6 @@ export default function ExploreScreen() {
           </View>
         ) : null}
 
-        {activity.length > 0 ? (
-          <View style={styles.activitySection}>
-            <Text style={styles.secLabel}>Recent activity</Text>
-            {activity.map((item) => renderActivityItem(item))}
-          </View>
-        ) : null}
-
         <Text style={styles.secLabel}>{exploreCopy.availableSectionLabel}</Text>
         {available.map((e) => (
           <Pressable
@@ -358,16 +320,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     marginTop: spacing.xs
   },
-  activitySection: { marginBottom: spacing.blockMb },
-  activityItem: { ...layout.feedItem, marginBottom: spacing.md },
-  activityHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.feedGap,
-    marginBottom: spacing.md
-  },
-  activityName: text.feedName,
-  activityTime: text.feedTime,
   area: {
     flexDirection: "row",
     alignItems: "stretch",

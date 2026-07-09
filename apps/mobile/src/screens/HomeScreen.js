@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator, Platform, RefreshControl } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
@@ -16,14 +16,13 @@ import { SectionTitle } from "../components/primitives/SectionTitle";
 import { PrimaryButton } from "../components/primitives/Buttons";
 import { ChipRow } from "../components/primitives/ChipRow";
 import { Card } from "../components/primitives/Card";
-import { Badge } from "../components/primitives/Badge";
-import { FeedItemAvatar } from "../components/home/FeedItemAvatar";
-import { RichTextParts } from "../utils/RichText";
+import { ActivityFeedCard } from "../components/home/ActivityFeedCard";
 import { ExplorationProgressSummary } from "../components/home/ExplorationProgressSummary";
 import { ActiveExplorationOutcomeCards } from "../components/home/ActiveExplorationOutcomeCards";
 import { DailyCheckinCard } from "../components/checkin/DailyCheckinCard";
 import { StarterCheckinCard } from "../components/checkin/StarterCheckinCard";
 import { FeedFilterEmptyState } from "../components/home/FeedFilterEmptyState";
+import { useActivityNice } from "../hooks/useActivityNice";
 import {
   allExplorationsLogged,
   buildInitialLogValues,
@@ -35,6 +34,9 @@ import {
 
 const REMINDER_DISMISS_KEY = "@kind/reminder_banner_dismissed";
 const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
+const IS_WEB = Platform.OS === "web";
+const WEB_PULL_THRESHOLD = 70;
+const WEB_PULL_MAX = 100;
 const HOME_FEED_TAB_EVENT_MAP = {
   all: "viewed all feed",
   milestone: "viewed milestone feed",
@@ -70,6 +72,7 @@ export default function HomeScreen() {
   const { showToast } = useUiShell();
   const navigation = useNavigation();
   const route = useRoute();
+  const activityNice = useActivityNice();
   const [showLog, setShowLog] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,8 +84,11 @@ export default function HomeScreen() {
   const [expandingFeed, setExpandingFeed] = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
   const [lastSavedNames, setLastSavedNames] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [webPullDistance, setWebPullDistance] = useState(0);
   const completedExplorationsTracked = useRef(new Set());
   const pendingOpenLogRef = useRef(false);
+  const webPullRef = useRef({ tracking: false, startY: 0, scrollY: 0 });
 
   const consentedIds = useMemo(
     () =>
@@ -387,9 +393,63 @@ export default function HomeScreen() {
     [chip, posthog]
   );
 
+  const handleRefresh = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchHome(), refetchInsight()]);
+    } catch (err) {
+      console.log("[HomeScreen] pull-to-refresh failed:", err);
+    } finally {
+      setRefreshing(false);
+      setWebPullDistance(0);
+    }
+  }, [refreshing, refetchHome, refetchInsight]);
+
+  const handleWebScroll = useCallback((e) => {
+    webPullRef.current.scrollY = e.nativeEvent?.contentOffset?.y ?? 0;
+  }, []);
+
+  const handleWebTouchStart = useCallback(
+    (e) => {
+      if (refreshing) return;
+      if (webPullRef.current.scrollY > 0) return;
+      const touch = e.nativeEvent?.touches?.[0];
+      if (!touch) return;
+      webPullRef.current.tracking = true;
+      webPullRef.current.startY = touch.pageY;
+    },
+    [refreshing]
+  );
+
+  const handleWebTouchMove = useCallback((e) => {
+    if (!webPullRef.current.tracking) return;
+    const touch = e.nativeEvent?.touches?.[0];
+    if (!touch) return;
+    const delta = touch.pageY - webPullRef.current.startY;
+    if (delta <= 0) {
+      setWebPullDistance(0);
+      return;
+    }
+    setWebPullDistance(Math.min(delta / 1.6, WEB_PULL_MAX));
+  }, []);
+
+  const handleWebTouchEnd = useCallback(() => {
+    if (!webPullRef.current.tracking) return;
+    webPullRef.current.tracking = false;
+    setWebPullDistance((distance) => {
+      if (distance >= WEB_PULL_THRESHOLD) {
+        handleRefresh();
+        return distance;
+      }
+      return 0;
+    });
+  }, [handleRefresh]);
+
   async function handleSaveLogs() {
     if (saving || logExplorations.length === 0) return;
     setSaving(true);
+    let saveSucceeded = false;
     try {
       await Promise.all(
         logExplorations.map((ex) =>
@@ -399,22 +459,32 @@ export default function HomeScreen() {
           })
         )
       );
-      await refreshExplorationRuns();
-      await refetchHome();
-      await refetchInsight();
-      setLastSavedNames(logExplorations.map((ex) => ex.title));
-      setSaved(true);
-      setShowLog(false);
-      posthog?.capture("daily log submitted");
+      saveSucceeded = true;
     } catch {
       showToast("Could not save your log. Please try again.");
-    } finally {
       setSaving(false);
+      return;
+    }
+
+    setLastSavedNames(logExplorations.map((ex) => ex.title));
+    setSaved(true);
+    setShowLog(false);
+    posthog?.capture("daily log submitted");
+    setSaving(false);
+
+    if (!saveSucceeded) return;
+
+    try {
+      await Promise.all([refreshExplorationRuns(), refetchHome(), refetchInsight()]);
+    } catch (err) {
+      console.log("[HomeScreen] post-save refetch failed:", err);
+      showToast("Saved — pull to refresh your feed.");
     }
   }
 
   function handleFeedPress(item) {
-    if (item.route) navigation.navigate(item.route, item.routeParams ?? {});
+    if (item.activityPostId) navigation.navigate("ActivityDetail", { activityPostId: item.activityPostId });
+    else if (item.route) navigation.navigate(item.route, item.routeParams ?? {});
     else if (item.userId) navigation.navigate("ExplorerProfile", { userId: item.userId });
     else if (item.type === "insight")
       navigation.navigate("MainTabs", {
@@ -433,40 +503,60 @@ export default function HomeScreen() {
     else if (item.explorationId) navigation.navigate("ExplorationDetail", { id: item.explorationId });
   }
 
+  function handleOpenProfile(userId) {
+    navigation.navigate("ExplorerProfile", { userId });
+  }
+
   function renderFeedItem(item) {
     return (
-      <Pressable key={item.id} style={styles.feed} onPress={() => handleFeedPress(item)}>
-        <View style={styles.feedHead}>
-          <FeedItemAvatar item={item} />
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-              <Text style={styles.feedName}>{item.displayName}</Text>
-              {item.badge ? <Badge variant={item.badge}>{item.badgeLabel}</Badge> : null}
-            </View>
-            <Text style={styles.feedTime}>{item.time}</Text>
-          </View>
-        </View>
-        <RichTextParts
-          html={item.body}
-          style={[text.feedBody, { marginTop: spacing.xs }]}
-          strongStyle={{ color: colors.text, ...type.bodyStrong }}
-        />
-        {item.highlight ? (
-          <View style={styles.hl}>
-            <RichTextParts
-              html={item.highlight}
-              style={text.feedHighlight}
-              strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
-            />
-          </View>
-        ) : null}
-      </Pressable>
+      <ActivityFeedCard
+        key={item.id}
+        item={item}
+        onOpenProfile={handleOpenProfile}
+        onOpenActivity={handleFeedPress}
+        niceState={activityNice.getState(item)}
+        onToggleNice={activityNice.toggle}
+        nicePending={item.activityPostId ? activityNice.pending[item.activityPostId] : false}
+      />
     );
   }
 
   return (
     <View style={styles.root}>
-      <ScrollView contentContainerStyle={styles.pad}>
+      <ScrollView
+        contentContainerStyle={styles.pad}
+        refreshControl={
+          IS_WEB ? undefined : (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.greenDark}
+              colors={[colors.greenDark]}
+            />
+          )
+        }
+        onScroll={IS_WEB ? handleWebScroll : undefined}
+        scrollEventThrottle={IS_WEB ? 16 : undefined}
+        onTouchStart={IS_WEB ? handleWebTouchStart : undefined}
+        onTouchMove={IS_WEB ? handleWebTouchMove : undefined}
+        onTouchEnd={IS_WEB ? handleWebTouchEnd : undefined}
+        onTouchCancel={IS_WEB ? handleWebTouchEnd : undefined}
+      >
+        {IS_WEB && (webPullDistance > 0 || refreshing) ? (
+          <View
+            style={[
+              styles.webPullIndicator,
+              { height: refreshing ? 44 : webPullDistance }
+            ]}
+          >
+            {refreshing || webPullDistance >= WEB_PULL_THRESHOLD ? (
+              <ActivityIndicator size="small" color={colors.greenDark} />
+            ) : (
+              <Text style={styles.webPullText}>Pull to refresh</Text>
+            )}
+          </View>
+        ) : null}
+
         <SectionTitle>{home.greeting}</SectionTitle>
 
         {starterMode && logExplorations.length === 0 && !saved && !showLog ? (
@@ -614,6 +704,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   pad: layout.screenPad,
+  webPullIndicator: {
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    marginBottom: spacing.sm
+  },
+  webPullText: { ...type.exploreDesc, color: colors.textMuted },
   reminderBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -665,17 +762,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl
   },
   prefillLoadingText: { ...type.exploreDesc, color: colors.textMuted },
-  feed: layout.feedItem,
-  feedHead: { flexDirection: "row", alignItems: "center", gap: spacing.feedGap, marginBottom: spacing.md },
-  feedName: text.feedName,
-  feedTime: text.feedTime,
-  hl: {
-    backgroundColor: colors.greenLight,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    marginTop: spacing.md
-  },
   more: layout.feedMore,
   moreT: text.feedMoreTitle,
   moreS: text.feedMoreSub,

@@ -21,6 +21,7 @@ import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
 import { MessageReactions } from "../components/activity/MessageReactions";
 import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
+import { ActivityMessageBlock } from "../components/activity/ActivityMessageBlock";
 import { RichTextParts } from "../utils/RichText";
 
 function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggleReaction, togglingReaction }) {
@@ -78,6 +79,7 @@ export default function ActivityDetailScreen() {
   const [togglingReaction, setTogglingReaction] = useState(null);
   const [togglingNice, setTogglingNice] = useState(false);
   const listRef = useRef(null);
+  const composerInputRef = useRef(null);
 
   const viewerSlug = profile?.viewerSlug;
 
@@ -149,6 +151,20 @@ export default function ActivityDetailScreen() {
     if (!activityPostId || !(detail?.nc > 0)) return;
     navigation.navigate("NiceSupporters", { activityPostId });
   }, [navigation, activityPostId, detail?.nc]);
+
+  const focusComposer = useCallback(() => {
+    composerInputRef.current?.focus();
+  }, []);
+
+  const openOwnerProfile = useCallback(() => {
+    if (!detail?.owner?.slug) return;
+    navigation.navigate("ExplorerProfile", { userId: detail.owner.slug });
+  }, [navigation, detail?.owner?.slug]);
+
+  const openExploration = useCallback(() => {
+    if (!detail?.explorationId) return;
+    navigation.navigate("ExplorationDetail", { id: detail.explorationId });
+  }, [navigation, detail?.explorationId]);
 
   const sendMessage = useCallback(async () => {
     const trimmed = draft.trim();
@@ -249,7 +265,17 @@ export default function ActivityDetailScreen() {
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={
               <View style={styles.activityCard}>
-                {detail?.exp ? <Text style={styles.actPill}>{detail.exp}</Text> : null}
+                {detail?.owner?.slug ? (
+                  <Pressable style={styles.ownerRow} onPress={openOwnerProfile} hitSlop={4}>
+                    <Avatar size={32} img={detail.owner.img} initials={detail.owner.initials} />
+                    <Text style={styles.ownerName}>{detail.owner.name}</Text>
+                  </Pressable>
+                ) : null}
+                {detail?.exp ? (
+                  <Pressable onPress={openExploration} disabled={!detail?.explorationId} hitSlop={4}>
+                    <Text style={styles.actPill}>{detail.exp}</Text>
+                  </Pressable>
+                ) : null}
                 <Text style={styles.actText}>{detail?.t}</Text>
                 {detail?.detail ? (
                   <View style={styles.actDetail}>
@@ -262,14 +288,21 @@ export default function ActivityDetailScreen() {
                 ) : null}
                 <View style={styles.actFoot}>
                   <Text style={styles.actTime}>{detail?.time}</Text>
-                  <ActivityNiceBlock
-                    count={detail?.nc || 0}
-                    viewerNiced={!!detail?.viewerNiced}
-                    supporterPreview={detail?.supporterPreview || []}
-                    onToggleNice={toggleNice}
-                    onOpenSupporters={openSupporters}
-                    disabled={togglingNice}
-                  />
+                  <View style={styles.actFootActions}>
+                    <ActivityNiceBlock
+                      count={detail?.nc || 0}
+                      viewerNiced={!!detail?.viewerNiced}
+                      supporterPreview={detail?.supporterPreview || []}
+                      onToggleNice={toggleNice}
+                      onOpenSupporters={openSupporters}
+                      disabled={togglingNice}
+                    />
+                    <ActivityMessageBlock
+                      count={detail?.mc || 0}
+                      messagePreview={detail?.messagePreview || []}
+                      onOpenMessages={focusComposer}
+                    />
+                  </View>
                 </View>
                 <Text style={styles.msgSectionLabel}>{messageHeaderLabel}</Text>
               </View>
@@ -308,6 +341,7 @@ export default function ActivityDetailScreen() {
           ) : null}
           <View style={styles.composerRow}>
             <TextInput
+              ref={composerInputRef}
               style={styles.composerInput}
               placeholder={
                 replyTo
@@ -367,6 +401,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     backgroundColor: colors.surface
   },
+  ownerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    marginBottom: spacing.md
+  },
+  ownerName: { ...type.feedName, color: colors.text },
   actPill: {
     ...type.captionStrong,
     color: colors.greenDark,
@@ -392,6 +433,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: spacing.lg
   },
+  actFootActions: { flexDirection: "row", gap: spacing.sm },
   actTime: { ...text.caption },
   msgSectionLabel: {
     ...text.uppercaseLabel,

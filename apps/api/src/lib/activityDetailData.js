@@ -29,7 +29,7 @@ export async function fetchActivityPostDetail(activityPostId, viewerId) {
   const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
 
   const { rows } = await query(
-    `SELECT ap.id, ap.summary, ap.detail_metrics, ap.exploration_label, ap.posted_at,
+    `SELECT ap.id, ap.exploration_id, ap.summary, ap.detail_metrics, ap.exploration_label, ap.posted_at,
             COALESCE(anc.nice_count, ap.nice_count_base, 0)::int AS nice_count,
             i.slug AS owner_slug, i.display_name AS owner_name,
             i.avatar_image_id AS owner_img, i.avatar_initials AS owner_initials
@@ -41,6 +41,7 @@ export async function fetchActivityPostDetail(activityPostId, viewerId) {
   );
   if (!rows.length) return null;
   const post = rows[0];
+  if (isHiddenFromCommunity(viewerIsAnna, post.owner_slug)) return null;
 
   const [supporterPreview, nicedRows, messages, messageSummary] = await Promise.all([
     fetchSupporterPreview(post.id, viewerIsAnna),
@@ -57,6 +58,7 @@ export async function fetchActivityPostDetail(activityPostId, viewerId) {
     t: post.summary,
     detail: post.detail_metrics,
     exp: post.exploration_label,
+    explorationId: post.exploration_id,
     time: formatActivityTime(post.posted_at),
     nc: Number(post.nice_count),
     viewerNiced: nicedRows.rows.length > 0,
