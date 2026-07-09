@@ -47,6 +47,13 @@ import {
   isCatalogExploration,
   SHORT_EXPLORATION_IDS
 } from "../lib/centShort/index.js";
+import {
+  fetchCommunityExplorationLogs,
+  fetchCommunityExplorationRun,
+  fetchExplorationPhaseReport,
+  fetchExplorationReportsList,
+  resolveIndividualIdBySlug
+} from "../lib/explorationReportsData.js";
 
 const router = new Hono();
 
@@ -333,6 +340,79 @@ router.get("/community/individuals/:slug", async (c) => {
     ...summary,
     acts
   });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/reports", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const explorationId = c.req.param("explorationId");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const individualId = await resolveIndividualIdBySlug(slug);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const payload = await fetchExplorationReportsList(individualId, explorationId);
+  return c.json({ ...payload, ownerSlug: slug });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/reports/:reportType", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const explorationId = c.req.param("explorationId");
+  const reportType = c.req.param("reportType");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const individualId = await resolveIndividualIdBySlug(slug);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const row = await fetchExplorationPhaseReport(individualId, explorationId, reportType);
+  if (!row) return c.json({ error: "Report not found" }, 404);
+
+  return c.json({ ...row, ownerSlug: slug });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const explorationId = c.req.param("explorationId");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const individualId = await resolveIndividualIdBySlug(slug);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const run = await fetchCommunityExplorationRun(individualId, explorationId);
+  if (!run) return c.json({ error: "Exploration not found" }, 404);
+
+  return c.json({ ...run, ownerSlug: slug });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/logs", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const explorationId = c.req.param("explorationId");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const individualId = await resolveIndividualIdBySlug(slug);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const payload = await fetchCommunityExplorationLogs(individualId, explorationId);
+  return c.json({ ...payload, ownerSlug: slug });
 });
 
 router.get("/community/individuals/:slug/explorations/:explorationId/report", async (c) => {

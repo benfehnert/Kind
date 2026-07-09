@@ -2,22 +2,28 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useUserExplorations } from "../hooks/useUserExplorations";
-import { computeUserPhaseStatuses } from "../utils/explorationProgress";
+import { computeUserPhaseStatuses, computeExplorationProgress } from "../utils/explorationProgress";
 import { isShortExploration } from "../utils/explorationIds";
+import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { colors } from "../theme/colors";
 import { Badge } from "../components/primitives/Badge";
 
 function formatLogDate(dateStr) {
   if (!dateStr) return "";
-  // Parse the date-only portion as a local date to avoid UTC-midnight
-  // shifting the displayed day backwards in timezones behind UTC.
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(dateStr));
   if (!match) return String(dateStr);
   const [, y, m, d] = match;
   const date = new Date(Number(y), Number(m) - 1, Number(d));
   if (Number.isNaN(date.getTime())) return String(dateStr);
   return date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function formatReportDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function formatFieldValue(field, value) {
@@ -36,11 +42,47 @@ export default function ExplorationSummaryScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
+  const ownerSlug = params?.ownerSlug ?? null;
+  const ownerName = params?.ownerName ?? null;
+  const ownerWeek = params?.ownerWeek;
+  const ownerWeeksTotal = params?.ownerWeeksTotal;
+  const ownerActive = params?.ownerActive;
+
+  const { explorations, profile } = useData();
   const userExplorations = useUserExplorations();
-  const e = id ? userExplorations[id] : null;
+  const isOwnerView = Boolean(ownerSlug) && ownerSlug !== profile?.viewerSlug;
+
+  const ownExploration = !isOwnerView && id ? userExplorations[id] : null;
+  const catalogExploration = id ? explorations?.[id] : null;
 
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(true);
+  const [reports, setReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [ownerRun, setOwnerRun] = useState(null);
+  const [loadingOwnerRun, setLoadingOwnerRun] = useState(isOwnerView);
+
+  useEffect(() => {
+    if (!id || !isOwnerView || !ownerSlug) {
+      setLoadingOwnerRun(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setLoadingOwnerRun(true);
+    get(`/community/individuals/${encodeURIComponent(ownerSlug)}/explorations/${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!cancelled) setOwnerRun(res);
+      })
+      .catch(() => {
+        if (!cancelled) setOwnerRun(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingOwnerRun(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isOwnerView, ownerSlug]);
 
   useEffect(() => {
     if (!id) {
@@ -49,7 +91,10 @@ export default function ExplorationSummaryScreen() {
     }
     let cancelled = false;
     setLoadingLogs(true);
-    get(`/me/logs?explorationId=${encodeURIComponent(id)}`)
+    const logsUrl = isOwnerView && ownerSlug
+      ? `/community/individuals/${encodeURIComponent(ownerSlug)}/explorations/${encodeURIComponent(id)}/logs`
+      : `/me/logs?explorationId=${encodeURIComponent(id)}`;
+    get(logsUrl)
       .then((res) => {
         if (!cancelled) setLogs(res.items || []);
       })
@@ -62,17 +107,104 @@ export default function ExplorationSummaryScreen() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isOwnerView, ownerSlug]);
+
+  useEffect(() => {
+    if (!id) {
+      setLoadingReports(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setLoadingReports(true);
+    const reportsUrl = isOwnerView && ownerSlug
+      ? `/community/individuals/${encodeURIComponent(ownerSlug)}/explorations/${encodeURIComponent(id)}/reports`
+      : `/me/explorations/${encodeURIComponent(id)}/reports`;
+    get(reportsUrl)
+      .then((res) => {
+        if (!cancelled) setReports(res.items || []);
+      })
+      .catch(() => {
+        if (!cancelled) setReports([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingReports(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isOwnerView, ownerSlug]);
+
+  const e = useMemo(() => {
+    if (!id) return null;
+    if (!isOwnerView) return ownExploration;
+    if (!catalogExploration) return null;
+
+    const weekCurrent = ownerRun?.weekCurrent ?? ownerWeek ?? null;
+    const weeksTotal = ownerRun?.weeksTotal ?? ownerWeeksTotal ?? null;
+    const streakDays = ownerRun?.streakDays ?? 0;
+    const startedAt = ownerRun?.startedAt ?? null;
+    const isShort = isShortExploration(id);
+    const progress = computeExplorationProgress({
+      startedAt,
+      weeksTotal,
+      weekCurrent,
+      isShort
+    });
+
+    return {
+      ...catalogExploration,
+      id,
+      title: catalogExploration.title,
+      category: catalogExploration.category,
+      weekCurrent,
+      weeksTotal,
+      streakDays,
+      progress,
+      phases: catalogExploration.phases ?? [],
+      fields: catalogExploration.fields ?? [],
+      active: ownerRun?.isActive ?? ownerActive ?? false,
+      ownerName
+    };
+  }, [
+    id,
+    isOwnerView,
+    ownExploration,
+    catalogExploration,
+    ownerRun,
+    ownerWeek,
+    ownerWeeksTotal,
+    ownerActive,
+    ownerName
+  ]);
 
   const phases = useMemo(
     () => computeUserPhaseStatuses(e?.phases, e?.weekCurrent, e?.weeksTotal),
     [e?.phases, e?.weekCurrent, e?.weeksTotal]
   );
 
-  if (!e) {
+  const openReport = (report) => {
+    if (report.isFinal) {
+      navigation.navigate("ExplorationReport", {
+        explorationId: id,
+        ownerSlug: isOwnerView ? ownerSlug : undefined
+      });
+      return;
+    }
+    navigation.navigate("CentPhaseReport", {
+      explorationId: id,
+      reportType: report.reportType,
+      ownerSlug: isOwnerView ? ownerSlug : undefined
+    });
+  };
+
+  if (!e || (isOwnerView && loadingOwnerRun && !ownerWeek)) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: colors.text }}>Exploration not found.</Text>
+        {isOwnerView && loadingOwnerRun ? (
+          <ActivityIndicator color={colors.greenDark} />
+        ) : (
+          <Text style={{ color: colors.text }}>Exploration not found.</Text>
+        )}
         <Pressable onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
           <Text style={{ color: colors.greenDark, fontWeight: "600" }}>← Back</Text>
         </Pressable>
@@ -81,6 +213,10 @@ export default function ExplorationSummaryScreen() {
   }
 
   const unitLabel = isShortExploration(id) ? "Day" : "Week";
+  const loggedDataTitle = isOwnerView ? "Their logged data" : "Your logged data";
+  const emptyLogsCopy = isOwnerView
+    ? "They haven't logged any data for this exploration yet."
+    : "You haven't logged any data for this exploration yet.";
 
   return (
     <View style={styles.root}>
@@ -92,6 +228,9 @@ export default function ExplorationSummaryScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.cat}>{e.category}</Text>
         <Text style={styles.title}>{e.title}</Text>
+        {isOwnerView && ownerName ? (
+          <Text style={styles.ownerMeta}>{ownerName}'s exploration</Text>
+        ) : null}
 
         <View style={styles.metaRow}>
           {e.weekCurrent && e.weeksTotal ? (
@@ -100,7 +239,10 @@ export default function ExplorationSummaryScreen() {
             </Badge>
           ) : null}
           <Badge variant="amber">{e.progress ?? 0}% complete</Badge>
-          <Badge variant="teal">{e.streakDays ?? 0}-day streak</Badge>
+          {!isOwnerView ? <Badge variant="teal">{e.streakDays ?? 0}-day streak</Badge> : null}
+          {isOwnerView && e.streakDays ? (
+            <Badge variant="teal">{e.streakDays}-day streak</Badge>
+          ) : null}
         </View>
 
         <Text style={styles.sectionTitle}>Exploration structure</Text>
@@ -120,13 +262,34 @@ export default function ExplorationSummaryScreen() {
           </View>
         ))}
 
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Your logged data</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Reports</Text>
+        {loadingReports ? (
+          <ActivityIndicator color={colors.greenDark} style={{ marginVertical: 20 }} />
+        ) : reports.length === 0 ? (
+          <Text style={styles.emptyLogs}>No reports generated yet.</Text>
+        ) : (
+          reports.map((report) => (
+            <Pressable
+              key={report.reportType}
+              style={styles.reportRow}
+              onPress={() => openReport(report)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.reportLabel}>{report.label}</Text>
+                {report.generatedAt ? (
+                  <Text style={styles.reportDate}>{formatReportDate(report.generatedAt)}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.reportChevron}>›</Text>
+            </Pressable>
+          ))
+        )}
+
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>{loggedDataTitle}</Text>
         {loadingLogs ? (
           <ActivityIndicator color={colors.greenDark} style={{ marginVertical: 20 }} />
         ) : logs.length === 0 ? (
-          <Text style={styles.emptyLogs}>
-            You haven't logged any data for this exploration yet.
-          </Text>
+          <Text style={styles.emptyLogs}>{emptyLogsCopy}</Text>
         ) : (
           logs.map((log) => {
             const rows = (e.fields || [])
@@ -149,7 +312,20 @@ export default function ExplorationSummaryScreen() {
 
         <Pressable
           style={styles.overviewLink}
-          onPress={() => navigation.navigate("ExplorationDetail", { id })}
+          onPress={() =>
+            navigation.navigate("ExplorationDetail", {
+              id,
+              ...(isOwnerView
+                ? {
+                    ownerSlug,
+                    ownerName,
+                    ownerWeek: e.weekCurrent,
+                    ownerWeeksTotal: e.weeksTotal,
+                    ownerActive: e.active
+                  }
+                : {})
+            })
+          }
         >
           <Text style={styles.overviewLinkTxt}>View full exploration overview ›</Text>
         </Pressable>
@@ -166,6 +342,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingBottom: 48 },
   cat: { fontSize: 11, fontWeight: "600", color: colors.greenDark, marginBottom: 4 },
   title: { fontSize: 20, fontWeight: "700", color: colors.text },
+  ownerMeta: { fontSize: 13, color: colors.textMuted, marginTop: 4 },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10, marginBottom: 8 },
   sectionTitle: {
     fontSize: 13,
@@ -187,6 +364,19 @@ const styles = StyleSheet.create({
   phn: { fontWeight: "600", color: colors.text, fontSize: 13 },
   phd: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
   emptyLogs: { fontSize: 13, color: colors.textMuted, lineHeight: 20 },
+  reportRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8
+  },
+  reportLabel: { fontSize: 14, fontWeight: "600", color: colors.text },
+  reportDate: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  reportChevron: { fontSize: 20, color: colors.greenDark, fontWeight: "600", marginLeft: 8 },
   logCard: {
     backgroundColor: colors.surface,
     borderWidth: 1,

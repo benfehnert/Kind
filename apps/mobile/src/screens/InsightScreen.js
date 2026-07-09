@@ -7,7 +7,7 @@ import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
-import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
+import { SectionSub } from "../components/primitives/SectionTitle";
 import { Card } from "../components/primitives/Card";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
@@ -35,6 +35,13 @@ function InsightIcon({ variant }) {
       <Polyline points="12 6 12 12 16 14" stroke={colors.purpleText} strokeWidth="2" fill="none" />
     </Svg>
   );
+}
+
+function formatReportDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export default function InsightScreen() {
@@ -77,10 +84,36 @@ export default function InsightScreen() {
     if (route.params?.community != null) setTab(route.params.community ? 1 : 0);
   }, [route.params?.community]);
 
-  const your = insight.energyTrend;
-  const mr = insight.rulesChart;
-  const showCharts = insight.hasPersonalData && your?.bars?.length > 0;
+  const explorationId = insight.activeExplorationId;
+  const rulesChart = insight.rulesChart;
+  const showRulesChart = insight.hasPersonalData && rulesChart?.bars?.length > 0;
+  const reportItems = insight.reports?.items || [];
   const showCommunityInsights = insight.showCommunityInsights !== false;
+
+  const openLoggedData = useCallback(() => {
+    if (!explorationId) return;
+    posthog?.capture("opened observation data source", { explorationId });
+    navigation.navigate("ExplorationSummary", { id: explorationId });
+  }, [explorationId, navigation, posthog]);
+
+  const openReport = useCallback(
+    (report) => {
+      if (!explorationId) return;
+      posthog?.capture("opened report from insights", {
+        explorationId,
+        reportType: report.reportType
+      });
+      if (report.isFinal) {
+        navigation.navigate("ExplorationReport", { explorationId });
+        return;
+      }
+      navigation.navigate("CentPhaseReport", {
+        explorationId,
+        reportType: report.reportType
+      });
+    },
+    [explorationId, navigation, posthog]
+  );
 
   useEffect(() => {
     if (!showCommunityInsights && tab === 1) setTab(0);
@@ -96,7 +129,6 @@ export default function InsightScreen() {
       >
         <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
 
-        <SectionTitle>{insight.header.title}</SectionTitle>
         <SectionSub>{insight.header.sub}</SectionSub>
 
         <View style={styles.subTabs}>
@@ -112,88 +144,18 @@ export default function InsightScreen() {
 
         {tab === 0 ? (
           <>
-            {showCharts ? (
-              <>
-                <Card>
-                  <Text style={styles.cardEyebrow}>{your.cardTitle}</Text>
-                  <Text style={styles.chartHint}>{your.chartHint}</Text>
-                  <View style={styles.chartRow}>
-                    {your.bars.map((b, i) => (
-                      <View key={i} style={styles.barCol}>
-                        <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
-                          <View
-                            style={[
-                              styles.barBase,
-                              {
-                                height: Math.max(4, (90 * b.h) / 100),
-                                backgroundColor: colors.greenDark
-                              }
-                            ]}
-                          />
-                        </View>
-                        <Text style={styles.labSmall}>
-                          {your.labels[i]}
-                          {"\n"}
-                          {b.v}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </Card>
-
-                <Card>
-                  <Text style={styles.cardEyebrow}>{mr.cardTitle}</Text>
-                  <Text style={styles.chartHint}>{mr.chartHint}</Text>
-                  <View style={styles.chartRow}>
-                    {mr.bars.map((b, i) => (
-                      <View key={i} style={styles.barCol}>
-                        <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
-                          <View
-                            style={[
-                              styles.barBase,
-                              {
-                                height: Math.max(4, (90 * b.h) / 100),
-                                backgroundColor: b.crash ? colors.orange : colors.greenDark
-                              }
-                            ]}
-                          />
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                  <View style={{ flexDirection: "row", gap: 16, marginTop: 8 }}>
-                    {(mr.legend || []).map((lg, i) => (
-                      <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                        <View
-                          style={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: 2,
-                            backgroundColor: lg.crash ? colors.orange : colors.greenDark
-                          }}
-                        />
-                        <Text style={{ fontSize: 11, color: colors.textMuted }}>{lg.label}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </Card>
-              </>
-            ) : (
-              <Card>
-                <Text style={styles.cardEyebrow}>Your insights</Text>
-                <Text style={styles.emptyBody}>
-                  {insight.emptyMessage ||
-                    "Join an exploration and log daily check-ins to unlock personal charts."}
-                </Text>
-              </Card>
-            )}
-
             <Card>
               <Text style={styles.cardEyebrow}>{insight.observations.cardTitle}</Text>
               {(insight.observations.rows || []).map((r, i) => (
-                <View
+                <Pressable
                   key={i}
-                  style={[styles.obsRow, i === insight.observations.rows.length - 1 && { borderBottomWidth: 0 }]}
+                  disabled={!explorationId}
+                  onPress={openLoggedData}
+                  style={({ pressed }) => [
+                    styles.obsRow,
+                    i === insight.observations.rows.length - 1 && { borderBottomWidth: 0 },
+                    pressed && explorationId && { opacity: 0.7 }
+                  ]}
                 >
                   <View
                     style={[
@@ -210,10 +172,80 @@ export default function InsightScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.obsTitle}>{r.title}</Text>
                     <Text style={styles.obsBody}>{r.body}</Text>
+                    {explorationId ? <Text style={styles.obsLink}>View your logged data</Text> : null}
                   </View>
-                </View>
+                </Pressable>
               ))}
             </Card>
+
+            <Card>
+              <Text style={styles.cardEyebrow}>{insight.reports?.cardTitle || "Reports"}</Text>
+              {reportItems.length ? (
+                reportItems.map((report, i) => (
+                  <Pressable
+                    key={report.reportType}
+                    onPress={() => openReport(report)}
+                    style={({ pressed }) => [
+                      styles.reportRow,
+                      i === reportItems.length - 1 && { borderBottomWidth: 0 },
+                      pressed && { opacity: 0.7 }
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.reportLabel}>{report.label}</Text>
+                      <Text style={styles.reportHeadline}>{report.headline}</Text>
+                      {report.generatedAt ? (
+                        <Text style={styles.reportDate}>{formatReportDate(report.generatedAt)}</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.reportChevron}>›</Text>
+                  </Pressable>
+                ))
+              ) : (
+                <Text style={styles.emptyBody}>
+                  Reports will appear here as your exploration generates them.
+                </Text>
+              )}
+            </Card>
+
+            {showRulesChart ? (
+              <Card>
+                <Text style={styles.cardEyebrow}>{rulesChart.cardTitle}</Text>
+                <Text style={styles.chartHint}>{rulesChart.chartHint}</Text>
+                <View style={styles.chartRow}>
+                  {rulesChart.bars.map((b, i) => (
+                    <View key={i} style={styles.barCol}>
+                      <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
+                        <View
+                          style={[
+                            styles.barBase,
+                            {
+                              height: Math.max(4, (90 * b.h) / 100),
+                              backgroundColor: b.crash ? colors.orange : colors.greenDark
+                            }
+                          ]}
+                        />
+                      </View>
+                    </View>
+                  ))}
+                </View>
+                <View style={{ flexDirection: "row", gap: 16, marginTop: 8 }}>
+                  {(rulesChart.legend || []).map((lg, i) => (
+                    <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <View
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 2,
+                          backgroundColor: lg.crash ? colors.orange : colors.greenDark
+                        }}
+                      />
+                      <Text style={{ fontSize: 11, color: colors.textMuted }}>{lg.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              </Card>
+            ) : null}
 
             <Card>
               <Text style={styles.cardEyebrow}>{insight.adherence.cardTitle}</Text>
@@ -333,7 +365,6 @@ const styles = StyleSheet.create({
   chartRow: { flexDirection: "row", height: heights.chart, gap: spacing.sm, alignItems: "flex-end", marginBottom: spacing.md },
   barCol: { flex: 1, alignItems: "center", height: "100%" },
   barBase: { width: "100%", borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-  labSmall: { ...type.caption, fontSize: 10, textAlign: "center", marginTop: spacing.xs },
   obsRow: {
     flexDirection: "row",
     gap: spacing.lg,
@@ -350,6 +381,19 @@ const styles = StyleSheet.create({
   },
   obsTitle: text.feedName,
   obsBody: { ...text.exploreDesc, marginTop: 2 },
+  obsLink: { fontSize: 11, fontWeight: "600", color: colors.greenDark, marginTop: 6 },
+  reportRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  reportLabel: { ...type.chip, color: colors.textMuted, marginBottom: 4 },
+  reportHeadline: { ...text.feedName, lineHeight: 20 },
+  reportDate: { ...text.caption, marginTop: 4 },
+  reportChevron: { fontSize: 20, color: colors.textMuted, fontWeight: "300" },
   adRow: {
     flexDirection: "row",
     justifyContent: "space-between",

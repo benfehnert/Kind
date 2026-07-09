@@ -26,6 +26,7 @@ import ExplorationConsentScreen from "../screens/ExplorationConsentScreen";
 import ExplorationStartedScreen from "../screens/ExplorationStartedScreen";
 import EnergyReportScreen from "../screens/EnergyReportScreen";
 import ExplorationReportScreen from "../screens/ExplorationReportScreen";
+import CentPhaseReportScreen from "../screens/CentPhaseReportScreen";
 import MainTabShell from "./MainTabShell";
 
 const RootStack = createNativeStackNavigator();
@@ -77,6 +78,7 @@ export default function AppNavigator() {
       <RootStack.Screen name="DataUsage" component={DataUsageScreen} />
       <RootStack.Screen name="DownloadData" component={DownloadDataScreen} />
       <RootStack.Screen name="ExplorationReport" component={ExplorationReportScreen} />
+      <RootStack.Screen name="CentPhaseReport" component={CentPhaseReportScreen} />
       <RootStack.Screen name="EnergyReport" component={EnergyReportScreen} />
     </RootStack.Navigator>
   );

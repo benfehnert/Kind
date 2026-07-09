@@ -21,6 +21,103 @@ import {
   SHORT_EXPLORATION_IDS
 } from "../lib/centShort/index.js";
 import { isCohortStatsScience } from "../lib/feedContentLibrary.js";
+import { REPORT_LABELS } from "../lib/explorationReportsData.js";
+
+const MOCK_CENT_PHASE_REPORTS = {
+  BASELINE_SUMMARY: {
+    type: "BASELINE_SUMMARY",
+    reportTitle: "Baseline summary report",
+    phaseLabel: "Baseline",
+    headline:
+      "Your baseline afternoon energy averaged 5.2 out of 10, with noticeable afternoon crashes on most days.",
+    phase_b_guidance:
+      "Starting next week you enter the intervention phase of your health exploration. Keep logging daily to strengthen your personalised analysis.",
+    summary_tiles: [
+      { label: "Afternoon energy", value: "5.2", note: "Baseline average" },
+      { label: "Days logged", value: "14/14", note: "Strong adherence" }
+    ],
+    limitations: ["Self-reported measures only — not a clinical diagnosis."]
+  },
+  INTERVENTION_INTERIM: {
+    type: "INTERVENTION_INTERIM",
+    reportTitle: "Health exploration interim report",
+    phaseLabel: "Intervention",
+    headline:
+      "Your afternoon energy improved by +1.8 points compared with baseline, with fewer severe afternoon crashes.",
+    optimise_guidance:
+      "Focus on the morning rules that showed the strongest uplift during the intervention phase.",
+    summary_tiles: [
+      { label: "Afternoon energy change", value: "+1.8", note: "Compared with Baseline" },
+      { label: "Crash severity change", value: "-1.2", note: "Improved vs Baseline" }
+    ],
+    limitations: ["Interim analysis — patterns may shift as you complete the exploration."]
+  },
+  OPTIMISE_COMPLETION: {
+    type: "OPTIMISE_COMPLETION",
+    reportTitle: "Optimise phase complete",
+    phaseLabel: "Optimise",
+    headline:
+      "You maintained your energy gains through the optimise phase, with consistent daily logging.",
+    optimise_guidance: "Carry forward the habits that worked best for you into everyday life.",
+    summary_tiles: [
+      { label: "Afternoon energy", value: "7.4", note: "Optimise phase average" },
+      { label: "Logging streak", value: "12 days", note: "During optimise phase" }
+    ]
+  }
+};
+
+function mockReportsList(explorationId) {
+  const base = [
+    {
+      reportType: "BASELINE_SUMMARY",
+      label: REPORT_LABELS.BASELINE_SUMMARY,
+      generatedAt: "2026-03-15T10:00:00.000Z",
+      isFinal: false
+    },
+    {
+      reportType: "INTERVENTION_INTERIM",
+      label: REPORT_LABELS.INTERVENTION_INTERIM,
+      generatedAt: "2026-04-01T10:00:00.000Z",
+      isFinal: false
+    }
+  ];
+
+  if (explorationId === "morning-rules") {
+    base.push({
+      reportType: "OPTIMISE_COMPLETION",
+      label: REPORT_LABELS.OPTIMISE_COMPLETION,
+      generatedAt: "2026-04-10T10:00:00.000Z",
+      isFinal: false
+    });
+  }
+
+  if (trialReports[explorationId]) {
+    base.push({
+      reportType: "FINAL_STUDY_COMPLETE",
+      label: REPORT_LABELS.FINAL_STUDY_COMPLETE,
+      generatedAt: "2026-04-14T10:00:00.000Z",
+      isFinal: true
+    });
+  }
+
+  return base;
+}
+
+function mockCommunityExplorationRun(explorationId) {
+  const exp = explorations[explorationId];
+  const weeksTotal = explorationId === "morning-rules" ? 8 : 6;
+  return {
+    explorationId,
+    weekCurrent: weeksTotal,
+    weeksTotal,
+    status: "complete",
+    streakDays: 28,
+    startedAt: "2026-03-01",
+    completedAt: "2026-04-14",
+    isActive: false,
+    title: exp?.title ?? explorationId
+  };
+}
 
 const router = new Hono();
 
@@ -358,6 +455,44 @@ router.get("/community/individuals/:id", (c) => {
   return c.json({ error: "Individual not found" }, 404);
 });
 
+router.get("/community/individuals/:slug/explorations/:explorationId/reports", (c) => {
+  const explorationId = c.req.param("explorationId");
+  return c.json({
+    explorationId,
+    ownerSlug: c.req.param("slug"),
+    items: mockReportsList(explorationId)
+  });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/reports/:reportType", (c) => {
+  const explorationId = c.req.param("explorationId");
+  const reportType = c.req.param("reportType");
+  const report = MOCK_CENT_PHASE_REPORTS[reportType];
+  if (!report) return c.json({ error: "Report not found" }, 404);
+  return c.json({
+    explorationId,
+    reportType,
+    ownerSlug: c.req.param("slug"),
+    report,
+    generatedAt: "2026-04-01T10:00:00.000Z"
+  });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId", (c) => {
+  const explorationId = c.req.param("explorationId");
+  const run = mockCommunityExplorationRun(explorationId);
+  return c.json({ ...run, ownerSlug: c.req.param("slug") });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/logs", (c) => {
+  const explorationId = c.req.param("explorationId");
+  return c.json({
+    explorationId,
+    ownerSlug: c.req.param("slug"),
+    items: []
+  });
+});
+
 router.get("/community/individuals/:slug/explorations/:explorationId/report", (c) => {
   const explorationId = c.req.param("explorationId");
   const report = trialReports[explorationId];
@@ -539,6 +674,27 @@ router.get("/me/explorations", (c) =>
     })
   })
 );
+
+router.get("/me/explorations/:id/reports", (c) => {
+  const explorationId = c.req.param("id");
+  return c.json({
+    explorationId,
+    items: mockReportsList(explorationId)
+  });
+});
+
+router.get("/me/explorations/:id/reports/:reportType", (c) => {
+  const explorationId = c.req.param("id");
+  const reportType = c.req.param("reportType");
+  const report = MOCK_CENT_PHASE_REPORTS[reportType];
+  if (!report) return c.json({ error: "Report not found" }, 404);
+  return c.json({
+    explorationId,
+    reportType,
+    report,
+    generatedAt: "2026-04-01T10:00:00.000Z"
+  });
+});
 
 router.get("/me/explorations/:id/report", (c) => {
   const explorationId = c.req.param("id");

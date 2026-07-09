@@ -9,6 +9,7 @@ import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js
 import { buildEatingInsights } from "./cent/timeRestrictedEating/insightAdapter.js";
 import { loadDayEntries as loadEatingEntries } from "./cent/timeRestrictedEating/normalize.js";
 import { SHORT_EXPLORATION_IDS, evidenceExplorationId, isShortExploration } from "./centShort/index.js";
+import { fetchExplorationReportsList } from "./explorationReportsData.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
 
@@ -43,6 +44,13 @@ function hasMeaningfulLogs(logs, explorationId) {
       (v) => typeof v === "number" || (Array.isArray(v) && v.length > 0)
     )
   );
+}
+
+function emptyReports() {
+  return {
+    cardTitle: "Reports",
+    items: []
+  };
 }
 
 function emptyPersonalInsights(explorationId) {
@@ -95,7 +103,8 @@ function emptyPersonalInsights(explorationId) {
     },
     emptyMessage: explorationId
       ? "Log daily check-ins on the Home tab to unlock your personal charts."
-      : "Join an exploration and log daily check-ins to unlock personal charts and observations."
+      : "Join an exploration and log daily check-ins to unlock personal charts and observations.",
+    reports: emptyReports()
   };
 }
 function logDateKey(logDate) {
@@ -637,17 +646,23 @@ export async function buildInsightPayload(individualId, { communityExplorationId
   }
 
   const communityScopeId = communityExplorationId ?? explorationId;
-  const [logs, community] = await Promise.all([
+  const [logs, community, reportsList] = await Promise.all([
     fetchExplorationLogs(individualId, explorationId),
-    buildCommunitySection(communityScopeId)
+    buildCommunitySection(communityScopeId),
+    fetchExplorationReportsList(individualId, explorationId)
   ]);
 
   const personal = buildPersonalInsights(explorationId, logs, activeRun);
+  const reports = {
+    cardTitle: "Reports",
+    items: (reportsList.items || []).filter((item) => item.headline)
+  };
 
   return {
     ...STATIC_COPY,
     activeExplorationId: explorationId,
     ...personal,
+    reports,
     ...community
   };
 }

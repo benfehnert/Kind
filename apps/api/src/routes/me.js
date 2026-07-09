@@ -22,6 +22,10 @@ import { recordActivityFromLog } from "../lib/homeData.js";
 import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
 import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
 import { isShortExploration, isCatalogExploration } from "../lib/centShort/index.js";
+import {
+  fetchExplorationPhaseReport,
+  fetchExplorationReportsList
+} from "../lib/explorationReportsData.js";
 
 const router = new Hono();
 
@@ -321,6 +325,27 @@ router.post("/me/explorations/:id/complete", async (c) => {
 // ---------------------------------------------------------------------------
 // Trial final reports
 // ---------------------------------------------------------------------------
+
+router.get("/me/explorations/:id/reports", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const explorationId = c.req.param("id");
+  const payload = await fetchExplorationReportsList(individualId, explorationId);
+  return c.json(payload);
+});
+
+router.get("/me/explorations/:id/reports/:reportType", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const explorationId = c.req.param("id");
+  const reportType = c.req.param("reportType");
+  const row = await fetchExplorationPhaseReport(individualId, explorationId, reportType);
+  if (!row) return c.json({ error: "Report not found" }, 404);
+
+  return c.json(row);
+});
 
 router.get("/me/explorations/:id/report", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);

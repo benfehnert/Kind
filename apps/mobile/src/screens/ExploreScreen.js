@@ -5,27 +5,31 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  Pressable,
-  ActivityIndicator
+  Pressable
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
 import { useExplorationStart } from "../hooks/useUserExplorations";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
-import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
 import { REM } from "../theme/tokens";
-import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
+import { SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
+import {
+  RESULTS_PAGE_SIZE,
+  buildExploreSearchIndex,
+  filterExploreSearchResults,
+  getExploreSearchNavigation
+} from "../utils/exploreSearch";
 
 export default function ExploreScreen() {
-  const { explorePage, refetchExplore } = useData();
+  const { explorePage, refetchExplore, explorations, explorationEvidence, feed } = useData();
   const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
     useCallback(() => refetchExplore(), [refetchExplore])
   );
@@ -38,10 +42,9 @@ export default function ExploreScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const [q, setQ] = useState("");
-  const [chat, setChat] = useState(null);
+  const [visibleResultCount, setVisibleResultCount] = useState(RESULTS_PAGE_SIZE);
   const scrollRef = useRef(null);
   const searchRef = useRef(null);
-  const timer = useRef(null);
 
   useEffect(() => {
     if (!route.params?.focusSearch) return;
@@ -60,28 +63,35 @@ export default function ExploreScreen() {
     return map;
   }, [activeList, available]);
 
+  const searchIndex = useMemo(
+    () =>
+      buildExploreSearchIndex({
+        explorations,
+        explorationEvidence,
+        feed,
+        explorePage
+      }),
+    [explorations, explorationEvidence, feed, explorePage]
+  );
+
+  const searchResults = useMemo(
+    () => filterExploreSearchResults(searchIndex, q),
+    [searchIndex, q]
+  );
+
   useEffect(() => {
-    if (!q.trim()) {
-      setChat(null);
-      return;
-    }
-    setChat({ loading: true });
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      post("/explore/chat", { query: q, explorers: explorationsForChat })
-        .then((r) => setChat({ loading: false, ...r }))
-        .catch(() => setChat({ loading: false, msg: "", explorationIds: [] }));
-    }, 700);
-    return () => clearTimeout(timer.current);
-  }, [q, explorationsForChat]);
+    setVisibleResultCount(RESULTS_PAGE_SIZE);
+  }, [q]);
+
+  const visibleSearchResults = searchResults.slice(0, visibleResultCount);
+  const hasMoreSearchResults = searchResults.length > visibleResultCount;
 
   return (
     <View style={styles.root}>
       <ScrollView ref={scrollRef} contentContainerStyle={styles.pad} {...scrollViewProps}>
         <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
 
-        <SectionTitle>{exploreCopy.title}</SectionTitle>
-        <SectionSub>{exploreCopy.subtitle}</SectionSub>
+        <SectionSub style={styles.intro}>{exploreCopy.subtitle}</SectionSub>
         <View style={styles.searchWrap}>
           <View style={styles.glass}>
             <SearchGlassIcon size={16} color={colors.textMuted} />
@@ -96,44 +106,38 @@ export default function ExploreScreen() {
           />
         </View>
 
-        {chat?.loading && <ActivityIndicator color={colors.greenDark} style={{ marginVertical: 8 }} />}
-        {chat && !chat.loading && chat.msg ? (
-          <View style={styles.chat}>
-            <View style={styles.aiBub}>
-              <View style={styles.kav}>
-                <Text style={{ color: "#fff", fontWeight: "700" }}>k</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.aitxt}>{chat.msg}</Text>
-                {chat.explorationIds.map((id) => {
-                  const e = explorationsForChat[id];
-                  if (!e) return null;
-                  return (
-                    <Pressable
-                      key={id}
-                      style={styles.expCard}
-                      onPress={() => navigation.navigate("ExplorationDetail", { id })}
-                    >
-                      <View style={[styles.eico, { backgroundColor: e.bg }]}>
-                        <Text style={{ fontSize: 18 }}>{e.icon}</Text>
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.etitle}>{e.title}</Text>
-                        <Text style={styles.esub}>
-                          {e.category} · {e.duration} · {e.participants} explorers
-                        </Text>
-                      </View>
-                      <Pressable
-                        style={styles.exploreBtn}
-                        onPress={() => navigation.navigate("ExplorationDetail", { id })}
-                      >
-                        <Text style={styles.exploreBtnTxt}>Explore</Text>
-                      </Pressable>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
+        {visibleSearchResults.length > 0 ? (
+          <View style={styles.searchResults}>
+            {visibleSearchResults.map((result) => {
+              const { screen, params } = getExploreSearchNavigation(result.kind, result.explorationId);
+              return (
+                <Pressable
+                  key={result.key}
+                  style={styles.searchCard}
+                  onPress={() => navigation.navigate(screen, params)}
+                >
+                  <View style={[styles.searchIco, { backgroundColor: result.iconBg || colors.bg }]}>
+                    <Text style={styles.searchIcoGlyph}>{result.icon}</Text>
+                  </View>
+                  <View style={styles.searchCardBody}>
+                    <Text style={styles.searchCardTitle} numberOfLines={2}>
+                      {result.title}
+                    </Text>
+                    <Text style={styles.searchCardSub} numberOfLines={2}>
+                      {result.sub}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+            {hasMoreSearchResults ? (
+              <Pressable
+                style={styles.moreResultsBtn}
+                onPress={() => setVisibleResultCount((count) => count + RESULTS_PAGE_SIZE)}
+              >
+                <Text style={styles.moreResultsTxt}>More search results</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -306,7 +310,39 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   pad: layout.screenPad,
+  intro: { marginBottom: spacing.md },
   searchWrap: { position: "relative", marginBottom: spacing.blockMbXL },
+  searchResults: { marginTop: -spacing.lg, marginBottom: spacing.blockMbXL },
+  searchCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface
+  },
+  searchIco: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  searchIcoGlyph: { fontSize: 18 },
+  searchCardBody: { flex: 1, minWidth: 0 },
+  searchCardTitle: text.feedName,
+  searchCardSub: { ...text.feedTime, marginTop: 2 },
+  moreResultsBtn: {
+    alignSelf: "center",
+    marginTop: spacing.xs,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl
+  },
+  moreResultsTxt: { ...text.link, marginTop: 0 },
   glass: { position: "absolute", left: spacing.xxl, top: 14, zIndex: 1 },
   search: {
     borderWidth: 1.5,
@@ -428,44 +464,5 @@ const styles = StyleSheet.create({
   },
   comingLabelTxt: { ...type.captionStrong, color: "#fff" },
   comingT: { ...text.exploreTitle, marginBottom: spacing.xs },
-  comingB: { ...text.exploreDesc, color: colors.amberText },
-  chat: { marginTop: spacing.md, marginBottom: spacing.feedMb },
-  aiBub: { flexDirection: "row", gap: spacing.lg },
-  kav: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.greenDark,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  aitxt: { ...text.body, marginBottom: spacing.md },
-  expCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xxl,
-    marginBottom: spacing.md,
-    backgroundColor: colors.surface
-  },
-  eico: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  etitle: text.feedName,
-  esub: { ...text.feedTime, marginTop: 2 },
-  exploreBtn: {
-    backgroundColor: colors.orange,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.sm + 2
-  },
-  exploreBtnTxt: { ...type.chip, color: "#fff" }
+  comingB: { ...text.exploreDesc, color: colors.amberText }
 });

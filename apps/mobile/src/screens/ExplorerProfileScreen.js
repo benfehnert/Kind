@@ -254,7 +254,7 @@ export default function ExplorerProfileScreen() {
                 <Pressable
                   key={ex.id}
                   onPress={() =>
-                    navigation.navigate("ExplorationDetail", {
+                    navigation.navigate("ExplorationSummary", {
                       id: ex.id,
                       ownerSlug: userId,
                       ownerName: u.name,

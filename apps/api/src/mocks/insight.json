@@ -1,9 +1,11 @@
 {
+  "activeExplorationId": "morning-rules",
   "header": {
     "title": "Insight",
     "sub": "Your personal findings alongside discoveries from the wider kind community and research world."
   },
   "yourSubTabs": ["Your insights", "Community insights"],
+  "hasPersonalData": true,
   "energyTrend": {
     "cardTitle": "Afternoon energy over time",
     "chartHint": "Avg. afternoon energy by week",
@@ -34,6 +36,17 @@
       { "tone": "+", "title": "Rule stacking helps", "body": "Days with sunlight + stretching show 1.6 points higher afternoon energy on average." },
       { "tone": "+", "title": "Fewer crashes", "body": "Noticeable afternoon crashes dropped from 4 days/week to 1 in week 3." },
       { "tone": "!", "title": "Caffeine offset untested", "body": "You haven't logged delayed caffeine yet — worth trying in week 4." }
+    ]
+  },
+  "reports": {
+    "cardTitle": "Reports",
+    "items": [
+      {
+        "reportType": "INTERVENTION_INTERIM",
+        "label": "Interim analysis",
+        "headline": "Afternoon crashes eased during your Morning rules phase, with sunlight and stretching showing the strongest lift in afternoon energy.",
+        "isFinal": false
+      }
     ]
   },
   "adherence": {
