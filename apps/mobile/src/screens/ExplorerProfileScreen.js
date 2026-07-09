@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
@@ -11,10 +11,20 @@ import { ActivityMessageBlock } from "../components/activity/ActivityMessageBloc
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
+import { Card, CardTitle } from "../components/primitives/Card";
 import { Avatar } from "../components/primitives/Avatar";
 import { Badge } from "../components/primitives/Badge";
 import { BackIcon } from "../components/icons/ProtoIcons";
 import { isShortExploration } from "../utils/explorationIds";
+
+const RECENT_ACTIVITY_LIMIT = 6;
+
+function normalizeBadges(badges = []) {
+  return badges.map((b) => ({
+    variant: b.variant || b.s || "teal",
+    label: b.label || b.t || ""
+  }));
+}
 
 export default function ExplorerProfileScreen() {
   const { explorations, community } = useData();
@@ -22,33 +32,48 @@ export default function ExplorerProfileScreen() {
   const { params } = useRoute();
   const userId = params?.userId;
   const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
-  const u = userId ? getUserProfile(userId, community, followerIdSet) : null;
+  const fallback = useMemo(
+    () => (userId ? getUserProfile(userId, community, followerIdSet) : null),
+    [userId, community, followerIdSet]
+  );
+  const [profile, setProfile] = useState(null);
   const [acts, setActs] = useState([]);
   const [togglingNice, setTogglingNice] = useState({});
 
-  const loadActs = useCallback(async () => {
+  const loadProfile = useCallback(async () => {
     if (!userId) return;
     try {
-      const profile = await get(`/community/individuals/${userId}`);
-      setActs(profile.acts || []);
+      const data = await get(`/community/individuals/${userId}`);
+      setProfile(data);
+      setActs((data.acts || []).slice(0, RECENT_ACTIVITY_LIMIT));
     } catch {
-      setActs(u?.acts || []);
+      if (fallback) {
+        setProfile({
+          ...fallback,
+          locationLine: fallback.loc ? `${fallback.loc}` : "",
+          followStats: { following: 0, followers: 0 },
+          summaryTitle: "My exploration summary",
+          summaryRows: [],
+          hasSummaryData: false,
+          badges: normalizeBadges(fallback.badges)
+        });
+        setActs((fallback.acts || []).slice(0, RECENT_ACTIVITY_LIMIT));
+      }
     }
-  }, [userId, u?.acts]);
+  }, [userId, fallback]);
 
   useFocusEffect(
     useCallback(() => {
-      loadActs();
-    }, [loadActs])
+      loadProfile();
+    }, [loadProfile])
   );
 
   const toggleNice = useCallback(
     async (act) => {
-      if (!act?.id || togglingNice[act.id]) return;
+      if (!act?.id || act.kind === "report" || togglingNice[act.id]) return;
       const previous = { nc: act.nc || 0, viewerNiced: !!act.viewerNiced, supporterPreview: act.supporterPreview || [] };
       const optimisticNiced = !previous.viewerNiced;
 
-      // Flip the icon/color instantly, then reconcile with the server response.
       setActs((prev) =>
         prev.map((row) =>
           row.id === act.id
@@ -77,7 +102,11 @@ export default function ExplorerProfileScreen() {
         );
       } catch (err) {
         console.error("[ExplorerProfile] toggle nice failed:", err);
-        setActs((prev) => (prev.some((row) => row.id === act.id) ? prev.map((row) => (row.id === act.id ? { ...row, ...previous } : row)) : prev));
+        setActs((prev) =>
+          prev.some((row) => row.id === act.id)
+            ? prev.map((row) => (row.id === act.id ? { ...row, ...previous } : row))
+            : prev
+        );
       } finally {
         setTogglingNice((prev) => ({ ...prev, [act.id]: false }));
       }
@@ -87,7 +116,7 @@ export default function ExplorerProfileScreen() {
 
   const openSupporters = useCallback(
     (act) => {
-      if (!act?.id || !(act.nc > 0)) return;
+      if (!act?.id || act.kind === "report" || !(act.nc > 0)) return;
       navigation.navigate("NiceSupporters", { activityPostId: act.id });
     },
     [navigation]
@@ -95,11 +124,20 @@ export default function ExplorerProfileScreen() {
 
   const openActivity = useCallback(
     (act) => {
-      if (!act?.id) return;
+      if (act?.kind === "report" && act.explorationId) {
+        navigation.navigate("ExplorationReport", {
+          explorationId: act.explorationId,
+          ownerSlug: userId
+        });
+        return;
+      }
+      if (!act?.id || act.kind === "report") return;
       navigation.navigate("ActivityDetail", { activityPostId: act.id });
     },
-    [navigation]
+    [navigation, userId]
   );
+
+  const u = profile || fallback;
 
   if (!u || !userId) {
     return (
@@ -114,6 +152,9 @@ export default function ExplorerProfileScreen() {
 
   const following = isFollowing(userId);
   const mutualText = u.follower ? "Follows you" : "";
+  const badges = normalizeBadges(u.badges);
+  const locationLine = u.locationLine || (u.loc ? u.loc : "");
+  const exps = u.exps || [];
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
@@ -126,102 +167,167 @@ export default function ExplorerProfileScreen() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.pad}>
-        <View style={styles.heroWrap}>
-          <View style={styles.hero}>
-            <Avatar
-              size={64}
-              img={u.img}
-              sceneKey={u.sceneKey}
-              initials={u.initials}
-              avatarUrl={u.avatarUrl}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>{u.name}</Text>
-              <Text style={styles.loc}>📍 {u.loc}</Text>
-              <Text style={styles.bio}>{u.bio}</Text>
-              <View style={styles.followRow}>
-                {!isSelf(userId) ? (
-                  <Pressable style={[styles.followBtn, following && styles.followBtnOn]} onPress={() => toggleFollow(userId)}>
-                    <Text style={[styles.followTxt, following && styles.followTxtOn]}>{following ? "Following" : "Follow"}</Text>
-                  </Pressable>
-                ) : null}
-                {mutualText ? <Text style={styles.mutualTxt}>· {mutualText}</Text> : null}
+      <ScrollView contentContainerStyle={layout.screenPad}>
+        <View style={styles.hero}>
+          <Avatar
+            size={64}
+            img={u.img}
+            sceneKey={u.sceneKey}
+            initials={u.initials}
+            avatarUrl={u.avatarUrl}
+            borderColor={colors.orange}
+            borderWidth={2}
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{u.name}</Text>
+            {locationLine ? <Text style={styles.loc}>{locationLine}</Text> : null}
+            {badges.length ? (
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+                {badges.map((b) => (
+                  <Badge key={b.label} variant={b.variant}>
+                    {b.label}
+                  </Badge>
+                ))}
               </View>
+            ) : null}
+            <View style={styles.followRow}>
+              {!isSelf(userId) ? (
+                <Pressable style={[styles.followBtn, following && styles.followBtnOn]} onPress={() => toggleFollow(userId)}>
+                  <Text style={[styles.followTxt, following && styles.followTxtOn]}>{following ? "Following" : "Follow"}</Text>
+                </Pressable>
+              ) : null}
+              {mutualText ? <Text style={styles.mutualTxt}>· {mutualText}</Text> : null}
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Explorations</Text>
-          {(u.exps || []).map((ex) => {
-            const expMeta = explorations[ex.id];
-            return (
-              <Pressable
-                key={ex.id}
-                style={styles.expRow}
-                onPress={() =>
-                  navigation.navigate("ExplorationDetail", {
-                    id: ex.id,
-                    ownerSlug: userId,
-                    ownerName: u.name,
-                    ownerWeek: ex.w,
-                    ownerWeeksTotal: ex.of,
-                    ownerActive: ex.active
-                  })
-                }
-              >
-                <View style={[styles.expIcon, { backgroundColor: ex.bg || colors.amberBg }]}>
-                  <Text style={styles.expIconGlyph}>{ex.icon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.expName}>{expMeta?.feedLabel || ex.name}</Text>
-                  <Text style={styles.expProg}>
-                    {ex.active ? `${isShortExploration(ex.id) ? "Day" : "Week"} ${ex.w} of ${ex.of}` : "Complete"}
-                  </Text>
-                </View>
-                {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Complete</Badge>}
-              </Pressable>
-            );
-          })}
+        <View style={styles.ff}>
+          <View style={styles.ffCell}>
+            <Text style={styles.ffN}>{u.followStats?.following ?? 0}</Text>
+            <Text style={styles.ffL}>Following</Text>
+          </View>
+          <View style={styles.ffDiv} />
+          <View style={styles.ffCell}>
+            <Text style={styles.ffN}>{u.followStats?.followers ?? 0}</Text>
+            <Text style={styles.ffL}>Followers</Text>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Recent activity</Text>
-          {acts.map((a, i) => {
-            const actKey = a.id || String(i);
-
-            return (
-              <Pressable
-                key={actKey}
-                style={styles.actCard}
-                onPress={() => openActivity(a)}
+        <Card>
+          <CardTitle>{u.summaryTitle || "My exploration summary"}</CardTitle>
+          {u.hasSummaryData ? (
+            (u.summaryRows || []).map((row, i, arr) => (
+              <View
+                key={row.label}
+                style={[
+                  styles.kv,
+                  i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border, paddingBottom: 8 }
+                ]}
               >
-                <Text style={styles.actPill}>{a.exp}</Text>
-                <Text style={styles.actText}>{a.t}</Text>
+                <Text style={styles.kl}>{row.label}</Text>
+                <Text
+                  style={[
+                    styles.kvTxt,
+                    row.valueTone === "green" ? { color: colors.greenDark } : { color: colors.text }
+                  ]}
+                >
+                  {row.value}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.exploreEmpty}>
+              {u.emptySummaryMessage ||
+                "Join an exploration and log daily check-ins to build your personal summary."}
+            </Text>
+          )}
+        </Card>
 
-                <View style={styles.actFoot} onStartShouldSetResponder={() => true}>
-                  <Text style={styles.actTime}>{a.time}</Text>
-                  <View style={styles.actions}>
-                    <ActivityNiceBlock
-                      count={a.nc || 0}
-                      viewerNiced={!!a.viewerNiced}
-                      supporterPreview={a.supporterPreview || []}
-                      onToggleNice={() => toggleNice(a)}
-                      onOpenSupporters={() => openSupporters(a)}
-                      disabled={!!togglingNice[a.id]}
-                    />
-                    <ActivityMessageBlock
-                      count={a.mc || 0}
-                      messagePreview={a.messagePreview || []}
-                      onOpenMessages={() => openActivity(a)}
-                    />
+        <Card>
+          <CardTitle>My health explorations</CardTitle>
+          {exps.length === 0 ? (
+            <Text style={styles.exploreEmpty}>No active explorations yet.</Text>
+          ) : (
+            exps.map((ex, i, arr) => {
+              const expMeta = explorations[ex.id];
+              return (
+                <Pressable
+                  key={ex.id}
+                  onPress={() =>
+                    navigation.navigate("ExplorationDetail", {
+                      id: ex.id,
+                      ownerSlug: userId,
+                      ownerName: u.name,
+                      ownerWeek: ex.w,
+                      ownerWeeksTotal: ex.of,
+                      ownerActive: ex.active
+                    })
+                  }
+                  style={[
+                    styles.exploreRow,
+                    i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border }
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exploreTitle}>{expMeta?.feedLabel || ex.name}</Text>
+                    <Text style={styles.exploreMeta}>
+                      {ex.active
+                        ? `${isShortExploration(ex.id) ? "Day" : "Week"} ${ex.w} of ${ex.of}`
+                        : "Complete"}
+                    </Text>
                   </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+                  {ex.active ? <Badge variant="amber">Active</Badge> : <Badge variant="teal">Complete</Badge>}
+                </Pressable>
+              );
+            })
+          )}
+        </Card>
+
+        <Card>
+          <CardTitle>Recent activity</CardTitle>
+          {acts.length === 0 ? (
+            <Text style={styles.exploreEmpty}>No recent activity yet.</Text>
+          ) : (
+            acts.map((a, i) => {
+              const actKey = a.id || String(i);
+              const isReport = a.kind === "report";
+
+              return (
+                <Pressable
+                  key={actKey}
+                  style={[styles.actCard, i < acts.length - 1 && styles.actCardGap]}
+                  onPress={() => openActivity(a)}
+                >
+                  <Text style={styles.actPill}>{a.exp}</Text>
+                  <Text style={styles.actText}>{a.t}</Text>
+
+                  <View style={styles.actFoot} onStartShouldSetResponder={() => true}>
+                    <Text style={styles.actTime}>{a.time}</Text>
+                    {!isReport ? (
+                      <View style={styles.actions}>
+                        <ActivityNiceBlock
+                          count={a.nc || 0}
+                          viewerNiced={!!a.viewerNiced}
+                          supporterPreview={a.supporterPreview || []}
+                          onToggleNice={() => toggleNice(a)}
+                          onOpenSupporters={() => openSupporters(a)}
+                          disabled={!!togglingNice[a.id]}
+                        />
+                        <ActivityMessageBlock
+                          count={a.mc || 0}
+                          messagePreview={a.messagePreview || []}
+                          onOpenMessages={() => openActivity(a)}
+                        />
+                      </View>
+                    ) : (
+                      <Text style={styles.reportLink}>View report</Text>
+                    )}
+                  </View>
+                </Pressable>
+              );
+            })
+          )}
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
@@ -246,18 +352,9 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   hdr: { ...type.button, color: "#fff", flex: 1 },
-  pad: { paddingBottom: spacing.screenBottom },
-  heroWrap: {
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: spacing.screen,
-    paddingVertical: spacing.blockMbLg
-  },
-  hero: { flexDirection: "row", gap: spacing.xxl, alignItems: "flex-start" },
+  hero: { flexDirection: "row", gap: spacing.screen, marginBottom: spacing.sectionGap, alignItems: "center" },
   name: { ...type.profileName, fontSize: 18, color: colors.text },
-  loc: { ...text.sectionSub, marginBottom: 0 },
-  bio: { ...text.body, marginTop: spacing.sm },
+  loc: { ...text.profileMeta, marginBottom: 0 },
   followRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, marginTop: spacing.lg },
   followBtn: {
     borderWidth: 1.5,
@@ -270,35 +367,44 @@ const styles = StyleSheet.create({
   followTxt: { ...type.captionStrong, color: colors.greenDark },
   followTxtOn: { color: "#fff" },
   mutualTxt: { ...text.caption },
-  section: { paddingHorizontal: spacing.screen, paddingTop: spacing.blockMb },
-  sectionLabel: { ...text.uppercaseLabel, marginBottom: spacing.xl },
-  expRow: {
+  ff: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sectionGap,
+    overflow: "hidden"
+  },
+  ffCell: { flex: 1, paddingVertical: spacing.xxl, alignItems: "center" },
+  ffDiv: { width: 1, backgroundColor: colors.border },
+  ffN: { ...type.metricValue, color: colors.text },
+  ffL: text.profileMeta,
+  kv: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: spacing.lg
+  },
+  kl: text.body,
+  kvTxt: text.feedName,
+  exploreEmpty: { ...text.body, marginBottom: spacing.md },
+  exploreRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xl,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    gap: spacing.md,
+    paddingVertical: spacing.lg
   },
-  expIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  expIconGlyph: { fontSize: 16 },
-  expName: { ...text.feedName },
-  expProg: { ...text.profileMeta },
+  exploreTitle: { ...text.label, marginBottom: 2 },
+  exploreMeta: text.profileMeta,
   actCard: {
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.lg,
     paddingVertical: spacing.cardY,
     paddingHorizontal: spacing.cardX,
-    marginBottom: spacing.feedMb,
     backgroundColor: colors.surface
   },
+  actCardGap: { marginBottom: spacing.feedMb },
   actPill: {
     ...type.captionStrong,
     color: colors.greenDark,
@@ -317,5 +423,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm
   },
   actTime: { ...text.caption },
-  actions: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" }
+  actions: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-end" },
+  reportLink: { ...text.link, fontSize: 13, color: colors.greenDark }
 });

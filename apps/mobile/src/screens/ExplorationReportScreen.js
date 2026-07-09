@@ -266,8 +266,9 @@ export function ExplorationReportView({ report, theme = DEFAULT_THEME }) {
 
 export default function ExplorationReportScreen({ route }) {
   const explorationId = route?.params?.explorationId ?? "morning-rules";
+  const ownerSlug = route?.params?.ownerSlug ?? null;
   const posthog = usePostHog();
-  const { explorations } = useData();
+  const { explorations, profile } = useData();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -283,7 +284,11 @@ export default function ExplorationReportScreen({ route }) {
     async function loadReport() {
       setLoading(true);
       try {
-        const res = await get(`/me/explorations/${explorationId}/report`);
+        const isOwnReport = !ownerSlug || ownerSlug === profile?.viewerSlug;
+        const url = isOwnReport
+          ? `/me/explorations/${explorationId}/report`
+          : `/community/individuals/${ownerSlug}/explorations/${explorationId}/report`;
+        const res = await get(url);
         if (!cancelled && res?.report) {
           setReport(res.report);
           posthog?.capture("exploration report viewed");
@@ -305,7 +310,7 @@ export default function ExplorationReportScreen({ route }) {
     return () => {
       cancelled = true;
     };
-  }, [explorationId, posthog]);
+  }, [explorationId, ownerSlug, posthog, profile?.viewerSlug]);
 
   if (loading) {
     return (

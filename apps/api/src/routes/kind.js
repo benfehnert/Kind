@@ -12,6 +12,7 @@ import {
   fetchExplorationConsents,
   fetchOnboardingRow,
   fetchPrivacyPrefs,
+  fetchUserReport,
   upsertIndividualConsents
 } from "../lib/meData.js";
 import { buildHomePayload, fetchHomeFeedExtras } from "../lib/homeData.js";
@@ -19,7 +20,8 @@ import { buildExplorePayload } from "../lib/exploreData.js";
 import { stripCatalogProgressFields } from "../lib/explorationCatalog.js";
 import { buildInsightPayload } from "../lib/insightData.js";
 import { buildCommunityPayload } from "../lib/communityData.js";
-import { buildProfilePayload, updateProfile } from "../lib/profileData.js";
+import { buildProfilePayload, buildSummaryRows, updateProfile } from "../lib/profileData.js";
+import profileMock from "../mocks/profile.json" with { type: "json" };
 import { buildDataUsagePayload } from "../lib/dataUsageData.js";
 import { submitDataExportRequest } from "../lib/dataExportRequest.js";
 import {
@@ -277,9 +279,11 @@ router.get("/community/individuals/:slug", async (c) => {
        i.avatar_image_id AS img,
        i.avatar_initials AS initials,
        i.bio,
-       i.profile_meta  AS meta,
+       i.joined_at,
+       (SELECT COUNT(*)::int FROM individual_follows WHERE follower_id = i.id) AS following,
+       (SELECT COUNT(*)::int FROM individual_follows WHERE followee_id = i.id) AS followers,
        (SELECT COALESCE(json_agg(
-          json_build_object('t', ib.label, 's', ib.style::text)
+          json_build_object('variant', ib.style::text, 'label', ib.label)
           ORDER BY ib.sort_order
         ), '[]'::json)
         FROM individual_badges ib WHERE ib.individual_id = i.id) AS badges,
@@ -304,12 +308,54 @@ router.get("/community/individuals/:slug", async (c) => {
   if (!rows.length) return c.json({ error: "Individual not found" }, 404);
 
   const profile = rows[0];
-  const acts = await buildActsForIndividual(profile.id, viewerId);
+  const [acts, summary] = await Promise.all([
+    buildActsForIndividual(profile.id, viewerId),
+    buildSummaryRows(profile.id)
+  ]);
+
+  const joinedDate = new Date(profile.joined_at).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric"
+  });
+  const locationLine = profile.loc
+    ? `${profile.loc} · Joined ${joinedDate}`
+    : `Joined ${joinedDate}`;
 
   return c.json({
     ...profile,
     id: profile.slug,
+    locationLine,
+    followStats: {
+      following: Number(profile.following ?? 0),
+      followers: Number(profile.followers ?? 0)
+    },
+    summaryTitle: profileMock.summaryTitle,
+    ...summary,
     acts
+  });
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/report", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const explorationId = c.req.param("explorationId");
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const { rows } = await query(`SELECT id FROM individuals WHERE slug = $1`, [slug]);
+  if (!rows.length) return c.json({ error: "Individual not found" }, 404);
+
+  const row = await fetchUserReport(rows[0].id, explorationId);
+  if (!row) return c.json({ error: "Report not found" }, 404);
+
+  return c.json({
+    explorationId,
+    ownerSlug: slug,
+    report: row.content,
+    generatedAt: row.generated_at
   });
 });
 

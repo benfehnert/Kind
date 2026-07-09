@@ -175,8 +175,9 @@ export default function ProfileScreen() {
             </Text>
           ) : (
             consentedExplorations.map((ex, i, arr) => (
-              <View
+              <Pressable
                 key={ex.id}
+                onPress={() => navigation.navigate("ExplorationSummary", { id: ex.id })}
                 style={[
                   styles.exploreRow,
                   i < arr.length - 1 && { borderBottomWidth: 1, borderColor: colors.border }
@@ -191,7 +192,7 @@ export default function ProfileScreen() {
                   ) : null}
                 </View>
                 <Badge variant="amber">Active</Badge>
-              </View>
+              </Pressable>
             ))
           )}
           <Pressable style={styles.po} onPress={() => navigation.navigate("ConsentSummary")}>

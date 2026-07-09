@@ -173,6 +173,7 @@ function enrichMockActs(userSlug, acts = []) {
     return {
       ...act,
       id,
+      kind: act.kind || "log",
       nc: supporters.length,
       viewerNiced: nicedSlugs.has(profile.viewerSlug),
       supporterPreview: supporters.slice(0, 5).map(({ slug, name, img, initials }) => ({
@@ -185,6 +186,28 @@ function enrichMockActs(userSlug, acts = []) {
       messagePreview
     };
   });
+}
+
+function mockIndividualProfileExtras(user) {
+  const badges = (user.badges || []).map((b) => ({
+    variant: b.variant || b.s || "teal",
+    label: b.label || b.t || ""
+  }));
+  const locationLine = user.loc ? `${user.loc} · Joined March 2026` : "Joined March 2026";
+  return {
+    locationLine,
+    followStats: {
+      following: 18,
+      followers: user.follower ? 12 : 6
+    },
+    summaryTitle: profile.summaryTitle,
+    summaryRows: profile.summaryRows,
+    hasSummaryData: true,
+    emptySummaryMessage:
+      profile.emptySummaryMessage ||
+      "Join an exploration and log daily check-ins to build your personal summary.",
+    badges
+  };
 }
 
 function mockSupportersPayload(postId) {
@@ -307,15 +330,44 @@ router.get("/community/individuals/:id", (c) => {
   const id = c.req.param("id");
   const cu = community.commUsers?.[id];
   if (cu) {
-    return c.json({ id, tier: "comm", ...cu, acts: enrichMockActs(id, cu.acts || []) });
+    const extras = mockIndividualProfileExtras(cu);
+    return c.json({
+      id,
+      tier: "comm",
+      ...cu,
+      ...extras,
+      badges: extras.badges,
+      acts: enrichMockActs(id, cu.acts || []).slice(0, 6)
+    });
   }
 
   const bu = [...(community.basicUsers || []), ...(community.followerOnly || [])].find(
     (u) => u.id === id
   );
-  if (bu) return c.json({ tier: "basic", ...bu, acts: enrichMockActs(id, bu.acts || []) });
+  if (bu) {
+    const extras = mockIndividualProfileExtras(bu);
+    return c.json({
+      tier: "basic",
+      ...bu,
+      ...extras,
+      badges: extras.badges,
+      acts: enrichMockActs(id, bu.acts || []).slice(0, 6)
+    });
+  }
 
   return c.json({ error: "Individual not found" }, 404);
+});
+
+router.get("/community/individuals/:slug/explorations/:explorationId/report", (c) => {
+  const explorationId = c.req.param("explorationId");
+  const report = trialReports[explorationId];
+  if (!report) return c.json({ error: "Report not found" }, 404);
+  return c.json({
+    explorationId,
+    ownerSlug: c.req.param("slug"),
+    report,
+    generatedAt: new Date().toISOString()
+  });
 });
 
 // ---------------------------------------------------------------------------

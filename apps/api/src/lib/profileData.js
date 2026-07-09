@@ -68,7 +68,7 @@ async function fetchMorningRulesEnergySummary(individualId) {
   };
 }
 
-async function buildSummaryRows(individualId) {
+export async function buildSummaryRows(individualId) {
   const [catalogCount, activeCount, totalLogs, energy] = await Promise.all([
     fetchAvailableExplorationCount(),
     fetchUserActiveExplorationCount(individualId),

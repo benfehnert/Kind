@@ -143,7 +143,7 @@ export default function ExploreScreen() {
             <React.Fragment key={item.id}>
               <Pressable
                 style={[styles.area, styles.areaActive]}
-                onPress={() => navigation.navigate("ExplorationDetail", { id: item.id })}
+                onPress={() => navigation.navigate("ExplorationSummary", { id: item.id })}
               >
                 <View style={[styles.ico, { backgroundColor: colors.amberBg }]}>
                   <Text style={styles.icoGlyph}>{item.icon}</Text>
