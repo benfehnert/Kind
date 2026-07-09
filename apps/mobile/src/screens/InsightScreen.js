@@ -1,14 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useRoute, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, heights, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Card } from "../components/primitives/Card";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
+import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { Badge } from "../components/primitives/Badge";
 import { RichTextParts } from "../utils/RichText";
 import Svg, { Circle, Path, Polyline } from "react-native-svg";
@@ -45,7 +47,15 @@ export default function InsightScreen() {
   const ownInsightsSeen = useRef(false);
   const communityInsightsSeen = useRef(false);
 
+  const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
+    useCallback(
+      () => refetchInsight?.(route.params?.explorationId),
+      [refetchInsight, route.params?.explorationId]
+    )
+  );
+
   function handleScroll(e) {
+    scrollViewProps.onScroll?.(e);
     const y = e.nativeEvent.contentOffset.y;
     if (tab === 0 && y > 80 && !ownInsightsSeen.current) {
       ownInsightsSeen.current = true;
@@ -80,9 +90,12 @@ export default function InsightScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         contentContainerStyle={layout.screenPad}
+        {...scrollViewProps}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
+
         <SectionTitle>{insight.header.title}</SectionTitle>
         <SectionSub>{insight.header.sub}</SectionSub>
 

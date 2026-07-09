@@ -15,6 +15,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { readFileSync } from "fs";
 import { config } from "dotenv";
+import { formatFullLogDetail } from "../src/lib/logDetailFormat.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 config({ path: join(__dir, "../.env") });
@@ -210,6 +211,8 @@ async function seedExplorations() {
         sort_order: i,
         min_value: f.min ?? null,
         max_value: f.max ?? null,
+        step_value: f.step ?? null,
+        unit: f.unit ?? null,
         default_value: f.val != null ? f.val : (f.sel != null ? f.sel : null),
         hints: f.hints ?? [],
         options: f.opts ?? [],
@@ -696,6 +699,25 @@ async function seedFollows() {
 // 8. Activity posts
 // ---------------------------------------------------------------------------
 
+/**
+ * A given mock act's `fieldValues` are keyed the same way a real daily log
+ * would be. Map that exploration's `fields` (from explorations.json) into
+ * the shape formatFullLogDetail() expects, so seeded activity posts get the
+ * same full field-by-field breakdown a real logged-in user would see —
+ * instead of the old hand-typed, partial `detail` one-liner.
+ */
+function fieldDefsFor(explorationId) {
+  const fields = explorations[explorationId]?.fields ?? [];
+  return fields.map((f) => ({
+    id: f.id,
+    type: f.type,
+    label: f.label,
+    min: f.min ?? null,
+    max: f.max ?? null,
+    unit: f.unit ?? null
+  }));
+}
+
 async function seedActivityPosts() {
   console.log("Seeding activity posts…");
   const posts = [];
@@ -714,11 +736,15 @@ async function seedActivityPosts() {
       else if (expLabel.includes("relaxation") || expLabel.includes("Relaxation")) explorationId = "relaxation";
       else if (expLabel.includes("UPF") || expLabel.includes("mood")) explorationId = "upf-mood";
 
+      const detailMetrics = act.fieldValues
+        ? formatFullLogDetail(fieldDefsFor(explorationId), act.fieldValues) || (act.detail ?? null)
+        : (act.detail ?? null);
+
       posts.push({
         individual_id: individualId,
         exploration_id: explorationId,
         summary: act.t,
-        detail_metrics: act.detail ?? null,
+        detail_metrics: detailMetrics,
         exploration_label: act.exp ?? null,
         posted_at: new Date(Date.now() - i * 3600000 * 24).toISOString(),
         nice_count_base: act.nc ?? 0,

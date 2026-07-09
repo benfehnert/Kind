@@ -17,6 +17,7 @@
     "supabase:push": "node scripts/supabase-guard.mjs && npx supabase db push",
     "supabase:status": "node scripts/supabase-guard.mjs && npx supabase status",
     "seed:kind": "node apps/api/scripts/seed-kind.mjs",
+    "backfill:activity-detail": "node apps/api/scripts/backfill-activity-detail-metrics.mjs",
     "purge:dev-users": "node apps/api/scripts/purge-dev-users.mjs",
     "cent:analysis": "node apps/api/scripts/run-cent-analysis.mjs --pretty",
     "cent:export-csv": "node apps/api/scripts/export-cent-csv.mjs",
@@ -38,5 +39,8 @@
     "test:api:update-snapshots": "npm --prefix apps/api run test:update-snapshots",
     "release:staging": "node scripts/release.mjs staging",
     "release:main": "node scripts/release.mjs main"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

@@ -18,6 +18,7 @@ import {
   isShortExploration,
   SHORT_EXPLORATION_IDS
 } from "./centShort/index.js";
+import { formatFullLogDetail } from "./logDetailFormat.js";
 
 export const FEED_CHIPS = [
   { key: "all", label: "All" },
@@ -770,40 +771,16 @@ function stripSortKey(item) {
   return rest;
 }
 
-async function fetchAllLogFieldDefs(explorationId) {
+export async function fetchAllLogFieldDefs(explorationId) {
   const { rows } = await query(
-    `SELECT field_key AS id, field_type::text AS type, label, options AS opts
+    `SELECT field_key AS id, field_type::text AS type, label,
+            min_value AS min, max_value AS max, unit, options AS opts
      FROM log_field_defs
      WHERE exploration_id = $1
      ORDER BY sort_order`,
     [explorationId]
   );
   return rows;
-}
-
-/**
- * A full "everything recorded" breakdown of a day's log, one entry per
- * field the individual filled in, used on the Activity Detail screen so
- * viewers can see all of the data behind an activity — not just the
- * one-line summary shown in the feed.
- */
-function formatFullLogDetail(fields, fieldValues) {
-  const fv = fieldValues ?? {};
-  const parts = [];
-  for (const field of fields || []) {
-    const raw = fv[field.id];
-    if (raw === undefined || raw === null || raw === "") continue;
-    const formatted =
-      field.type === "checks"
-        ? Array.isArray(raw) && raw.length
-          ? raw.join(", ")
-          : "None"
-        : field.type === "range"
-          ? `${raw}/10`
-          : String(raw);
-    parts.push(`<strong>${field.label}:</strong> ${formatted}`);
-  }
-  return parts.join(" · ");
 }
 
 export async function recordActivityFromLog(individualId, explorationId, fieldValues, userExplorationId) {

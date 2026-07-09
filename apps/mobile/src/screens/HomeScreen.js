@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator, Platform, RefreshControl } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
@@ -9,6 +9,7 @@ import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { get, post } from "../lib/api";
 import { listConsentedExplorations } from "../hooks/useUserExplorations";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
@@ -16,6 +17,7 @@ import { SectionTitle } from "../components/primitives/SectionTitle";
 import { PrimaryButton } from "../components/primitives/Buttons";
 import { ChipRow } from "../components/primitives/ChipRow";
 import { Card } from "../components/primitives/Card";
+import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { ActivityFeedCard } from "../components/home/ActivityFeedCard";
 import { ExplorationProgressSummary } from "../components/home/ExplorationProgressSummary";
 import { ActiveExplorationOutcomeCards } from "../components/home/ActiveExplorationOutcomeCards";
@@ -34,9 +36,6 @@ import {
 
 const REMINDER_DISMISS_KEY = "@kind/reminder_banner_dismissed";
 const FEED_EXPANSION_KEY = "@kind/home_feed_expansion";
-const IS_WEB = Platform.OS === "web";
-const WEB_PULL_THRESHOLD = 70;
-const WEB_PULL_MAX = 100;
 const HOME_FEED_TAB_EVENT_MAP = {
   all: "viewed all feed",
   milestone: "viewed milestone feed",
@@ -84,11 +83,8 @@ export default function HomeScreen() {
   const [expandingFeed, setExpandingFeed] = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
   const [lastSavedNames, setLastSavedNames] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [webPullDistance, setWebPullDistance] = useState(0);
   const completedExplorationsTracked = useRef(new Set());
   const pendingOpenLogRef = useRef(false);
-  const webPullRef = useRef({ tracking: false, startY: 0, scrollY: 0 });
 
   const consentedIds = useMemo(
     () =>
@@ -393,58 +389,11 @@ export default function HomeScreen() {
     [chip, posthog]
   );
 
-  const handleRefresh = useCallback(async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      await Promise.all([refetchHome(), refetchInsight()]);
-    } catch (err) {
-      console.log("[HomeScreen] pull-to-refresh failed:", err);
-    } finally {
-      setRefreshing(false);
-      setWebPullDistance(0);
-    }
-  }, [refreshing, refetchHome, refetchInsight]);
-
-  const handleWebScroll = useCallback((e) => {
-    webPullRef.current.scrollY = e.nativeEvent?.contentOffset?.y ?? 0;
-  }, []);
-
-  const handleWebTouchStart = useCallback(
-    (e) => {
-      if (refreshing) return;
-      if (webPullRef.current.scrollY > 0) return;
-      const touch = e.nativeEvent?.touches?.[0];
-      if (!touch) return;
-      webPullRef.current.tracking = true;
-      webPullRef.current.startY = touch.pageY;
-    },
-    [refreshing]
+  const handleHomeRefresh = useCallback(
+    () => Promise.all([refetchHome(), refetchInsight()]),
+    [refetchHome, refetchInsight]
   );
-
-  const handleWebTouchMove = useCallback((e) => {
-    if (!webPullRef.current.tracking) return;
-    const touch = e.nativeEvent?.touches?.[0];
-    if (!touch) return;
-    const delta = touch.pageY - webPullRef.current.startY;
-    if (delta <= 0) {
-      setWebPullDistance(0);
-      return;
-    }
-    setWebPullDistance(Math.min(delta / 1.6, WEB_PULL_MAX));
-  }, []);
-
-  const handleWebTouchEnd = useCallback(() => {
-    if (!webPullRef.current.tracking) return;
-    webPullRef.current.tracking = false;
-    setWebPullDistance((distance) => {
-      if (distance >= WEB_PULL_THRESHOLD) {
-        handleRefresh();
-        return distance;
-      }
-      return 0;
-    });
-  }, [handleRefresh]);
+  const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(handleHomeRefresh);
 
   async function handleSaveLogs() {
     if (saving || logExplorations.length === 0) return;
@@ -523,39 +472,8 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.root}>
-      <ScrollView
-        contentContainerStyle={styles.pad}
-        refreshControl={
-          IS_WEB ? undefined : (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={colors.greenDark}
-              colors={[colors.greenDark]}
-            />
-          )
-        }
-        onScroll={IS_WEB ? handleWebScroll : undefined}
-        scrollEventThrottle={IS_WEB ? 16 : undefined}
-        onTouchStart={IS_WEB ? handleWebTouchStart : undefined}
-        onTouchMove={IS_WEB ? handleWebTouchMove : undefined}
-        onTouchEnd={IS_WEB ? handleWebTouchEnd : undefined}
-        onTouchCancel={IS_WEB ? handleWebTouchEnd : undefined}
-      >
-        {IS_WEB && (webPullDistance > 0 || refreshing) ? (
-          <View
-            style={[
-              styles.webPullIndicator,
-              { height: refreshing ? 44 : webPullDistance }
-            ]}
-          >
-            {refreshing || webPullDistance >= WEB_PULL_THRESHOLD ? (
-              <ActivityIndicator size="small" color={colors.greenDark} />
-            ) : (
-              <Text style={styles.webPullText}>Pull to refresh</Text>
-            )}
-          </View>
-        ) : null}
+      <ScrollView contentContainerStyle={styles.pad} {...scrollViewProps}>
+        <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
 
         <SectionTitle>{home.greeting}</SectionTitle>
 
@@ -704,13 +622,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   pad: layout.screenPad,
-  webPullIndicator: {
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    marginBottom: spacing.sm
-  },
-  webPullText: { ...type.exploreDesc, color: colors.textMuted },
   reminderBanner: {
     flexDirection: "row",
     alignItems: "center",

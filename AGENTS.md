@@ -35,6 +35,7 @@ If a port is already in use, the script will ask whether to stop the existing pr
 - `npm run supabase:push` — push migrations to remote project
 - `npm run supabase:status` — show local URLs and API keys
 - `npm run seed:kind` — seed demo data into a running local DB
+- `npm run backfill:activity-detail` — recompute `detail_metrics` on existing activity posts from their matching daily log (dry-run by default; pass `-- --confirm` to apply)
 
 ### Testing
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   ScrollView,
@@ -12,18 +12,23 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
 import { useExplorationStart } from "../hooks/useUserExplorations";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { post } from "../lib/api";
 import { colors, radius, spacing } from "../theme/colors";
 import { REM } from "../theme/tokens";
 import { SectionTitle, SectionSub } from "../components/primitives/SectionTitle";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
+import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 
 export default function ExploreScreen() {
   const { explorePage, refetchExplore } = useData();
+  const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
+    useCallback(() => refetchExplore(), [refetchExplore])
+  );
   const exploreCopy = explorePage?.copy ?? {};
   const activeList = explorePage?.activeExplorations ?? [];
   const available = explorePage?.availableExplorations ?? [];
@@ -72,7 +77,9 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.root}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.pad}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.pad} {...scrollViewProps}>
+        <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
+
         <SectionTitle>{exploreCopy.title}</SectionTitle>
         <SectionSub>{exploreCopy.subtitle}</SectionSub>
         <View style={styles.searchWrap}>

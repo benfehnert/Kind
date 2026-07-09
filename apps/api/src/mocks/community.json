@@ -55,6 +55,12 @@
           "time": "Yesterday",
           "exp": "Relaxation practices & composure",
           "detail": "2 practices \u00b7 Stress 4/10 \u00b7 Anxiety 3/10 \u00b7 Composure 7/10",
+          "fieldValues": {
+            "rp_practices": ["Vagal breathing", "Short nature walk"],
+            "rp_stress": 4,
+            "rp_anxiety": 3,
+            "rp_composure": 7
+          },
           "nc": 7
         },
         {
@@ -62,6 +68,13 @@
           "time": "3 days ago",
           "exp": "Time-restricted eating",
           "detail": "Eating window 9hr \u00b7 Energy 8/10 \u00b7 No crash",
+          "fieldValues": {
+            "te_first": "8\u20139am",
+            "te_last": "6\u20137pm",
+            "te_energy": 8,
+            "te_hunger": 7,
+            "te_mood": 7
+          },
           "nc": 2
         }
       ],
@@ -101,6 +114,12 @@
           "time": "4 hours ago",
           "exp": "Relaxation practices & composure",
           "detail": "2 practices \u00b7 Stress 4/10 \u00b7 Anxiety 3/10 \u00b7 Composure 7/10",
+          "fieldValues": {
+            "rp_practices": ["Vagal breathing", "Progressive muscle relaxation"],
+            "rp_stress": 4,
+            "rp_anxiety": 3,
+            "rp_composure": 7
+          },
           "nc": 9
         },
         {
@@ -191,6 +210,12 @@
           "time": "5 hours ago",
           "exp": "Relaxation practices & composure",
           "detail": "2 practices \u00b7 Stress 3/10 \u00b7 Anxiety 2/10 \u00b7 Composure 8/10",
+          "fieldValues": {
+            "rp_practices": ["Meditation / visualisation", "Progressive muscle relaxation"],
+            "rp_stress": 3,
+            "rp_anxiety": 2,
+            "rp_composure": 8
+          },
           "nc": 11
         },
         {
@@ -198,6 +223,12 @@
           "time": "Yesterday",
           "exp": "Relaxation practices & composure",
           "detail": "Nature walk \u00b7 Stress 4/10 \u00b7 Anxiety 3/10",
+          "fieldValues": {
+            "rp_practices": ["Short nature walk"],
+            "rp_stress": 4,
+            "rp_anxiety": 3,
+            "rp_composure": 6
+          },
           "nc": 5
         }
       ],
@@ -237,6 +268,13 @@
           "time": "This morning",
           "exp": "Morning rules & afternoon energy",
           "detail": "Sunlight \u00b7 Stretch \u00b7 10hr window \u00b7 Afternoon energy 8/10",
+          "fieldValues": {
+            "mr_rules": ["Early sunlight exposure", "Morning stretching", "Caffeine offset (delayed first cup)"],
+            "mr_am_energy": 7,
+            "mr_pm_energy": 8,
+            "mr_crash": "None",
+            "mr_focus": 7
+          },
           "nc": 3
         }
       ],
@@ -265,6 +303,15 @@
           "w": 5,
           "of": 6,
           "active": true
+        },
+        {
+          "id": "screen-sleep",
+          "name": "Does moderation of screen exposure improve my sleep quality?",
+          "icon": "\ud83d\udcf1",
+          "bg": "#E6F1FB",
+          "w": 2,
+          "of": 6,
+          "active": true
         }
       ],
       "acts": [
@@ -273,7 +320,28 @@
           "time": "Last night",
           "exp": "Relaxation practices & composure",
           "detail": "4 practices \u00b7 Stress 3/10 \u00b7 Anxiety 2/10 \u00b7 Composure 9/10",
+          "fieldValues": {
+            "rp_practices": ["Vagal breathing", "Progressive muscle relaxation", "Short nature walk", "Meditation / visualisation"],
+            "rp_stress": 3,
+            "rp_anxiety": 2,
+            "rp_composure": 9
+          },
           "nc": 8
+        },
+        {
+          "t": "Cut screens 45 minutes before bed and read instead \u2014 fell asleep faster and slept better.",
+          "time": "This morning",
+          "exp": "Screen moderation & sleep",
+          "detail": "Screen-free wind-down 45min \u00b7 Time to fall asleep 10\u201320 min \u00b7 Sleep quality 8/10",
+          "fieldValues": {
+            "ss_last": "60+ min before",
+            "ss_bed": "None",
+            "ss_windup": 45,
+            "ss_activities": ["Reading", "Stretching"],
+            "ss_onset": "10\u201320 min",
+            "ss_sleep": 8
+          },
+          "nc": 6
         }
       ],
       "badges": [
@@ -308,6 +376,13 @@
           "time": "Yesterday",
           "exp": "Time-restricted eating",
           "detail": "Eating window 8hr \u00b7 Energy 8/10 \u00b7 Hunger comfort 8/10",
+          "fieldValues": {
+            "te_first": "8\u20139am",
+            "te_last": "4\u20136pm",
+            "te_energy": 8,
+            "te_hunger": 8,
+            "te_mood": 7
+          },
           "nc": 6
         },
         {
@@ -350,6 +425,12 @@
           "time": "This morning",
           "exp": "Relaxation practices & composure",
           "detail": "Vagal breathing \u00b7 PMR \u00b7 Stress 4/10 \u00b7 Composure 7/10",
+          "fieldValues": {
+            "rp_practices": ["Vagal breathing", "Progressive muscle relaxation", "Short nature walk"],
+            "rp_stress": 4,
+            "rp_anxiety": 3,
+            "rp_composure": 7
+          },
           "nc": 12
         }
       ],

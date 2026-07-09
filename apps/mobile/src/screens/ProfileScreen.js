@@ -10,12 +10,14 @@ import { useProfile } from "../context/ProfileContext";
 import { useUiShell } from "../context/UiContext";
 import { requestDailyReminderPermission } from "../lib/notifications";
 import { formatConsentDate } from "../hooks/useUserExplorations";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Card, CardTitle } from "../components/primitives/Card";
 import { Badge } from "../components/primitives/Badge";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
+import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 import { PRIVACY_POLICY_URL } from "../data/explorerOnboarding";
@@ -24,6 +26,9 @@ export default function ProfileScreen() {
   const posthog = usePostHog();
   const { profile, explorations, refetchProfile } = useData();
   const navigation = useNavigation();
+  const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
+    useCallback(() => refetchProfile?.(), [refetchProfile])
+  );
   const { followingCount } = useFollow();
   const { privacyPrefs, updatePrivacyPref, explorationConsents, activeExplorationId } = useConsent();
   const { displayName, avatar, initials, avatarProps, updateDisplayName, updateAvatar } = useProfile();
@@ -84,7 +89,9 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={layout.screenPad}>
+      <ScrollView contentContainerStyle={layout.screenPad} {...scrollViewProps}>
+        <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
+
         <View style={styles.hero}>
           <Pressable
             onPress={() => setAvatarModalOpen(true)}

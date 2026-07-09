@@ -7,6 +7,7 @@ import { getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { useFollow } from "../context/FollowContext";
+import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, fontSize, heights, radius, spacing } from "../theme/colors";
 import { REM } from "../theme/tokens";
 import { layout, text } from "../theme/textStyles";
@@ -15,13 +16,20 @@ import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { Badge } from "../components/primitives/Badge";
 import { Avatar } from "../components/primitives/Avatar";
 import { Card, CardTitle } from "../components/primitives/Card";
+import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { RichTextParts } from "../utils/RichText";
 
 const INITIAL_PANEL_HEIGHT = 500;
 
 export default function CommunityScreen() {
   const posthog = usePostHog();
-  const { community, exploreCopy, explorePage, refetchExplore } = useData();
+  const { community, exploreCopy, explorePage, refetchExplore, refetchSocialFollows } = useData();
+  const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
+    useCallback(
+      () => Promise.all([refetchExplore?.(), refetchSocialFollows?.()]),
+      [refetchExplore, refetchSocialFollows]
+    )
+  );
   const explorations = useUserExplorations();
   const navigation = useNavigation();
   const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
@@ -227,7 +235,9 @@ export default function CommunityScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView contentContainerStyle={layout.screenPad}>
+      <ScrollView contentContainerStyle={layout.screenPad} {...scrollViewProps}>
+        <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
+
         <Text style={text.sectionTitle}>{c.title}</Text>
         <Text style={text.sectionSub}>{c.subtitle}</Text>
         <ScienceBanner title={c.bannerTitle} body={c.bannerBody} footer={<View style={styles.bb}>{c.bannerBadges.map((b) => <Badge key={b.label} variant={b.variant}>{b.label}</Badge>)}</View>} />
