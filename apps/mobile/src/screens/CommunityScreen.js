@@ -21,6 +21,28 @@ import { RichTextParts } from "../utils/RichText";
 
 const INITIAL_PANEL_HEIGHT = 500;
 
+/** Derives completed/active exploration counts (and active exploration names) for a community list row. */
+function getExplorationStats(u) {
+  const exps = Array.isArray(u?.exps) ? u.exps : null;
+  if (exps && exps.length) {
+    const activeExps = exps.filter((e) => e.active);
+    const completedExps = exps.filter((e) => !e.active);
+    return {
+      completedCount: completedExps.length,
+      activeCount: activeExps.length,
+      activeNames: activeExps.map((e) => e.name).filter(Boolean)
+    };
+  }
+  const meta = (u?.meta || "").trim();
+  if (!meta) return { completedCount: 0, activeCount: 0, activeNames: [] };
+  if (/complete/i.test(meta)) {
+    return { completedCount: 1, activeCount: 0, activeNames: [] };
+  }
+  const parts = meta.split("·").map((s) => s.trim()).filter(Boolean);
+  const name = parts.length > 1 ? parts[1] : parts[0];
+  return { completedCount: 0, activeCount: name ? 1 : 0, activeNames: name ? [name] : [] };
+}
+
 export default function CommunityScreen() {
   const posthog = usePostHog();
   const { community, exploreCopy, explorePage, refetchExplore, refetchSocialFollows } = useData();
@@ -32,7 +54,7 @@ export default function CommunityScreen() {
   );
   const explorations = useUserExplorations();
   const navigation = useNavigation();
-  const { isFollowing, toggleFollow, followerIdSet, isSelf } = useFollow();
+  const { isFollowing, toggleFollow, isFollowingResearcher, toggleResearcherFollow, followerIdSet, isSelf } = useFollow();
   const [tab, setTab] = useState("all");
   const [q, setQ] = useState("");
   const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
@@ -146,14 +168,21 @@ export default function CommunityScreen() {
     const prof = uid ? getUserProfile(uid, community, new Set()) : u;
     const following = uid ? isFollowing(uid) : false;
     const badges = (prof.badges || []).slice(0, 2);
+    const stats = getExplorationStats(u);
     return (
       <Pressable key={`person:${uid || u.name}`} style={styles.row} onPress={() => navigation.navigate("ExplorerProfile", { userId: uid })}>
-        <Avatar size={42} img={prof.img} sceneKey={prof.sceneKey} avatarUrl={prof.avatarUrl} initials={prof.initials} />
+        <Avatar size={42} sceneKey={prof.sceneKey} avatarUrl={prof.avatarUrl} initials={prof.initials} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.pname}>{prof.name}</Text>
           <Text style={styles.pmeta}>
-            {prof.loc} · {prof.meta}
+            {stats.completedCount} exploration{stats.completedCount === 1 ? "" : "s"} completed · {stats.activeCount}{" "}
+            active
           </Text>
+          {stats.activeNames.length ? (
+            <Text style={styles.pactive} numberOfLines={2}>
+              Active in: {stats.activeNames.join(", ")}
+            </Text>
+          ) : null}
           {badges.length ? (
             <View style={{ flexDirection: "row", gap: 4, marginTop: 4 }}>
               {badges.map((b) => (
@@ -207,24 +236,36 @@ export default function CommunityScreen() {
     );
   };
 
-  const renderResearcher = (r) => (
-    <Pressable key={`researcher:${r.id}`} style={styles.resRow} onPress={() => navigation.navigate("ResearcherProfile", { researcherId: r.id })}>
-      <Avatar size={44} img={r.img} initials={r.initials} />
-      <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-          <Text style={styles.rtitle}>{r.name}</Text>
-          {r.verified ? <Badge variant="blue">✓ Verified</Badge> : null}
+  const renderResearcher = (r) => {
+    const following = isFollowingResearcher(r.id);
+    return (
+      <Pressable key={`researcher:${r.id}`} style={styles.resRow} onPress={() => navigation.navigate("ResearcherProfile", { researcherId: r.id })}>
+        <Avatar size={44} img={r.img} initials={r.initials} />
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+            <Text style={styles.rtitle}>{r.name}</Text>
+            {r.verified ? <Badge variant="blue">✓ Verified</Badge> : null}
+          </View>
+          <Text style={styles.rsub}>{r.title}</Text>
+          <Text style={styles.rorg}>{r.org}</Text>
+          {r.explorations?.[0] ? (
+            <Text style={styles.expLine}>
+              {explorations[r.explorations[0].expId]?.category} · {explorations[r.explorations[0].expId]?.title}
+            </Text>
+          ) : null}
         </View>
-        <Text style={styles.rsub}>{r.title}</Text>
-        <Text style={styles.rorg}>{r.org}</Text>
-        {r.explorations?.[0] ? (
-          <Text style={styles.expLine}>
-            {explorations[r.explorations[0].expId]?.category} · {explorations[r.explorations[0].expId]?.title}
-          </Text>
-        ) : null}
-      </View>
-    </Pressable>
-  );
+        <Pressable
+          style={[styles.fb, following && styles.fbon]}
+          onPress={(e) => {
+            e.stopPropagation();
+            toggleResearcherFollow(r.id);
+          }}
+        >
+          <Text style={[styles.ft, following && styles.fton]}>{following ? "Following" : "Follow"}</Text>
+        </Pressable>
+      </Pressable>
+    );
+  };
 
   const renderEmptyState = (key, title, body) => (
     <View key={key} style={styles.emptyState}>
@@ -238,7 +279,6 @@ export default function CommunityScreen() {
       <ScrollView contentContainerStyle={layout.screenPad} {...scrollViewProps}>
         <PullToRefreshIndicator refreshing={refreshing} webPullDistance={webPullDistance} />
 
-        <Text style={text.sectionTitle}>{c.title}</Text>
         <Text style={text.sectionSub}>{c.subtitle}</Text>
         <ScienceBanner title={c.bannerTitle} body={c.bannerBody} footer={<View style={styles.bb}>{c.bannerBadges.map((b) => <Badge key={b.label} variant={b.variant}>{b.label}</Badge>)}</View>} />
 
@@ -383,6 +423,7 @@ const styles = StyleSheet.create({
   },
   pname: text.profileName,
   pmeta: text.profileMeta,
+  pactive: { ...text.caption, color: colors.greenDark, marginTop: 2 },
   fb: {
     borderWidth: 1.5,
     borderColor: colors.greenDark,
