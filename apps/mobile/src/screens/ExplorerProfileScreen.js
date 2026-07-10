@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
-import { getUserProfile } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { get, patch } from "../lib/api";
@@ -13,6 +12,7 @@ import { layout, text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Card, CardTitle } from "../components/primitives/Card";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 import { Badge } from "../components/primitives/Badge";
 import { BackIcon } from "../components/icons/ProtoIcons";
 import { isShortExploration } from "../utils/explorationIds";
@@ -27,40 +27,29 @@ function normalizeBadges(badges = []) {
 }
 
 export default function ExplorerProfileScreen() {
-  const { explorations, community } = useData();
+  const { explorations } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const userId = params?.userId;
-  const { followerIdSet, isFollowing, toggleFollow, isSelf } = useFollow();
-  const fallback = useMemo(
-    () => (userId ? getUserProfile(userId, community, followerIdSet) : null),
-    [userId, community, followerIdSet]
-  );
+  const { isFollowing, toggleFollow, isSelf } = useFollow();
   const [profile, setProfile] = useState(null);
   const [acts, setActs] = useState([]);
+  const [unavailable, setUnavailable] = useState(false);
   const [togglingNice, setTogglingNice] = useState({});
 
   const loadProfile = useCallback(async () => {
     if (!userId) return;
+    setUnavailable(false);
     try {
       const data = await get(`/community/individuals/${userId}`);
       setProfile(data);
       setActs((data.acts || []).slice(0, RECENT_ACTIVITY_LIMIT));
     } catch {
-      if (fallback) {
-        setProfile({
-          ...fallback,
-          locationLine: fallback.loc ? `${fallback.loc}` : "",
-          followStats: { following: 0, followers: 0 },
-          summaryTitle: "My exploration summary",
-          summaryRows: [],
-          hasSummaryData: false,
-          badges: normalizeBadges(fallback.badges)
-        });
-        setActs((fallback.acts || []).slice(0, RECENT_ACTIVITY_LIMIT));
-      }
+      setProfile(null);
+      setActs([]);
+      setUnavailable(true);
     }
-  }, [userId, fallback]);
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -137,12 +126,17 @@ export default function ExplorerProfileScreen() {
     [navigation, userId]
   );
 
-  const u = profile || fallback;
+  const u = profile;
 
   if (!u || !userId) {
     return (
-      <SafeAreaView style={{ flex: 1, padding: 20 }}>
-        <Text>Explorer not found</Text>
+      <SafeAreaView style={{ flex: 1, padding: 20, backgroundColor: colors.bg }}>
+        <Text style={styles.name}>{unavailable ? "Individual not available" : "Explorer not found"}</Text>
+        <Text style={styles.loc}>
+          {unavailable
+            ? "This Individual is not visible in the community, or you do not have permission to view other Individuals."
+            : "We could not load this profile."}
+        </Text>
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={{ color: colors.greenDark, marginTop: 12 }}>Back</Text>
         </Pressable>
@@ -171,10 +165,7 @@ export default function ExplorerProfileScreen() {
         <View style={styles.hero}>
           <Avatar
             size={64}
-            img={u.img}
-            sceneKey={u.sceneKey}
-            initials={u.initials}
-            avatarUrl={u.avatarUrl}
+            {...avatarPropsFromPerson(u)}
             borderColor={colors.orange}
             borderWidth={2}
           />

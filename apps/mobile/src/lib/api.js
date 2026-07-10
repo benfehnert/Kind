@@ -28,8 +28,11 @@ async function parseResponse(res) {
   }
 }
 
-async function request(method, path, body, { isPublic = false, retried = false } = {}) {
-  const headers = { "Content-Type": "application/json" };
+async function request(method, path, body, { isPublic = false, retried = false, headers: extraHeaders } = {}) {
+  const headers = { ...extraHeaders };
+  if (!(body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   if (!isPublic) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -38,7 +41,7 @@ async function request(method, path, body, { isPublic = false, retried = false }
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined
+    body: body !== undefined ? (body instanceof FormData ? body : JSON.stringify(body)) : undefined
   });
 
   if (res.status === 401 && !isPublic && !retried && onRefresh) {
@@ -69,6 +72,16 @@ export function post(path, body) {
 
 export function patch(path, body) {
   return request("PATCH", path, body);
+}
+
+export async function uploadProfileAvatar(uri) {
+  const formData = new FormData();
+  formData.append("file", {
+    uri,
+    name: "avatar.jpg",
+    type: "image/jpeg"
+  });
+  return request("POST", "/profile/avatar", formData);
 }
 
 export function put(path, body) {

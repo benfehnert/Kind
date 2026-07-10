@@ -185,6 +185,48 @@ export async function upsertIndividualConsents(individualId, choices) {
   }
 }
 
+/** Partial update of privacy_settings; syncs individual_consents when consent toggles change. */
+export async function patchPrivacyPrefs(individualId, partial = {}) {
+  const current = await fetchPrivacyPrefs(individualId);
+  const merged = {
+    globalConsent:
+      partial.globalConsent !== undefined ? partial.globalConsent : current.globalConsent,
+    science: partial.science !== undefined ? partial.science : current.science,
+    visible: partial.visible !== undefined ? partial.visible : current.visible,
+    reminders: partial.reminders !== undefined ? partial.reminders : current.reminders
+  };
+
+  await query(
+    `INSERT INTO privacy_settings (
+       individual_id, platform_consent, contribute_to_citizen_science,
+       visible_in_community, daily_reminders
+     ) VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (individual_id) DO UPDATE SET
+       platform_consent = EXCLUDED.platform_consent,
+       contribute_to_citizen_science = EXCLUDED.contribute_to_citizen_science,
+       visible_in_community = EXCLUDED.visible_in_community,
+       daily_reminders = EXCLUDED.daily_reminders,
+       updated_at = NOW()`,
+    [individualId, merged.globalConsent, merged.science, merged.visible, merged.reminders]
+  );
+
+  const consentUpdates = {};
+  if (partial.globalConsent !== undefined) {
+    consentUpdates.platform_participation = merged.globalConsent;
+  }
+  if (partial.science !== undefined) {
+    consentUpdates.research_contribution = merged.science;
+  }
+  if (partial.visible !== undefined) {
+    consentUpdates.result_sharing = merged.visible;
+  }
+  if (Object.keys(consentUpdates).length) {
+    await upsertIndividualConsents(individualId, consentUpdates);
+  }
+
+  return merged;
+}
+
 export async function setActiveExploration(individualId, explorationId) {
   await query(
     `UPDATE exploration_consents SET is_active = FALSE, updated_at = NOW()

@@ -14,21 +14,45 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
+import { OAuthButtons } from "../components/auth/OAuthButtons";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
 import { colors, fontFamily, radius, spacing } from "../theme/colors";
 import { type } from "../theme/typography";
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
-  const { signup } = useAuth();
+  const { signup, signInWithOAuth } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [oauthProvider, setOauthProvider] = useState(null);
 
   const canSubmit =
-    name.trim().length > 0 && email.trim().length > 0 && password.length >= 8 && !submitting;
+    name.trim().length > 0 &&
+    email.trim().length > 0 &&
+    password.length >= 8 &&
+    !submitting &&
+    !oauthProvider;
+
+  const handleOAuth = async (provider) => {
+    setError("");
+    setOauthProvider(provider);
+    try {
+      await signInWithOAuth(provider);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err?.message === "OAuth sign-in was cancelled"
+            ? ""
+            : "Something went wrong. Please try again.";
+      if (message) setError(message);
+    } finally {
+      setOauthProvider(null);
+    }
+  };
 
   const handleSignUp = async () => {
     if (!canSubmit) return;
@@ -63,7 +87,7 @@ export default function SignUpScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.title}>Create your account</Text>
-          <Text style={styles.subhead}>Use your email and a password to get started.</Text>
+          <Text style={styles.subhead}>Use your email and a password, or continue with a provider.</Text>
 
           <View style={styles.form}>
             <View style={styles.inputCard}>
@@ -122,6 +146,18 @@ export default function SignUpScreen() {
               <ActivityIndicator style={styles.spinner} color={colors.greenDark} />
             ) : null}
           </View>
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <OAuthButtons
+            onProviderPress={handleOAuth}
+            disabled={submitting}
+            loadingProvider={oauthProvider}
+          />
 
           <View style={styles.footer}>
             <Text style={styles.footerTxt}>Already have an account?</Text>
@@ -202,6 +238,17 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   spinner: { marginTop: 8 },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginVertical: 24
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: {
+    ...type.caption,
+    color: colors.textMuted
+  },
   footer: {
     flexDirection: "row",
     justifyContent: "center",

@@ -1,18 +1,30 @@
 {
   "expo": {
-    "name": "ProtocolPath",
+    "name": "Kind Health",
     "slug": "protocol-path",
+    "scheme": "kind",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/images/app-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#22401F"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "app.kind.health"
     },
-    "android": {},
-    "web": {},
-    "plugins": ["expo-localization", "expo-notifications"]
+    "android": {
+      "package": "app.kind.health"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "name": "Kind Health",
+      "shortName": "Kind Health",
+      "themeColor": "#22401F",
+      "backgroundColor": "#22401F",
+      "display": "standalone"
+    },
+    "plugins": ["expo-localization", "expo-notifications", "expo-web-browser"]
   }
 }

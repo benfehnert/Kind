@@ -7,6 +7,7 @@ import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 
 export default function ExplorersListScreen() {
   const { community, explorations } = useData();
@@ -45,7 +46,7 @@ export default function ExplorersListScreen() {
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Pressable style={{ flex: 1, flexDirection: "row", gap: 12 }} onPress={() => navigation.navigate("ExplorerProfile", { userId: item.uid })}>
-              <Avatar size={44} img={item.img} sceneKey={item.sceneKey} initials={item.initials} avatarUrl={item.avatarUrl} />
+              <Avatar size={44} {...avatarPropsFromPerson(item)} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>{item.meta || item.loc}</Text>

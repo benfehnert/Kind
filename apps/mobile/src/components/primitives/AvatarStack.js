@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Avatar } from "./Avatar";
 import { colors } from "../../theme/colors";
+import { avatarPropsFromPerson } from "../../lib/avatarProps";
 
 export function AvatarStack({ people = [], size = 24, max = 5, onPress }) {
   const visible = people.slice(0, max);
@@ -28,8 +29,7 @@ export function AvatarStack({ people = [], size = 24, max = 5, onPress }) {
         >
           <Avatar
             size={size - 2}
-            img={person.img}
-            initials={person.initials}
+            {...avatarPropsFromPerson(person)}
             borderWidth={1.5}
             borderColor={colors.surface}
           />

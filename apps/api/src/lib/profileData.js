@@ -2,10 +2,7 @@ import { query } from "../db.js";
 import profileMock from "../mocks/profile.json" with { type: "json" };
 import { isShortExploration, SHORT_EXPLORATION_IDS } from "./centShort/index.js";
 import { fetchActiveRun } from "./homeData.js";
-
-function avatarKeyFromImageId(imageId) {
-  return imageId != null ? `pravatar-${imageId}` : null;
-}
+import { resolveAvatarKey, normalizeAvatarUpdate } from "./avatarUtils.js";
 
 function avg(values) {
   if (!values.length) return null;
@@ -121,6 +118,8 @@ export async function buildProfilePayload(individualId) {
        i.location,
        i.avatar_initials AS "avatarInitials",
        i.avatar_image_id AS "avatarImageId",
+       i.avatar_key AS "avatarKeyStored",
+       i.avatar_url AS "avatarUrl",
        i.joined_at,
        (SELECT COUNT(*)::int FROM individual_follows WHERE follower_id = i.id) AS following,
        (SELECT COUNT(*)::int FROM individual_follows WHERE followee_id = i.id) AS followers,
@@ -153,7 +152,11 @@ export async function buildProfilePayload(individualId) {
     month: "long",
     year: "numeric"
   });
-  const avatarKey = avatarKeyFromImageId(row.avatarImageId);
+  const avatarKey = resolveAvatarKey({
+    avatar_key: row.avatarKeyStored,
+    avatar_image_id: row.avatarImageId
+  });
+  const avatarUrl = row.avatarUrl ?? null;
   const locationLine = row.location
     ? `${row.location} · Joined ${joinedDate}`
     : `Joined ${joinedDate}`;
@@ -182,13 +185,15 @@ export async function buildProfilePayload(individualId) {
     viewerSlug: row.slug,
     navProfile: {
       initials,
-      avatarKey
+      avatarKey,
+      avatarUrl: avatarKey === "photo" ? avatarUrl : null
     },
     hero: {
       name: row.display_name,
       locationLine,
       badges: dynamicBadges,
-      avatarKey
+      avatarKey,
+      avatarUrl: avatarKey === "photo" ? avatarUrl : null
     },
     followStats: {
       following: Number(row.following ?? 0),
@@ -214,7 +219,7 @@ export async function buildProfilePayload(individualId) {
   };
 }
 
-export async function updateProfile(individualId, { displayName, avatarImageId }) {
+export async function updateProfile(individualId, { displayName, avatarImageId, avatarKey, avatarUrl }) {
   const fields = [];
   const values = [];
   let idx = 1;
@@ -237,9 +242,14 @@ export async function updateProfile(individualId, { displayName, avatarImageId }
     );
   }
 
-  if (avatarImageId !== undefined) {
+  const avatarUpdate = normalizeAvatarUpdate({ avatarKey, avatarUrl, avatarImageId });
+  if (avatarUpdate.avatarKey !== undefined) {
+    fields.push(`avatar_key = $${idx++}`);
+    values.push(avatarUpdate.avatarKey);
+    fields.push(`avatar_url = $${idx++}`);
+    values.push(avatarUpdate.avatarUrl);
     fields.push(`avatar_image_id = $${idx++}`);
-    values.push(avatarImageId);
+    values.push(avatarUpdate.avatarImageId);
   }
 
   if (!fields.length) return null;

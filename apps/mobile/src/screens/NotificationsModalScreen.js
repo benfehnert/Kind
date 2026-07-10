@@ -5,6 +5,7 @@ import { useData } from "../context/DataContext";
 import { colors, fontSize, iconSize, spacing } from "../theme/colors";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromFeedItem } from "../lib/avatarProps";
 import { RichTextParts } from "../utils/RichText";
 import { CloseIcon } from "../components/icons/ProtoIcons";
 import { text } from "../theme/textStyles";
@@ -30,13 +31,7 @@ export default function NotificationsModalScreen() {
             ) : (
               <Avatar
                 size={iconSize.avatarNav}
-                img={
-                  n.avatarKey
-                    ? parseInt(String(n.avatarKey).replace("pravatar-", ""), 10)
-                    : undefined
-                }
-                sceneKey={n.sceneKey}
-                initials={n.initials || ""}
+                {...avatarPropsFromFeedItem(n)}
                 backgroundColor={n.avatarBg}
               />
             )}

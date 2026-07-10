@@ -133,6 +133,12 @@ async function main() {
   ensureRemoteBranch(remote, to);
 
   checkoutAndSync(remote, from);
+
+  if (!dryRun) {
+    console.log(`\nPushing ${from} to ${remote}...`);
+    run(`git push ${remote} ${from}`);
+  }
+
   checkoutAndSync(remote, to);
 
   console.log(`\nMerging ${from} into ${to}...`);

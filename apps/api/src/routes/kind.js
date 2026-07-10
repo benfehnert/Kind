@@ -13,6 +13,7 @@ import {
   fetchOnboardingRow,
   fetchPrivacyPrefs,
   fetchUserReport,
+  patchPrivacyPrefs,
   upsertIndividualConsents
 } from "../lib/meData.js";
 import { buildHomePayload, fetchHomeFeedExtras } from "../lib/homeData.js";
@@ -21,6 +22,8 @@ import { stripCatalogProgressFields } from "../lib/explorationCatalog.js";
 import { buildInsightPayload } from "../lib/insightData.js";
 import { buildCommunityPayload } from "../lib/communityData.js";
 import { buildProfilePayload, buildSummaryRows, updateProfile } from "../lib/profileData.js";
+import { uploadProfileAvatar } from "../lib/uploadAvatar.js";
+import { enrichAvatarFields, feedAvatarFields } from "../lib/avatarUtils.js";
 import profileMock from "../mocks/profile.json" with { type: "json" };
 import { buildDataUsagePayload } from "../lib/dataUsageData.js";
 import { submitDataExportRequest } from "../lib/dataExportRequest.js";
@@ -37,10 +40,7 @@ import {
 } from "../lib/activityMessageData.js";
 import { fetchActivityPostDetail } from "../lib/activityDetailData.js";
 import meRouter from "./me.js";
-import {
-  isAnnaDemoIndividual,
-  isHiddenFromCommunity
-} from "../lib/demoAccount.js";
+import { buildCommunityVisibilityFilters } from "../lib/communityVisibility.js";
 import { EXPLORATION_CATEGORY } from "../lib/onboardingRecommendations.js";
 import {
   evidenceExplorationId,
@@ -175,7 +175,7 @@ router.get("/explorations/:id/evidence", (c) => {
 
 router.get("/community/individuals", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
 
   const { rows: individuals } = await query(
     `SELECT
@@ -184,6 +184,8 @@ router.get("/community/individuals", async (c) => {
        i.display_name  AS name,
        i.location      AS loc,
        i.avatar_image_id AS img,
+       i.avatar_key,
+       i.avatar_url,
        i.avatar_initials AS initials,
        i.bio,
        i.profile_meta  AS meta,
@@ -223,13 +225,15 @@ router.get("/community/individuals", async (c) => {
      ORDER BY i.display_name`
   );
 
-  const individualsWithTier = individuals
-    .filter((ind) => !isHiddenFromCommunity(viewerIsAnna, ind.slug))
-    .map((ind) => ({
-      ...ind,
-      id: ind.slug,
-      tier: ind.bio ? "comm" : "basic"
-    }));
+  const individualsWithTier = ctx.canViewIndividuals
+    ? individuals
+        .filter((ind) => !shouldHideSlug(ind.slug))
+        .map((ind) => ({
+          ...enrichAvatarFields(ind),
+          id: ind.slug,
+          tier: ind.bio ? "comm" : "basic"
+        }))
+    : [];
 
   const { rows: expFollowers } = await query(
     `SELECT ue.exploration_id, i.slug
@@ -238,14 +242,18 @@ router.get("/community/individuals", async (c) => {
   );
   const explorationFollowers = {};
   for (const row of expFollowers) {
-    if (isHiddenFromCommunity(viewerIsAnna, row.slug)) continue;
+    if (shouldHideSlug(row.slug)) continue;
     if (!explorationFollowers[row.exploration_id]) {
       explorationFollowers[row.exploration_id] = [];
     }
     explorationFollowers[row.exploration_id].push(row.slug);
   }
 
-  return c.json({ items: individualsWithTier, explorationFollowers });
+  return c.json({
+    items: individualsWithTier,
+    explorationFollowers,
+    canViewIndividuals: ctx.canViewIndividuals
+  });
 });
 
 router.get("/community/researchers", async (c) => {
@@ -272,10 +280,10 @@ router.get("/community/researchers", async (c) => {
 
 router.get("/community/individuals/:slug", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -286,6 +294,8 @@ router.get("/community/individuals/:slug", async (c) => {
        i.display_name  AS name,
        i.location      AS loc,
        i.avatar_image_id AS img,
+       i.avatar_key,
+       i.avatar_url,
        i.avatar_initials AS initials,
        i.bio,
        i.joined_at,
@@ -331,7 +341,7 @@ router.get("/community/individuals/:slug", async (c) => {
     : `Joined ${joinedDate}`;
 
   return c.json({
-    ...profile,
+    ...enrichAvatarFields(profile),
     id: profile.slug,
     locationLine,
     followStats: {
@@ -346,11 +356,11 @@ router.get("/community/individuals/:slug", async (c) => {
 
 router.get("/community/individuals/:slug/follows", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const mode = c.req.query("mode") === "followers" ? "followers" : "following";
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -366,6 +376,8 @@ router.get("/community/individuals/:slug/follows", async (c) => {
          i.display_name AS name,
          i.location AS loc,
          i.avatar_image_id AS img,
+         i.avatar_key,
+         i.avatar_url,
          i.avatar_initials AS initials,
          i.profile_meta AS meta
        FROM individual_follows f
@@ -375,8 +387,8 @@ router.get("/community/individuals/:slug/follows", async (c) => {
       [individualId]
     );
     for (const row of individuals) {
-      if (isHiddenFromCommunity(viewerIsAnna, row.id)) continue;
-      items.push({ ...row, kind: "individual" });
+      if (shouldHideSlug(row.id)) continue;
+      items.push({ ...enrichAvatarFields(row), kind: "individual" });
     }
 
     const { rows: researchers } = await query(
@@ -411,6 +423,8 @@ router.get("/community/individuals/:slug/follows", async (c) => {
          i.display_name AS name,
          i.location AS loc,
          i.avatar_image_id AS img,
+         i.avatar_key,
+         i.avatar_url,
          i.avatar_initials AS initials,
          i.profile_meta AS meta
        FROM individual_follows f
@@ -420,8 +434,8 @@ router.get("/community/individuals/:slug/follows", async (c) => {
       [individualId]
     );
     for (const row of individuals) {
-      if (isHiddenFromCommunity(viewerIsAnna, row.id)) continue;
-      items.push({ ...row, kind: "individual" });
+      if (shouldHideSlug(row.id)) continue;
+      items.push({ ...enrichAvatarFields(row), kind: "individual" });
     }
   }
 
@@ -430,11 +444,11 @@ router.get("/community/individuals/:slug/follows", async (c) => {
 
 router.get("/community/individuals/:slug/explorations/:explorationId/reports", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const explorationId = c.req.param("explorationId");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -447,12 +461,12 @@ router.get("/community/individuals/:slug/explorations/:explorationId/reports", a
 
 router.get("/community/individuals/:slug/explorations/:explorationId/reports/:reportType", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const explorationId = c.req.param("explorationId");
   const reportType = c.req.param("reportType");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -467,11 +481,11 @@ router.get("/community/individuals/:slug/explorations/:explorationId/reports/:re
 
 router.get("/community/individuals/:slug/explorations/:explorationId", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const explorationId = c.req.param("explorationId");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -486,11 +500,11 @@ router.get("/community/individuals/:slug/explorations/:explorationId", async (c)
 
 router.get("/community/individuals/:slug/explorations/:explorationId/logs", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const explorationId = c.req.param("explorationId");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -503,11 +517,11 @@ router.get("/community/individuals/:slug/explorations/:explorationId/logs", asyn
 
 router.get("/community/individuals/:slug/explorations/:explorationId/report", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const slug = c.req.param("slug");
   const explorationId = c.req.param("explorationId");
 
-  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+  if (shouldHideSlug(slug)) {
     return c.json({ error: "Individual not found" }, 404);
   }
 
@@ -541,11 +555,15 @@ const FEED_CHIPS = [
 const TIME_LABELS = ["Yesterday", "2 days ago", "3 days ago", "4 days ago", "5 days ago"];
 
 router.get("/feed", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const { shouldHideSlug } = await buildCommunityVisibilityFilters(viewerId);
+
   const { rows } = await query(
     `SELECT fi.id, fi.feed_type::text AS type, fi.exploration_id, fi.headline,
             fi.body, fi.highlight, fi.published_at, fi.sort_order,
             i.slug AS actor_slug, i.display_name AS actor_name,
-            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials
+            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials,
+            i.avatar_key AS actor_avatar_key, i.avatar_url AS actor_avatar_url
      FROM feed_items fi
      LEFT JOIN individuals i ON i.id = fi.actor_individual_id
      ORDER BY fi.sort_order, fi.published_at DESC`
@@ -573,6 +591,7 @@ router.get("/feed", async (c) => {
         highlight: row.highlight ?? ""
       });
     } else {
+      if (row.actor_slug && shouldHideSlug(row.actor_slug)) continue;
       const badgeMap = { milestone: "amber", insight: "blue", activity: "purple", tip: "teal", science: "teal" };
       const labelMap = { milestone: "Milestone", insight: "Insight", activity: "Activity", tip: "Tip", science: "Science" };
       staticItems.push({
@@ -588,9 +607,7 @@ router.get("/feed", async (c) => {
           : "Recently",
         body: row.body ?? row.headline ?? "",
         highlight: row.highlight ?? "",
-        avatarKind: row.actor_img ? "image" : "initials",
-        initials: row.actor_initials ?? "K",
-        avatarKey: row.actor_img ? `pravatar-${row.actor_img}` : undefined
+        ...feedAvatarFields(row)
       });
     }
   }
@@ -678,7 +695,9 @@ router.patch("/profile", async (c) => {
   try {
     const payload = await updateProfile(individualId, {
       displayName: body.displayName,
-      avatarImageId: body.avatarImageId
+      avatarImageId: body.avatarImageId,
+      avatarKey: body.avatarKey,
+      avatarUrl: body.avatarUrl
     });
     if (!payload) return c.json({ error: "Nothing to update" }, 400);
     return c.json(payload);
@@ -687,32 +706,37 @@ router.patch("/profile", async (c) => {
   }
 });
 
+router.post("/profile/avatar", async (c) => {
+  const individualId = await getIndividualId(c.get("user").sub);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const body = await c.req.parseBody();
+  const file = body.file;
+  if (!file || typeof file === "string") {
+    return c.json({ error: "file required" }, 400);
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const contentType = file.type || "image/jpeg";
+    const avatarUrl = await uploadProfileAvatar(c.env, individualId, buffer, contentType);
+    const payload = await updateProfile(individualId, {
+      avatarKey: "photo",
+      avatarUrl
+    });
+    return c.json(payload);
+  } catch (err) {
+    return c.json({ error: err.message || "Upload failed" }, 400);
+  }
+});
+
 router.patch("/profile/privacy", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const body = await c.req.json();
-  const { science, visible, reminders, globalConsent } = body;
-  await query(
-    `INSERT INTO privacy_settings (
-       individual_id, platform_consent, contribute_to_citizen_science,
-       visible_in_community, daily_reminders
-     ) VALUES ($1, $2, $3, $4, $5)
-     ON CONFLICT (individual_id) DO UPDATE SET
-       platform_consent = COALESCE(EXCLUDED.platform_consent, privacy_settings.platform_consent),
-       contribute_to_citizen_science = EXCLUDED.contribute_to_citizen_science,
-       visible_in_community = EXCLUDED.visible_in_community,
-       daily_reminders = EXCLUDED.daily_reminders,
-       updated_at = NOW()`,
-    [
-      individualId,
-      globalConsent ?? false,
-      science ?? true,
-      visible ?? true,
-      reminders ?? true
-    ]
-  );
-  return c.json({ ok: true, privacy: body });
+  const body = await c.req.json().catch(() => ({}));
+  const privacy = await patchPrivacyPrefs(individualId, body);
+  return c.json({ ok: true, privacy });
 });
 
 // ---------------------------------------------------------------------------
@@ -794,7 +818,7 @@ router.get("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ followingExplorerIds: [], followingResearcherIds: [] });
 
-  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(individualId);
 
   const { rows: individuals } = await query(
     `SELECT i.slug FROM individual_follows f
@@ -810,7 +834,7 @@ router.get("/social/follows", async (c) => {
   return c.json({
     followingExplorerIds: individuals
       .map((r) => r.slug)
-      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
+      .filter((slug) => !shouldHideSlug(slug)),
     followingResearcherIds: researchers.map((r) => r.researcher_id)
   });
 });
@@ -819,11 +843,14 @@ router.patch("/social/follows", async (c) => {
   const individualId = await getIndividualId(c.get("user").sub);
   if (!individualId) return c.json({ error: "Individual not found" }, 404);
 
-  const viewerIsAnna = await isAnnaDemoIndividual(individualId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(individualId);
   const { followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = await c.req.json();
 
   if (followSlug) {
-    if (isHiddenFromCommunity(viewerIsAnna, followSlug)) {
+    if (!ctx.canViewIndividuals) {
+      return c.json({ error: "Community visibility required to follow individuals" }, 403);
+    }
+    if (shouldHideSlug(followSlug)) {
       return c.json({ error: "Individual not found" }, 404);
     }
     const { rows: selfRows } = await query("SELECT slug FROM individuals WHERE id = $1", [individualId]);
@@ -875,7 +902,7 @@ router.patch("/social/follows", async (c) => {
     ok: true,
     followingExplorerIds: followingIndividuals
       .map((r) => r.slug)
-      .filter((slug) => !isHiddenFromCommunity(viewerIsAnna, slug)),
+      .filter((slug) => !shouldHideSlug(slug)),
     followingResearcherIds: followingResearchers.map((r) => r.researcher_id)
   });
 });
@@ -908,9 +935,9 @@ router.patch("/activity-posts/:id/nice", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const ownerSlug = await fetchActivityPostOwnerSlug(postId);
-  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+  if (!ownerSlug || shouldHideSlug(ownerSlug)) {
     return c.json({ error: "Activity not found" }, 404);
   }
 
@@ -929,9 +956,9 @@ router.get("/activity-posts/:id/nices", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const ownerSlug = await fetchActivityPostOwnerSlug(postId);
-  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+  if (!ownerSlug || shouldHideSlug(ownerSlug)) {
     return c.json({ error: "Activity not found" }, 404);
   }
 
@@ -944,9 +971,9 @@ router.get("/activity-posts/:id/messages", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const ownerSlug = await fetchActivityPostOwnerSlug(postId);
-  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+  if (!ownerSlug || shouldHideSlug(ownerSlug)) {
     return c.json({ error: "Activity not found" }, 404);
   }
 
@@ -963,9 +990,9 @@ router.post("/activity-posts/:id/messages", async (c) => {
   if (!viewerId) return c.json({ error: "Individual not found" }, 404);
 
   const postId = c.req.param("id");
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const ownerSlug = await fetchActivityPostOwnerSlug(postId);
-  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+  if (!ownerSlug || shouldHideSlug(ownerSlug)) {
     return c.json({ error: "Activity not found" }, 404);
   }
 
@@ -989,9 +1016,9 @@ router.patch("/activity-posts/:id/messages/:messageId/reactions", async (c) => {
 
   const postId = c.req.param("id");
   const messageId = c.req.param("messageId");
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const ownerSlug = await fetchActivityPostOwnerSlug(postId);
-  if (!ownerSlug || isHiddenFromCommunity(viewerIsAnna, ownerSlug)) {
+  if (!ownerSlug || shouldHideSlug(ownerSlug)) {
     return c.json({ error: "Activity not found" }, 404);
   }
 
@@ -1038,7 +1065,7 @@ router.get("/notifications", (c) => {
 
 router.get("/search", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug, ctx } = await buildCommunityVisibilityFilters(viewerId);
   const q = (c.req.query("q") || "").toLowerCase().trim();
   if (!q) return c.json({ explorations: [], community: [] });
 
@@ -1056,9 +1083,11 @@ router.get("/search", async (c) => {
      WHERE LOWER(display_name) LIKE $1`,
     [pattern]
   );
-  const community = communityRows.filter(
-    (row) => !isHiddenFromCommunity(viewerIsAnna, row.slug)
-  ).map(({ slug: _slug, ...row }) => row);
+  const community = ctx.canViewIndividuals
+    ? communityRows
+        .filter((row) => !shouldHideSlug(row.slug))
+        .map(({ slug: _slug, ...row }) => row)
+    : [];
 
   return c.json({ explorations, community });
 });

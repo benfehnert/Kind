@@ -1,4 +1,8 @@
 import { query } from "../db.js";
+import {
+  buildCommunityVisibilityFilters,
+  COMMUNITY_INDIVIDUALS_HIDDEN_COPY
+} from "./communityVisibility.js";
 import exploreCopyMock from "../mocks/exploreCopy.json" with { type: "json" };
 import { isAnnaDemoIndividual } from "./demoAccount.js";
 import { EXPLORATION_FEED_LABELS } from "./homeData.js";
@@ -73,6 +77,7 @@ async function fetchCommunityInsightBody(explorationId, individualId, feedLabel)
 export async function buildCommunityCopy(activeExploration, individualId) {
   const explorationId = activeExploration?.id ?? null;
   const showExampleCommunityInsight = await isAnnaDemoIndividual(individualId);
+  const { ctx } = await buildCommunityVisibilityFilters(individualId);
   const feedLabel =
     activeExploration?.feedLabel ||
     (explorationId ? EXPLORATION_FEED_LABELS[explorationId] : null) ||
@@ -122,7 +127,9 @@ export async function buildCommunityCopy(activeExploration, individualId) {
     nearYouTitle: exploreCopyMock.community.nearYouTitle,
     insightCardTitle: exploreCopyMock.community.insightCardTitle,
     insightCardBody,
-    showExampleCommunityInsight
+    showExampleCommunityInsight,
+    canViewIndividuals: ctx.canViewIndividuals,
+    individualsHiddenCopy: ctx.canViewIndividuals ? null : COMMUNITY_INDIVIDUALS_HIDDEN_COPY
   };
 }
 

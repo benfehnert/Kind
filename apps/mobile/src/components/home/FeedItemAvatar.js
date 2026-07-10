@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Avatar } from "../primitives/Avatar";
 import { KindBlob } from "../onboarding/KindBlob";
+import { avatarPropsFromFeedItem } from "../../lib/avatarProps";
 
 const AVATAR_SIZE = 34;
 
@@ -35,9 +36,7 @@ export function FeedItemAvatar({ item }) {
   return (
     <Avatar
       size={AVATAR_SIZE}
-      img={item.avatarKey ? parseInt(item.avatarKey.replace("pravatar-", ""), 10) : undefined}
-      sceneKey={item.sceneKey}
-      initials={item.initials}
+      {...avatarPropsFromFeedItem(item)}
       backgroundColor={item.avatarBgStyle}
     />
   );

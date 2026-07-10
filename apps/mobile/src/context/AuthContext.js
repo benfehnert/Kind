@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { configureApiAuth, publicPost } from "../lib/api";
+import { startOAuthSignIn } from "../lib/oauth";
 
 const STORAGE_KEY = "@kind/auth";
 const EXPLORATION_CONSENTS_KEY = "@kind/exploration_consents";
@@ -152,6 +153,21 @@ export function AuthProvider({ children }) {
     [saveSession]
   );
 
+  const signInWithOAuth = useCallback(
+    async (provider) => {
+      const data = await startOAuthSignIn(provider);
+      await clearExplorationStorage();
+      await saveSession({
+        token: data.token,
+        refreshToken: data.refreshToken,
+        individualId: data.individualId ?? null,
+        email: data.email || ""
+      });
+      return data;
+    },
+    [saveSession]
+  );
+
   const logout = useCallback(async () => {
     if (token) {
       try {
@@ -166,6 +182,7 @@ export function AuthProvider({ children }) {
     await clearSession();
     await clearExplorationStorage();
     await AsyncStorage.removeItem("@kind/user_profile");
+    await AsyncStorage.removeItem("@kind/community_withdraw_notice");
   }, [token, clearSession]);
 
   const value = useMemo(
@@ -178,9 +195,10 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       signup,
+      signInWithOAuth,
       logout
     }),
-    [token, refreshToken, individualId, email, hydrating, login, signup, logout]
+    [token, refreshToken, individualId, email, hydrating, login, signup, signInWithOAuth, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

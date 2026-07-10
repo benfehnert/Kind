@@ -13,7 +13,7 @@ import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { DataProvider } from "./src/context/DataContext";
 import { FollowProvider } from "./src/context/FollowContext";
-import { ConsentProvider } from "./src/context/ConsentContext";
+import { ConsentProvider, useConsent } from "./src/context/ConsentContext";
 import { ProfileProvider } from "./src/context/ProfileContext";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { OnboardingProvider, useOnboarding } from "./src/context/OnboardingContext";
@@ -21,6 +21,8 @@ import { UiProvider, useUiShell } from "./src/context/UiContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import AuthNavigator from "./src/navigation/AuthNavigator";
 import ExplorerOnboardingScreen from "./src/screens/ExplorerOnboardingScreen";
+import GlobalConsentRequiredScreen from "./src/screens/GlobalConsentRequiredScreen";
+import CommunityVisibilityWithdrawnScreen from "./src/screens/CommunityVisibilityWithdrawnScreen";
 import { PostHogRoot } from "./src/components/PostHogRoot";
 import { ProtoAppFrame } from "./src/components/ProtoAppFrame";
 import { ProtoToast } from "./src/components/ProtoToast";
@@ -29,7 +31,35 @@ import { FeedbackFab } from "./src/components/FeedbackFab";
 function AppShell() {
   const { toast } = useUiShell();
   const { completed, hydrating } = useOnboarding();
+  const { privacyPrefs, prefsHydrating, communityWithdrawNotice, communityNoticeHydrating } = useConsent();
   const inOnboarding = !hydrating && !completed;
+  const blockedForConsent = !inOnboarding && !prefsHydrating && !privacyPrefs.globalConsent;
+  const blockedForCommunityWithdraw =
+    !inOnboarding &&
+    !prefsHydrating &&
+    !communityNoticeHydrating &&
+    communityWithdrawNotice &&
+    privacyPrefs.globalConsent;
+
+  if (blockedForConsent) {
+    return (
+      <View style={{ flex: 1 }}>
+        <StatusBar style="dark" />
+        <GlobalConsentRequiredScreen />
+        <ProtoToast message={toast} visible={!!toast} />
+      </View>
+    );
+  }
+
+  if (blockedForCommunityWithdraw) {
+    return (
+      <View style={{ flex: 1 }}>
+        <StatusBar style="dark" />
+        <CommunityVisibilityWithdrawnScreen />
+        <ProtoToast message={toast} visible={!!toast} />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

@@ -23,8 +23,10 @@ export function getUserProfile(userId, community, followerIdSet) {
     loc: bu.loc,
     img: bu.img,
     initials: bu.initials,
+    avatarKey: bu.avatarKey,
+    avatarUrl: bu.avatarUrl,
     meta: bu.meta,
-    sceneKey: bu.avatarUrl ? getSceneKeyFromAvatarUrl(bu.avatarUrl) : null,
+    sceneKey: bu.sceneKey || (bu.avatarUrl ? getSceneKeyFromAvatarUrl(bu.avatarUrl) : null),
     bio: "Explorer on kind — building their personal health story.",
     exps: [
       {

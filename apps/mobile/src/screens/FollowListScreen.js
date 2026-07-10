@@ -8,6 +8,7 @@ import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 
 export default function FollowListScreen() {
   const { community } = useData();
@@ -128,7 +129,7 @@ export default function FollowListScreen() {
                     : navigation.navigate("ExplorerProfile", { userId: item.id })
                 }
               >
-                <Avatar size={44} img={item.img} sceneKey={item.sceneKey} initials={item.initials} avatarUrl={item.avatarUrl} />
+                <Avatar size={44} {...avatarPropsFromPerson(item)} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.name}>{item.name}</Text>
                   <Text style={styles.meta}>{item.meta || item.loc}</Text>

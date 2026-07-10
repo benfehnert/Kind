@@ -5,6 +5,7 @@ import { colors, iconSize, spacing } from "../../theme/colors";
 import { Avatar } from "./Avatar";
 import { KindLogo } from "./KindLogo";
 import { SearchIcon } from "../icons/ProtoIcons";
+import { avatarPropsFromPerson } from "../../lib/avatarProps";
 
 export function KindNavBar({ profile, onLogo, onSearch, onAvatar }) {
   const insets = useSafeAreaInsets();
@@ -20,10 +21,7 @@ export function KindNavBar({ profile, onLogo, onSearch, onAvatar }) {
         <TouchableOpacity onPress={onAvatar} accessibilityLabel="Profile">
           <Avatar
             size={iconSize.avatarNav}
-            img={profile?.img}
-            sceneKey={profile?.sceneKey}
-            avatarUrl={profile?.avatarUrl}
-            initials={profile?.initials || "?"}
+            {...avatarPropsFromPerson(profile)}
             borderColor={colors.orange}
             borderWidth={1.5}
           />

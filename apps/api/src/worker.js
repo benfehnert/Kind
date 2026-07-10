@@ -2,7 +2,9 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { initDb, query } from "./db.js";
 import { requireAuth } from "./middleware.js";
-import { makeAdminClient, makeAnonClient } from "./supabase.js";
+import { ensureIndividualProfile, oauthDisplayName } from "./lib/authProfile.js";
+import { isAllowedOAuthRedirect, mapOAuthError, OAUTH_PROVIDERS } from "./lib/oauth.js";
+import { makeAdminClient, makeAnonClient, createOAuthStorage, makeOAuthClient, readOAuthCodeVerifier, seedOAuthCodeVerifier } from "./supabase.js";
 import { generateFeedContent } from "./feedContent.js";
 import { morningRulesFeedLibrary } from "./data/morningRulesFeedLibrary.js";
 import kindRouter from "./routes/kind.js";
@@ -67,23 +69,13 @@ app.post("/auth/signup", async (c) => {
     return c.json({ error: authError.message }, status);
   }
 
-  const slug = (name || email.split("@")[0])
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  const initials = (name || "U")
-    .split(" ")
-    .map((w) => w[0] || "")
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
+  let profile;
   try {
-    await query(
-      `INSERT INTO individuals (auth_user_id, slug, email, display_name, avatar_initials)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [authData.user.id, slug, email, name || email, initials]
-    );
+    profile = await ensureIndividualProfile({
+      authUserId: authData.user.id,
+      email,
+      displayName: name || email
+    });
   } catch {
     await admin.auth.admin.deleteUser(authData.user.id);
     return c.json({ error: "Failed to create profile" }, 500);
@@ -101,10 +93,87 @@ app.post("/auth/signup", async (c) => {
   return c.json(
     {
       token: sessionData.session.access_token,
-      refreshToken: sessionData.session.refresh_token
+      refreshToken: sessionData.session.refresh_token,
+      individualId: profile.individualId
     },
     201
   );
+});
+
+app.post("/auth/oauth/url", async (c) => {
+  const { provider, redirectTo } = await c.req.json();
+  if (!provider || !OAUTH_PROVIDERS.has(provider)) {
+    return c.json({ error: "provider must be google or apple" }, 400);
+  }
+  if (!isAllowedOAuthRedirect(redirectTo)) {
+    return c.json({ error: "redirectTo is not allowed" }, 400);
+  }
+
+  const storage = createOAuthStorage();
+  const anon = makeOAuthClient(c.env, storage);
+  const { data, error } = await anon.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true
+    }
+  });
+
+  if (error || !data?.url) {
+    const mapped = mapOAuthError(error ?? { message: "Failed to start OAuth sign-in" });
+    return c.json({ error: mapped.error }, mapped.status);
+  }
+
+  const codeVerifier = await readOAuthCodeVerifier(storage);
+  if (!codeVerifier) {
+    return c.json({ error: "Failed to start OAuth sign-in" }, 500);
+  }
+
+  return c.json({ url: data.url, codeVerifier });
+});
+
+app.post("/auth/oauth/callback", async (c) => {
+  const { provider, code, redirectTo, codeVerifier } = await c.req.json();
+  if (!provider || !OAUTH_PROVIDERS.has(provider)) {
+    return c.json({ error: "provider must be google or apple" }, 400);
+  }
+  if (!code) {
+    return c.json({ error: "code is required" }, 400);
+  }
+  if (!codeVerifier) {
+    return c.json({ error: "codeVerifier is required" }, 400);
+  }
+  if (!isAllowedOAuthRedirect(redirectTo)) {
+    return c.json({ error: "redirectTo is not allowed" }, 400);
+  }
+
+  const storage = createOAuthStorage();
+  await seedOAuthCodeVerifier(storage, codeVerifier);
+  const anon = makeOAuthClient(c.env, storage);
+  const { data, error } = await anon.auth.exchangeCodeForSession(code);
+  if (error || !data?.session || !data?.user) {
+    const mapped = mapOAuthError(error ?? { message: "OAuth sign-in failed" });
+    return c.json({ error: mapped.error }, mapped.status);
+  }
+
+  let profile;
+  try {
+    profile = await ensureIndividualProfile({
+      authUserId: data.user.id,
+      email: data.user.email ?? null,
+      displayName: oauthDisplayName(data.user)
+    });
+  } catch {
+    return c.json({ error: "Failed to create profile" }, 500);
+  }
+
+  return c.json({
+    token: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+    individualId: profile.individualId,
+    isNewUser: profile.isNewUser,
+    email: data.user.email ?? null
+  });
 });
 
 app.post("/auth/login", async (c) => {

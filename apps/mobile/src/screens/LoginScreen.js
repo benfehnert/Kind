@@ -16,6 +16,7 @@ import { usePostHog } from "posthog-react-native";
 import { useAuth } from "../context/AuthContext";
 import { identifyPostHogUser } from "../lib/posthog";
 import { ApiError } from "../lib/api";
+import { OAuthButtons } from "../components/auth/OAuthButtons";
 import { KindBlob } from "../components/onboarding/KindBlob";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
 import { colors, fontFamily, radius, spacing } from "../theme/colors";
@@ -24,13 +25,34 @@ import { type } from "../theme/typography";
 export default function LoginScreen() {
   const navigation = useNavigation();
   const posthog = usePostHog();
-  const { login } = useAuth();
+  const { login, signInWithOAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [oauthProvider, setOauthProvider] = useState(null);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting && !oauthProvider;
+
+  const handleOAuth = async (provider) => {
+    setError("");
+    setOauthProvider(provider);
+    try {
+      const data = await signInWithOAuth(provider);
+      if (data.email) identifyPostHogUser(posthog, data.email);
+      posthog?.capture("signed in", { method: provider });
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err?.message === "OAuth sign-in was cancelled"
+            ? ""
+            : "Something went wrong. Please try again.";
+      if (message) setError(message);
+    } finally {
+      setOauthProvider(null);
+    }
+  };
 
   const handleLogin = async () => {
     if (!canSubmit) return;
@@ -68,7 +90,7 @@ export default function LoginScreen() {
           <Text style={styles.headline}>
             Welcome <Text style={styles.accent}>back.</Text>
           </Text>
-          <Text style={styles.subhead}>Sign in with your email and password.</Text>
+          <Text style={styles.subhead}>Sign in with email and password, or continue with a provider.</Text>
 
           <View style={styles.blobWrap}>
             <KindBlob size={140} />
@@ -126,10 +148,11 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.oauthSection}>
-            <Pressable style={[styles.oauthBtn, styles.oauthDisabled]} disabled accessibilityState={{ disabled: true }}>
-              <Text style={styles.oauthBtnTxt}>Continue with Google</Text>
-            </Pressable>
-            <Text style={styles.oauthHint}>OAuth sign-in coming soon</Text>
+            <OAuthButtons
+              onProviderPress={handleOAuth}
+              disabled={submitting}
+              loadingProvider={oauthProvider}
+            />
           </View>
 
           <View style={styles.footer}>
@@ -224,27 +247,7 @@ const styles = StyleSheet.create({
     ...type.caption,
     color: colors.textMuted
   },
-  oauthSection: { gap: 8, marginBottom: 24 },
-  oauthBtn: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderMed,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.xxl,
-    minHeight: 48,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  oauthDisabled: { opacity: 0.5 },
-  oauthBtnTxt: {
-    ...type.buttonMd,
-    color: colors.text
-  },
-  oauthHint: {
-    ...type.caption,
-    color: colors.textMuted,
-    textAlign: "center"
-  },
+  oauthSection: { marginBottom: 24 },
   footer: {
     flexDirection: "row",
     justifyContent: "center",

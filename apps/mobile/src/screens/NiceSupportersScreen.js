@@ -7,12 +7,13 @@ import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily, spacing } from "../theme/colors";
 import { text } from "../theme/textStyles";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 
 function SupporterRow({ item, showFollow, isFollowing, toggleFollow, isSelf, onPressProfile }) {
   return (
     <View style={styles.row}>
       <Pressable style={styles.rowMain} onPress={() => onPressProfile(item.slug)}>
-        <Avatar size={44} img={item.img} initials={item.initials} />
+        <Avatar size={44} {...avatarPropsFromPerson(item)} />
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.meta}>{item.meta || item.loc}</Text>

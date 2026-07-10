@@ -7,6 +7,7 @@ import { getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { useFollow } from "../context/FollowContext";
+import { useConsent } from "../context/ConsentContext";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, fontSize, heights, radius, spacing } from "../theme/colors";
 import { REM } from "../theme/tokens";
@@ -15,6 +16,7 @@ import { type } from "../theme/typography";
 import { ScienceBanner } from "../components/primitives/ScienceBanner";
 import { Badge } from "../components/primitives/Badge";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 import { Card, CardTitle } from "../components/primitives/Card";
 import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIndicator";
 import { RichTextParts } from "../utils/RichText";
@@ -55,9 +57,13 @@ export default function CommunityScreen() {
   const explorations = useUserExplorations();
   const navigation = useNavigation();
   const { isFollowing, toggleFollow, isFollowingResearcher, toggleResearcherFollow, followerIdSet, isSelf } = useFollow();
+  const { privacyPrefs } = useConsent();
   const [tab, setTab] = useState("all");
   const [q, setQ] = useState("");
   const c = exploreCopy?.community ?? explorePage?.copy?.community ?? {};
+  const canViewIndividuals =
+    (community.canViewIndividuals ?? c.canViewIndividuals ?? privacyPrefs.visible) !== false;
+  const individualsHiddenCopy = c.individualsHiddenCopy;
   const query = q.trim().toLowerCase();
   const COMMUNITY_TAB_EVENT_MAP = {
     all: "viewed all community feed",
@@ -82,12 +88,13 @@ export default function CommunityScreen() {
   );
 
   const allPeople = useMemo(() => {
+    if (!canViewIndividuals) return [];
     const base = [...(community.basicUsers || []), ...(community.followerOnly || [])];
     const rich = Object.keys(community.commUsers || {}).map((id) => ({ id, ...community.commUsers[id] }));
     const merged = [...rich, ...base].filter((u) => !isSelf(u.id));
     merged.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     return merged;
-  }, [community, isSelf]);
+  }, [community, isSelf, canViewIndividuals]);
 
   const people = useMemo(() => {
     const filtered = allPeople.filter((u) => {
@@ -171,7 +178,7 @@ export default function CommunityScreen() {
     const stats = getExplorationStats(u);
     return (
       <Pressable key={`person:${uid || u.name}`} style={styles.row} onPress={() => navigation.navigate("ExplorerProfile", { userId: uid })}>
-        <Avatar size={42} sceneKey={prof.sceneKey} avatarUrl={prof.avatarUrl} initials={prof.initials} />
+        <Avatar size={42} {...avatarPropsFromPerson(prof)} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.pname}>{prof.name}</Text>
           <Text style={styles.pmeta}>
@@ -319,21 +326,30 @@ export default function CommunityScreen() {
             showsVerticalScrollIndicator
           >
             {tab === "all" &&
-              allItems.map((item) => {
-                if (item.type === "person") return renderPerson(item.data);
-                if (item.type === "exploration") return renderExploration(item.data);
-                if (item.type === "researcher") return renderResearcher(item.data);
-                return null;
-              })}
+              (canViewIndividuals
+                ? allItems.map((item) => {
+                    if (item.type === "person") return renderPerson(item.data);
+                    if (item.type === "exploration") return renderExploration(item.data);
+                    if (item.type === "researcher") return renderResearcher(item.data);
+                    return null;
+                  })
+                : [
+                    ...filteredExplorationIds.map((id) => renderExploration(id)),
+                    ...filteredResearchers.map((r) => renderResearcher(r))
+                  ])}
 
             {tab === "individuals" &&
               (people.length
                 ? people.map(renderPerson)
                 : renderEmptyState(
                     "empty:individuals",
-                    c.emptyIndividualsTitle || "No individuals yet",
-                    c.emptyIndividualsBody ||
-                      "You'll be able to view and follow other individuals here once others join the service."
+                    !canViewIndividuals && individualsHiddenCopy?.title
+                      ? individualsHiddenCopy.title
+                      : c.emptyIndividualsTitle || "No individuals yet",
+                    !canViewIndividuals && individualsHiddenCopy?.body
+                      ? individualsHiddenCopy.body
+                      : c.emptyIndividualsBody ||
+                          "You'll be able to view and follow other individuals here once others join the service."
                   ))}
 
             {tab === "explorations" && filteredExplorationIds.map(renderExploration)}

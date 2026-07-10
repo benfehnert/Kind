@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { patch } from "../lib/api";
+import { patch, uploadProfileAvatar } from "../lib/api";
 import { useData } from "./DataContext";
 import { useOnboarding } from "./OnboardingContext";
 import { useAuth } from "./AuthContext";
@@ -25,9 +25,13 @@ function pravatarNum(key) {
 
 export function avatarFromProfile(profile) {
   const avatarKey = profile?.hero?.avatarKey ?? profile?.navProfile?.avatarKey ?? null;
+  const avatarUrl = profile?.hero?.avatarUrl ?? profile?.navProfile?.avatarUrl ?? null;
   if (!avatarKey) return null;
   if (avatarKey.startsWith("scene-")) {
     return { type: "scene", key: avatarKey.replace(/^scene-/, "") };
+  }
+  if (avatarKey === "photo" && avatarUrl) {
+    return { type: "photo", uri: avatarUrl };
   }
   const id = pravatarNum(avatarKey);
   return id != null ? { type: "pravatar", id } : null;
@@ -36,7 +40,10 @@ export function avatarFromProfile(profile) {
 export function avatarToProps(avatar) {
   if (!avatar) return {};
   if (avatar.type === "scene") return { sceneKey: avatar.key };
-  if (avatar.type === "photo" && avatar.uri) return { photoUri: avatar.uri };
+  if (avatar.type === "photo" && avatar.uri) {
+    if (avatar.uri.startsWith("http")) return { photoUrl: avatar.uri };
+    return { photoUri: avatar.uri };
+  }
   if (avatar.id != null) return { img: avatar.id };
   return {};
 }
@@ -67,12 +74,7 @@ export function ProfileProvider({ children }) {
 
         if (isAuthenticated) {
           setDisplayName(apiName || parsed?.displayName || "");
-          const localAvatar = parsed?.avatar;
-          if (localAvatar?.type === "scene" || localAvatar?.type === "photo") {
-            setAvatar(localAvatar);
-          } else {
-            setAvatar(apiAvatar ?? localAvatar);
-          }
+          setAvatar(apiAvatar ?? null);
         } else if (parsed) {
           setDisplayName(parsed.displayName || apiName);
           setAvatar(parsed.avatar ?? apiAvatar);
@@ -123,17 +125,36 @@ export function ProfileProvider({ children }) {
     async (nextAvatar) => {
       setAvatar(nextAvatar);
       persist({ displayName, avatar: nextAvatar });
-      if (isAuthenticated) {
-        try {
-          const body =
-            nextAvatar?.type === "pravatar" && nextAvatar.id != null
-              ? { avatarImageId: nextAvatar.id }
-              : { avatarImageId: null };
-          await patch("/profile", body);
-          await refetchProfile?.();
-        } catch {
-          // local state kept
+      if (!isAuthenticated) return;
+
+      try {
+        let updatedProfile = null;
+
+        if (nextAvatar?.type === "photo" && nextAvatar.uri) {
+          if (nextAvatar.uri.startsWith("http")) {
+            updatedProfile = await patch("/profile", {
+              avatarKey: "photo",
+              avatarUrl: nextAvatar.uri
+            });
+          } else {
+            updatedProfile = await uploadProfileAvatar(nextAvatar.uri);
+          }
+        } else if (nextAvatar?.type === "scene" && nextAvatar.key) {
+          updatedProfile = await patch("/profile", { avatarKey: `scene-${nextAvatar.key}` });
+        } else if (nextAvatar?.type === "pravatar" && nextAvatar.id != null) {
+          updatedProfile = await patch("/profile", { avatarKey: `pravatar-${nextAvatar.id}` });
+        } else {
+          updatedProfile = await patch("/profile", { avatarKey: null });
         }
+
+        await refetchProfile?.();
+        const savedAvatar = avatarFromProfile(updatedProfile);
+        if (savedAvatar) {
+          setAvatar(savedAvatar);
+          persist({ displayName, avatar: savedAvatar });
+        }
+      } catch {
+        // local state kept
       }
     },
     [displayName, persist, isAuthenticated, refetchProfile]

@@ -1,7 +1,7 @@
 import { query } from "../db.js";
 import { fetchActivityMessageSummary } from "./activityMessageData.js";
-import { isAnnaDemoIndividual } from "./demoAccount.js";
-import { isHiddenFromCommunity } from "./demoProfiles.js";
+import { buildCommunityVisibilityFilters } from "./communityVisibility.js";
+import { enrichAvatarFields } from "./avatarUtils.js";
 
 const SUPPORTER_PREVIEW_LIMIT = 5;
 const RECENT_ACTIVITY_LIMIT = 6;
@@ -22,9 +22,10 @@ export function formatActivityTime(postedAt) {
   return then.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-async function fetchSupporterPreview(activityPostId, viewerIsAnna, limit = SUPPORTER_PREVIEW_LIMIT) {
+async function fetchSupporterPreview(activityPostId, shouldHideSlug, limit = SUPPORTER_PREVIEW_LIMIT) {
   const { rows } = await query(
-    `SELECT i.slug, i.display_name AS name, i.avatar_image_id AS img, i.avatar_initials AS initials
+    `SELECT i.slug, i.display_name AS name, i.avatar_image_id AS img, i.avatar_initials AS initials,
+            i.avatar_key, i.avatar_url
      FROM activity_nices an
      JOIN individuals i ON i.id = an.individual_id
      WHERE an.activity_post_id = $1
@@ -32,7 +33,7 @@ async function fetchSupporterPreview(activityPostId, viewerIsAnna, limit = SUPPO
      LIMIT $2`,
     [activityPostId, limit]
   );
-  return rows.filter((row) => !isHiddenFromCommunity(viewerIsAnna, row.slug));
+  return rows.filter((row) => !shouldHideSlug(row.slug)).map(enrichAvatarFields);
 }
 
 async function fetchNiceCount(activityPostId) {
@@ -56,9 +57,9 @@ async function viewerHasNiced(activityPostId, viewerId) {
   return rows.length > 0;
 }
 
-async function mapLogAct(post, viewerId, viewerIsAnna) {
+async function mapLogAct(post, viewerId, shouldHideSlug) {
   const [supporterPreview, niced, messageSummary] = await Promise.all([
-    fetchSupporterPreview(post.id, viewerIsAnna),
+    fetchSupporterPreview(post.id, shouldHideSlug),
     viewerHasNiced(post.id, viewerId),
     fetchActivityMessageSummary(post.id)
   ]);
@@ -80,7 +81,7 @@ async function mapLogAct(post, viewerId, viewerIsAnna) {
 }
 
 export async function buildActsForIndividual(individualId, viewerId) {
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug } = await buildCommunityVisibilityFilters(viewerId);
   const [{ rows: posts }, { rows: reports }] = await Promise.all([
     query(
       `SELECT ap.id, ap.summary, ap.detail_metrics, ap.exploration_id, ap.exploration_label, ap.posted_at,
@@ -103,7 +104,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
     )
   ]);
 
-  const logActs = await Promise.all(posts.map((post) => mapLogAct(post, viewerId, viewerIsAnna)));
+  const logActs = await Promise.all(posts.map((post) => mapLogAct(post, viewerId, shouldHideSlug)));
 
   const reportActs = reports.map((row) => {
     const title = row.title || row.exploration_id;
@@ -130,6 +131,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
 }
 
 export async function toggleActivityNice(activityPostId, viewerId) {
+  const { ctx, shouldHideSlug } = await buildCommunityVisibilityFilters(viewerId);
   const { rows: ownerRows } = await query(
     `SELECT individual_id FROM activity_posts WHERE id = $1`,
     [activityPostId]
@@ -144,8 +146,12 @@ export async function toggleActivityNice(activityPostId, viewerId) {
     err.status = 403;
     throw err;
   }
+  if (!ctx.canViewIndividuals) {
+    const err = new Error("Community visibility required to interact with other individuals");
+    err.status = 403;
+    throw err;
+  }
 
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const alreadyNiced = await viewerHasNiced(activityPostId, viewerId);
 
   if (alreadyNiced) {
@@ -164,7 +170,7 @@ export async function toggleActivityNice(activityPostId, viewerId) {
 
   const [nc, supporterPreview] = await Promise.all([
     fetchNiceCount(activityPostId),
-    fetchSupporterPreview(activityPostId, viewerIsAnna)
+    fetchSupporterPreview(activityPostId, shouldHideSlug)
   ]);
 
   return {
@@ -175,13 +181,15 @@ export async function toggleActivityNice(activityPostId, viewerId) {
 }
 
 export async function fetchActivityNiceSupporters(activityPostId, viewerId) {
-  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const { shouldHideSlug } = await buildCommunityVisibilityFilters(viewerId);
   const { rows } = await query(
     `SELECT
        i.slug,
        i.display_name AS name,
        i.location AS loc,
        i.avatar_image_id AS img,
+       i.avatar_key,
+       i.avatar_url,
        i.avatar_initials AS initials,
        i.profile_meta AS meta,
        EXISTS(
@@ -199,15 +207,17 @@ export async function fetchActivityNiceSupporters(activityPostId, viewerId) {
   const others = [];
 
   for (const row of rows) {
-    if (isHiddenFromCommunity(viewerIsAnna, row.slug)) continue;
-    const entry = {
+    if (shouldHideSlug(row.slug)) continue;
+    const entry = enrichAvatarFields({
       slug: row.slug,
       name: row.name,
       loc: row.loc,
       img: row.img,
       initials: row.initials,
-      meta: row.meta
-    };
+      meta: row.meta,
+      avatar_key: row.avatar_key,
+      avatar_url: row.avatar_url
+    });
     if (row.viewerFollows) following.push(entry);
     else others.push(entry);
   }

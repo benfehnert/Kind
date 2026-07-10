@@ -46,8 +46,8 @@ The snapshot tests compare the cent/centShort analysis output for every explorat
 
 ### Releases
 
-- `npm run release:staging` — merge current branch → staging and push
-- `npm run release:main` — merge staging → main and push
+- `npm run release:staging` — push `dev`, merge `dev` → `staging`, and push `staging`
+- `npm run release:main` — push `staging`, merge `staging` → `main`, and push `main`
 
 ## Release Guardrails
 

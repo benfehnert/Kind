@@ -59,7 +59,8 @@ export function DataProvider({ children }) {
       followerOnly,
       researchers: communityResearchers.items || [],
       socialMeta: socialFollows,
-      explorationFollowers: communityIndividuals.explorationFollowers || {}
+      explorationFollowers: communityIndividuals.explorationFollowers || {},
+      canViewIndividuals: communityIndividuals.canViewIndividuals !== false
     };
 
     return {

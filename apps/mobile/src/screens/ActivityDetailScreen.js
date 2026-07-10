@@ -19,6 +19,7 @@ import { colors, fontFamily, radius, spacing } from "../theme/colors";
 import { text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
+import { avatarPropsFromPerson } from "../lib/avatarProps";
 import { Card, CardTitle } from "../components/primitives/Card";
 import { MessageReactions } from "../components/activity/MessageReactions";
 import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
@@ -38,7 +39,7 @@ function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggl
   return (
     <View style={[styles.messageRow, item.parentMessageId && styles.replyRow]}>
       <Pressable onPress={() => onPressProfile(item.sender.slug)}>
-        <Avatar size={36} img={item.sender.img} initials={item.sender.initials} />
+        <Avatar size={36} {...avatarPropsFromPerson(item.sender)} />
       </Pressable>
       <View style={styles.messageBody}>
         <View style={styles.messageHead}>
@@ -342,7 +343,7 @@ export default function ActivityDetailScreen() {
                   <Card style={styles.sectionCard}>
                     <CardTitle>Explorer</CardTitle>
                     <Pressable style={styles.linkRow} onPress={openOwnerProfile} hitSlop={4}>
-                      <Avatar size={40} img={detail.owner.img} initials={detail.owner.initials} />
+                      <Avatar size={40} {...avatarPropsFromPerson(detail.owner)} />
                       <View style={styles.linkBody}>
                         <Text style={styles.ownerName}>{detail.owner.name}</Text>
                         <Text style={styles.linkHint}>View profile</Text>

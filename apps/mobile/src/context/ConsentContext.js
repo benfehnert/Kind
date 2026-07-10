@@ -8,6 +8,7 @@ import { useAuth } from "./AuthContext";
 const PREFS_STORAGE_KEY = "@kind/profile_privacy_prefs";
 const EXPLORATION_CONSENTS_KEY = "@kind/exploration_consents";
 const ACTIVE_EXPLORATION_KEY = "@kind/active_exploration";
+const COMMUNITY_WITHDRAW_NOTICE_KEY = "@kind/community_withdraw_notice";
 
 export const DEFAULT_PRIVACY_PREFS = {
   globalConsent: false,
@@ -56,6 +57,66 @@ export function ConsentProvider({ children }) {
   const [activeExplorationId, setActiveExplorationId] = useState(null);
   const [explorationRuns, setExplorationRuns] = useState({});
   const [explorationHydrating, setExplorationHydrating] = useState(true);
+  const [communityWithdrawNotice, setCommunityWithdrawNotice] = useState(false);
+  const [communityNoticeHydrating, setCommunityNoticeHydrating] = useState(true);
+
+  const persistPrefs = useCallback(async (next) => {
+    try {
+      await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const applyPrefs = useCallback(
+    (prefs) => {
+      const normalized = normalizePrefs(prefs);
+      setPrivacyPrefs(normalized);
+      setChoices((prev) => ({ ...prev, ...choicesFromPrefs(normalized) }));
+      persistPrefs(normalized);
+      return normalized;
+    },
+    [persistPrefs]
+  );
+
+  const persistCommunityWithdrawNotice = useCallback(async (show) => {
+    try {
+      if (show) {
+        await AsyncStorage.setItem(COMMUNITY_WITHDRAW_NOTICE_KEY, "1");
+      } else {
+        await AsyncStorage.removeItem(COMMUNITY_WITHDRAW_NOTICE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const showCommunityWithdrawNotice = useCallback(async () => {
+    setCommunityWithdrawNotice(true);
+    await persistCommunityWithdrawNotice(true);
+  }, [persistCommunityWithdrawNotice]);
+
+  const clearCommunityWithdrawNotice = useCallback(async () => {
+    setCommunityWithdrawNotice(false);
+    await persistCommunityWithdrawNotice(false);
+  }, [persistCommunityWithdrawNotice]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(COMMUNITY_WITHDRAW_NOTICE_KEY);
+        if (!cancelled) setCommunityWithdrawNotice(raw === "1");
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setCommunityNoticeHydrating(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (hydrating) return;
@@ -63,6 +124,12 @@ export function ConsentProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
+        if (isAuthenticated && data?.consent?.privacyPrefs) {
+          if (cancelled) return;
+          applyPrefs(data.consent.privacyPrefs);
+          return;
+        }
+
         const raw = await AsyncStorage.getItem(PREFS_STORAGE_KEY);
         if (cancelled) return;
 
@@ -74,7 +141,7 @@ export function ConsentProvider({ children }) {
           const fromOnboarding = privacyFromAnswers(onboardingAnswers);
           setPrivacyPrefs(fromOnboarding);
           setChoices((prev) => ({ ...prev, ...choicesFromPrefs(fromOnboarding) }));
-          await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(fromOnboarding));
+          await persistPrefs(fromOnboarding);
         }
       } catch {
         // ignore corrupt storage
@@ -86,7 +153,15 @@ export function ConsentProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [hydrating, onboardingCompleted, onboardingAnswers]);
+  }, [
+    hydrating,
+    isAuthenticated,
+    data?.consent?.privacyPrefs,
+    onboardingCompleted,
+    onboardingAnswers,
+    applyPrefs,
+    persistPrefs
+  ]);
 
   useEffect(() => {
     if (hydrating) return;
@@ -112,14 +187,6 @@ export function ConsentProvider({ children }) {
       cancelled = true;
     };
   }, [hydrating, isAuthenticated]);
-
-  const persistPrefs = useCallback(async (next) => {
-    try {
-      await AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore
-    }
-  }, []);
 
   const persistExplorationConsents = useCallback(async (next) => {
     try {
@@ -226,28 +293,29 @@ export function ConsentProvider({ children }) {
   const syncFromOnboarding = useCallback(
     async (answers) => {
       const prefs = privacyFromAnswers(answers);
-      setPrivacyPrefs(prefs);
-      const nextChoices = choicesFromPrefs(prefs);
-      setChoices((prev) => ({ ...prev, ...nextChoices }));
-      await persistPrefs(prefs);
+      applyPrefs(prefs);
 
       if (isAuthenticated) {
         try {
-          await post("/consent/choices", { choices: nextChoices });
+          await patch("/profile/privacy", prefs);
         } catch {
-          // local state remains when API unavailable
+          try {
+            await post("/consent/choices", { choices: choicesFromPrefs(prefs) });
+          } catch {
+            // local state remains when API unavailable
+          }
         }
       }
     },
-    [isAuthenticated, persistPrefs]
+    [isAuthenticated, applyPrefs]
   );
 
   const updatePrivacyPref = useCallback(
-    (key, value) => {
+    async (key, value) => {
+      let nextPrefs;
       setPrivacyPrefs((prev) => {
-        const next = { ...prev, [key]: value };
-        persistPrefs(next);
-        return next;
+        nextPrefs = { ...prev, [key]: value };
+        return nextPrefs;
       });
       setChoices((prev) => {
         if (key === "globalConsent") return { ...prev, platform_participation: value };
@@ -255,8 +323,19 @@ export function ConsentProvider({ children }) {
         if (key === "visible") return { ...prev, result_sharing: value };
         return prev;
       });
+      await persistPrefs(nextPrefs);
+
+      if (isAuthenticated) {
+        try {
+          await patch("/profile/privacy", nextPrefs);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      return true;
     },
-    [persistPrefs]
+    [isAuthenticated, persistPrefs]
   );
 
   const hasExplorationConsent = useCallback(
@@ -350,6 +429,8 @@ export function ConsentProvider({ children }) {
       completed,
       privacyPrefs,
       prefsHydrating,
+      communityWithdrawNotice,
+      communityNoticeHydrating,
       explorationConsents,
       activeExplorationId,
       explorationRuns,
@@ -357,6 +438,8 @@ export function ConsentProvider({ children }) {
       saveConsent,
       syncFromOnboarding,
       updatePrivacyPref,
+      showCommunityWithdrawNotice,
+      clearCommunityWithdrawNotice,
       hasExplorationConsent,
       grantExplorationConsent,
       revokeExplorationConsent,
@@ -371,6 +454,8 @@ export function ConsentProvider({ children }) {
       completed,
       privacyPrefs,
       prefsHydrating,
+      communityWithdrawNotice,
+      communityNoticeHydrating,
       explorationConsents,
       activeExplorationId,
       explorationRuns,
@@ -378,6 +463,8 @@ export function ConsentProvider({ children }) {
       saveConsent,
       syncFromOnboarding,
       updatePrivacyPref,
+      showCommunityWithdrawNotice,
+      clearCommunityWithdrawNotice,
       hasExplorationConsent,
       grantExplorationConsent,
       revokeExplorationConsent,

@@ -1,5 +1,6 @@
 import { query } from "../db.js";
 import { formatActivityTime } from "./activityNiceData.js";
+import { enrichAvatarFields } from "./avatarUtils.js";
 
 const PREVIEW_LIMIT = 5;
 export const MESSAGE_REACTION_TYPES = ["heart", "clap"];
@@ -53,7 +54,8 @@ async function fetchMessageCount(activityPostId) {
 
 async function fetchMessagePreview(activityPostId, limit = PREVIEW_LIMIT) {
   const { rows } = await query(
-    `SELECT i.slug, i.display_name AS name, i.avatar_image_id AS img, i.avatar_initials AS initials
+    `SELECT i.slug, i.display_name AS name, i.avatar_image_id AS img, i.avatar_initials AS initials,
+            i.avatar_key, i.avatar_url
      FROM (
        SELECT DISTINCT ON (sender_id) sender_id, sent_at
        FROM activity_messages
@@ -65,7 +67,7 @@ async function fetchMessagePreview(activityPostId, limit = PREVIEW_LIMIT) {
      LIMIT $2`,
     [activityPostId, limit]
   );
-  return rows;
+  return rows.map(enrichAvatarFields);
 }
 
 export async function fetchActivityMessageSummary(activityPostId) {
@@ -77,6 +79,12 @@ export async function fetchActivityMessageSummary(activityPostId) {
 }
 
 function mapMessageRow(row) {
+  const senderAvatar = enrichAvatarFields({
+    img: row.senderImg,
+    initials: row.senderInitials,
+    avatar_key: row.senderAvatarKey,
+    avatar_url: row.senderAvatarUrl
+  });
   return {
     id: row.id,
     body: row.body,
@@ -86,8 +94,11 @@ function mapMessageRow(row) {
     sender: {
       slug: row.senderSlug,
       name: row.senderName,
-      img: row.senderImg,
-      initials: row.senderInitials
+      img: senderAvatar.img,
+      initials: senderAvatar.initials,
+      avatarKey: senderAvatar.avatarKey,
+      avatarUrl: senderAvatar.avatarUrl,
+      sceneKey: senderAvatar.sceneKey
     }
   };
 }
@@ -96,7 +107,8 @@ export async function fetchActivityMessages(activityPostId, viewerId) {
   const { rows } = await query(
     `SELECT am.id, am.body, am.sent_at, am.parent_message_id,
             i.slug AS "senderSlug", i.display_name AS "senderName",
-            i.avatar_image_id AS "senderImg", i.avatar_initials AS "senderInitials"
+            i.avatar_image_id AS "senderImg", i.avatar_initials AS "senderInitials",
+            i.avatar_key AS "senderAvatarKey", i.avatar_url AS "senderAvatarUrl"
      FROM activity_messages am
      JOIN individuals i ON i.id = am.sender_id
      WHERE am.activity_post_id = $1

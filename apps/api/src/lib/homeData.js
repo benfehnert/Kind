@@ -1,4 +1,5 @@
 import { query } from "../db.js";
+import { buildCommunityVisibilityFilters } from "./communityVisibility.js";
 import {
   filterStaticFeedRows,
   isCohortStatsScience
@@ -19,6 +20,7 @@ import {
   SHORT_EXPLORATION_IDS
 } from "./centShort/index.js";
 import { formatFullLogDetail } from "./logDetailFormat.js";
+import { feedAvatarFields } from "./avatarUtils.js";
 
 export const FEED_CHIPS = [
   { key: "all", label: "All" },
@@ -391,9 +393,9 @@ function mapFeedRow(row, explorationMeta = {}) {
     time: formatFeedTime(row.published_at),
     body: row.body ?? row.headline ?? "",
     highlight: row.highlight ?? "",
-    avatarKind: row.actor_img ? "image" : "initials",
+    avatarKind: feedAvatarFields(row).avatarKind,
     initials: row.actor_initials ?? "K",
-    avatarKey: row.actor_img ? `pravatar-${row.actor_img}` : undefined
+    ...feedAvatarFields(row)
   };
 }
 
@@ -437,7 +439,8 @@ async function fetchFeedRows(explorationIds) {
     `SELECT fi.id, fi.feed_type::text AS type, fi.exploration_id, fi.headline,
             fi.body, fi.highlight, fi.published_at, fi.sort_order,
             i.slug AS actor_slug, i.display_name AS actor_name,
-            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials
+            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials,
+            i.avatar_key AS actor_avatar_key, i.avatar_url AS actor_avatar_url
      FROM feed_items fi
      LEFT JOIN individuals i ON i.id = fi.actor_individual_id
      WHERE fi.feed_type IN ('tip', 'science')
@@ -478,9 +481,9 @@ function mapActivityPost(row) {
     time: `${formatFeedTime(row.posted_at)}${expSuffix}`,
     body: row.summary,
     highlight: row.detail_metrics ?? "",
-    avatarKind: row.actor_img ? "image" : "initials",
+    avatarKind: feedAvatarFields(row).avatarKind,
     initials: row.actor_initials ?? "?",
-    avatarKey: row.actor_img ? `pravatar-${row.actor_img}` : undefined,
+    ...feedAvatarFields(row),
     nc: Number(row.nice_count) || 0,
     viewerNiced: !!row.viewer_niced,
     _sortAt: new Date(row.posted_at).getTime()
@@ -488,6 +491,9 @@ function mapActivityPost(row) {
 }
 
 async function fetchNetworkActivityPosts(individualId, consentedIds) {
+  const { ctx, shouldHideSlug } = await buildCommunityVisibilityFilters(individualId);
+  if (!ctx.canViewIndividuals) return [];
+
   const { rows } = await query(
     `SELECT ap.id, ap.individual_id, ap.exploration_id, ap.summary, ap.detail_metrics,
             ap.exploration_label, ap.posted_at,
@@ -497,7 +503,8 @@ async function fetchNetworkActivityPosts(individualId, consentedIds) {
               WHERE n.activity_post_id = ap.id AND n.individual_id = $1
             ) AS viewer_niced,
             i.slug AS actor_slug, i.display_name AS actor_name,
-            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials
+            i.avatar_image_id AS actor_img, i.avatar_initials AS actor_initials,
+            i.avatar_key AS actor_avatar_key, i.avatar_url AS actor_avatar_url
      FROM activity_posts ap
      JOIN individuals i ON i.id = ap.individual_id
      LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
@@ -512,9 +519,10 @@ async function fetchNetworkActivityPosts(individualId, consentedIds) {
 
   return rows.filter(
     (row) =>
-      !row.exploration_id ||
-      consentedIds.length === 0 ||
-      consentedIds.includes(row.exploration_id)
+      (!row.exploration_id ||
+        consentedIds.length === 0 ||
+        consentedIds.includes(row.exploration_id)) &&
+      !shouldHideSlug(row.actor_slug)
   );
 }
 
@@ -689,11 +697,15 @@ function truncate(text, max = 140) {
 }
 
 async function fetchIncomingActivityMessages(individualId) {
+  const { ctx, shouldHideSlug } = await buildCommunityVisibilityFilters(individualId);
+  if (!ctx.canViewIndividuals) return [];
+
   const { rows } = await query(
     `SELECT am.id AS message_id, am.body, am.sent_at, am.activity_post_id,
             ap.summary, ap.exploration_label,
             i.slug AS sender_slug, i.display_name AS sender_name,
-            i.avatar_image_id AS sender_img, i.avatar_initials AS sender_initials
+            i.avatar_image_id AS sender_img, i.avatar_initials AS sender_initials,
+            i.avatar_key AS sender_avatar_key, i.avatar_url AS sender_avatar_url
      FROM activity_messages am
      JOIN activity_posts ap ON ap.id = am.activity_post_id
      JOIN individuals i ON i.id = am.sender_id
@@ -703,7 +715,9 @@ async function fetchIncomingActivityMessages(individualId) {
     [individualId]
   );
 
-  return rows.map((row) => {
+  return rows
+    .filter((row) => !shouldHideSlug(row.sender_slug))
+    .map((row) => {
     const senderName = shortDisplayName(row.sender_name);
     const expSuffix = row.exploration_label ? ` · ${row.exploration_label}` : "";
     return {
@@ -716,9 +730,7 @@ async function fetchIncomingActivityMessages(individualId) {
       time: `${formatFeedTime(row.sent_at)}${expSuffix}`,
       body: `<strong>${senderName}</strong> left a message on your activity: "${truncate(row.body)}"`,
       highlight: row.summary ? `Re: ${row.summary}` : "",
-      avatarKind: row.sender_img ? "image" : "initials",
-      initials: row.sender_initials ?? "?",
-      avatarKey: row.sender_img ? `pravatar-${row.sender_img}` : undefined,
+      ...feedAvatarFields(row),
       route: "ActivityDetail",
       routeParams: { activityPostId: row.activity_post_id },
       _sortAt: new Date(row.sent_at).getTime()

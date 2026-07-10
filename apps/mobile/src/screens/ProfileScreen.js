@@ -21,6 +21,10 @@ import { PullToRefreshIndicator } from "../components/primitives/PullToRefreshIn
 import { Avatar } from "../components/primitives/Avatar";
 import { EditNameModal, EditAvatarModal } from "../components/profile/ProfileEditModals";
 import { PRIVACY_POLICY_URL } from "../data/explorerOnboarding";
+import {
+  PRIVACY_WITHDRAW_KEYS,
+  PROFILE_WITHDRAW_CONFIRMATIONS
+} from "../data/profileWithdrawConfirmations";
 
 export default function ProfileScreen() {
   const posthog = usePostHog();
@@ -30,12 +34,14 @@ export default function ProfileScreen() {
     useCallback(() => refetchProfile?.(), [refetchProfile])
   );
   const { followingCount } = useFollow();
-  const { privacyPrefs, updatePrivacyPref, explorationConsents, activeExplorationId } = useConsent();
+  const { privacyPrefs, prefsHydrating, updatePrivacyPref, showCommunityWithdrawNotice, explorationConsents, activeExplorationId } =
+    useConsent();
   const { displayName, avatar, initials, avatarProps, updateDisplayName, updateAvatar } = useProfile();
   const { logout } = useAuth();
   const { showToast } = useUiShell();
   const [nameModalOpen, setNameModalOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [pendingWithdraw, setPendingWithdraw] = useState(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -58,7 +64,40 @@ export default function ProfileScreen() {
       };
     });
 
+  const trackPrivacyToggle = (key, next) => {
+    if (key !== "globalConsent" && key !== "science" && key !== "visible") return;
+    posthog?.capture("updated data controls");
+    if (key === "globalConsent") {
+      posthog?.capture(next ? "turned global consent on" : "turned global consent off");
+    }
+    if (key === "science") {
+      posthog?.capture(next ? "turned citizen science consent on" : "turned citizen science consent off");
+    }
+    if (key === "visible") {
+      posthog?.capture(next ? "turned community visibility on" : "turned community visibility off");
+    }
+  };
+
+  const applyPrivacyPref = async (key, next) => {
+    const saved = await updatePrivacyPref(key, next);
+    if (!saved) {
+      showToast("Could not save your preference. Please try again.");
+      return false;
+    }
+    trackPrivacyToggle(key, next);
+    return true;
+  };
+
   const handleToggle = async (key, next) => {
+    if (PRIVACY_WITHDRAW_KEYS.has(key) && !next) {
+      setPendingWithdraw(key);
+      return;
+    }
+
+    if (pendingWithdraw === key && next) {
+      setPendingWithdraw(null);
+    }
+
     if (key === "reminders" && next) {
       if (Platform.OS === "web") {
         showToast("Daily reminders are available in the iOS and Android apps.");
@@ -70,19 +109,16 @@ export default function ProfileScreen() {
         return;
       }
     }
-    updatePrivacyPref(key, next);
-    if (key === "globalConsent" || key === "science" || key === "visible") {
-      posthog?.capture("updated data controls");
-      if (key === "globalConsent") {
-        posthog?.capture(next ? "turned global consent on" : "turned global consent off");
-      }
-      if (key === "science") {
-        posthog?.capture(
-          next ? "turned citizen science consent on" : "turned citizen science consent off"
-        );
-      }
+
+    await applyPrivacyPref(key, next);
+  };
+
+  const handleConfirmWithdraw = async (key) => {
+    const saved = await applyPrivacyPref(key, false);
+    if (saved) {
+      setPendingWithdraw(null);
       if (key === "visible") {
-        posthog?.capture(next ? "turned community visibility on" : "turned community visibility off");
+        await showCommunityWithdrawNotice();
       }
     }
   };
@@ -203,21 +239,37 @@ export default function ProfileScreen() {
         <Card>
           <CardTitle>{profile.privacy.title}</CardTitle>
           {toggles.map((t, i) => {
-            const on = Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            const on = prefsHydrating
+              ? Boolean(t.defaultOn ?? false)
+              : Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            const withdrawCopy = PROFILE_WITHDRAW_CONFIRMATIONS[t.key];
             return (
-              <View key={t.key} style={[styles.setRow, i === toggles.length - 1 && { borderBottomWidth: 0 }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.sl}>{t.label}</Text>
-                  <Text style={styles.ss}>{t.sub}</Text>
+              <View key={t.key}>
+                <View style={[styles.setRow, i === toggles.length - 1 && pendingWithdraw !== t.key && { borderBottomWidth: 0 }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.sl}>{t.label}</Text>
+                    <Text style={styles.ss}>{t.sub}</Text>
+                  </View>
+                  <Pressable
+                    style={[styles.toggle, !on && styles.toggleOff]}
+                    onPress={() => handleToggle(t.key, !on)}
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: on }}
+                  >
+                    <View style={[styles.toggleKnob, !on && styles.toggleKnobOff]} />
+                  </Pressable>
                 </View>
-                <Pressable
-                  style={[styles.toggle, !on && styles.toggleOff]}
-                  onPress={() => handleToggle(t.key, !on)}
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: on }}
-                >
-                  <View style={[styles.toggleKnob, !on && styles.toggleKnobOff]} />
-                </Pressable>
+                {pendingWithdraw === t.key && withdrawCopy ? (
+                  <View style={[styles.withdrawBlock, i === toggles.length - 1 && { borderBottomWidth: 0 }]}>
+                    <Text style={styles.withdrawMsg}>{withdrawCopy.message}</Text>
+                    <Pressable style={styles.withdrawConfirmBtn} onPress={() => handleConfirmWithdraw(t.key)}>
+                      <Text style={styles.withdrawConfirmTxt}>Confirm</Text>
+                    </Pressable>
+                    <Pressable style={styles.withdrawCancelBtn} onPress={() => setPendingWithdraw(null)}>
+                      <Text style={styles.withdrawCancelTxt}>Cancel</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             );
           })}
@@ -245,7 +297,9 @@ export default function ProfileScreen() {
         <Card>
           <CardTitle>{profile.reminders?.title || "Reminders"}</CardTitle>
           {reminderToggles.map((t, i) => {
-            const on = Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
+            const on = prefsHydrating
+              ? Boolean(t.defaultOn ?? false)
+              : Boolean(privacyPrefs[t.key] ?? t.defaultOn ?? false);
             return (
               <View
                 key={t.key}
@@ -374,6 +428,36 @@ const styles = StyleSheet.create({
   },
   toggleKnobOff: {
     alignSelf: "flex-start"
+  },
+  withdrawBlock: {
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  withdrawMsg: {
+    ...text.body,
+    color: colors.textMuted,
+    marginBottom: spacing.md
+  },
+  withdrawConfirmBtn: {
+    backgroundColor: colors.greenDark,
+    borderRadius: radius.md,
+    paddingVertical: spacing.lg,
+    alignItems: "center",
+    marginBottom: spacing.sm
+  },
+  withdrawConfirmTxt: {
+    ...type.buttonMd,
+    color: "#fff"
+  },
+  withdrawCancelBtn: {
+    paddingVertical: spacing.sm,
+    alignItems: "center"
+  },
+  withdrawCancelTxt: {
+    ...text.link,
+    fontSize: 14,
+    color: colors.textMuted
   },
   po: {
     marginTop: spacing.lg,
