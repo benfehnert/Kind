@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors, radius, spacing } from "../theme/colors";
-import { type } from "../theme/typography";
+import { colors, radius, spacing } from "../../theme/colors";
+import { type } from "../../theme/typography";
 
 const PROVIDERS = [
   { id: "google", label: "Continue with Google" },
