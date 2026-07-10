@@ -70,7 +70,7 @@ export default function ExplorerProfileScreen() {
 
   const toggleNice = useCallback(
     async (act) => {
-      if (!act?.id || act.kind === "report" || togglingNice[act.id]) return;
+      if (!act?.id || act.kind === "report" || togglingNice[act.id] || isSelf(userId)) return;
       const previous = { nc: act.nc || 0, viewerNiced: !!act.viewerNiced, supporterPreview: act.supporterPreview || [] };
       const optimisticNiced = !previous.viewerNiced;
 
@@ -111,7 +111,7 @@ export default function ExplorerProfileScreen() {
         setTogglingNice((prev) => ({ ...prev, [act.id]: false }));
       }
     },
-    [togglingNice]
+    [isSelf, togglingNice, userId]
   );
 
   const openSupporters = useCallback(
@@ -202,15 +202,33 @@ export default function ExplorerProfileScreen() {
         </View>
 
         <View style={styles.ff}>
-          <View style={styles.ffCell}>
+          <Pressable
+            style={styles.ffCell}
+            onPress={() =>
+              navigation.navigate("FollowList", {
+                mode: "following",
+                userId,
+                userName: u.name
+              })
+            }
+          >
             <Text style={styles.ffN}>{u.followStats?.following ?? 0}</Text>
             <Text style={styles.ffL}>Following</Text>
-          </View>
+          </Pressable>
           <View style={styles.ffDiv} />
-          <View style={styles.ffCell}>
+          <Pressable
+            style={styles.ffCell}
+            onPress={() =>
+              navigation.navigate("FollowList", {
+                mode: "followers",
+                userId,
+                userName: u.name
+              })
+            }
+          >
             <Text style={styles.ffN}>{u.followStats?.followers ?? 0}</Text>
             <Text style={styles.ffL}>Followers</Text>
-          </View>
+          </Pressable>
         </View>
 
         <Card>
@@ -312,6 +330,7 @@ export default function ExplorerProfileScreen() {
                           onToggleNice={() => toggleNice(a)}
                           onOpenSupporters={() => openSupporters(a)}
                           disabled={!!togglingNice[a.id]}
+                          canToggleNice={!isSelf(userId)}
                         />
                         <ActivityMessageBlock
                           count={a.mc || 0}

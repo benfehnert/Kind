@@ -7,8 +7,9 @@ import {
 } from "../constants.js";
 import { phaseStats, effectSize, rankHabits, adherenceStats } from "../stats.js";
 import { buildLimitations, round1, keepListLabel } from "../helpers.js";
+import { buildRelaxationPracticesMobileViewForReport } from "./mobileView.js";
 
-export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta) {
+export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
   const oValid = optimiseEntries.filter((e) => e.valid_for_analysis);
@@ -33,7 +34,7 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
     PRIMARY_OUTCOME
   );
 
-  return {
+  const report = {
     type: "OPTIMISE_COMPLETION",
     reportTitle: "Optimise phase completion report",
     phaseLabel: "Optimise",
@@ -63,5 +64,15 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
         ? `During the optimise phase, your composure averaged ${round1(optimiseComposure.mean ?? outputComposure.mean)}/10. Keep focusing on ${keepLabels.join(" and ")}.`
         : `Your composure averaged ${round1(optimiseComposure.mean ?? outputComposure.mean)}/10 during week 5. Continue logging to confirm your best practices.`,
     limitations: buildLimitations(adherence, periodFx, bValid, oValid.length ? oValid : outputEntries)
+  };
+
+  return {
+    ...report,
+    mobileView: buildRelaxationPracticesMobileViewForReport(report, {
+      studyMeta,
+      allEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

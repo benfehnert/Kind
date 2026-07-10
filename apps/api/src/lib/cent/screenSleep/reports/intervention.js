@@ -23,13 +23,19 @@ import {
 import { buildWinddownSleepChart, buildHabitUpliftChart } from "../charts.js";
 import { meanWinddownMinutes } from "../normalize.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildScreenSleepMobileViewForReport } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
-export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta) {
+export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = baselineEntries.filter((e) => e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, { MIN_INTERVENTION_DAYS });
 
-  if (iValid.length < MIN_INTERVENTION_DAYS) {
-    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, MIN_INTERVENTION_DAYS, iValid);
+  if (iValid.length < thresholds.MIN_INTERVENTION_DAYS) {
+    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, thresholds.MIN_INTERVENTION_DAYS, iValid, {
+      studyMeta,
+      isShort: options.isShort ?? false
+    });
   }
 
   const baselineSleepMean = phaseStats(bValid, PRIMARY_OUTCOME).mean;
@@ -73,7 +79,7 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
   const winddownSleepChart = buildWinddownSleepChart(iValid, baselineSleepMean);
   const habitUpliftChart = buildHabitUpliftChart(habitSleep);
 
-  return {
+  const report = {
     type: "INTERVENTION_INTERIM",
     reportTitle: "Health exploration interim report",
     phaseLabel: "30-min free",
@@ -111,5 +117,15 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
         note: `Baseline avg ${round1(meanWinddownMinutes(bValid))} min → 30-min phase ${round1(meanWinddownMinutes(iValid))} min`
       }
     ]
+  };
+
+  return {
+    ...report,
+    mobileView: buildScreenSleepMobileViewForReport(report, {
+      studyMeta,
+      allEntries: [...baselineEntries, ...interventionEntries],
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

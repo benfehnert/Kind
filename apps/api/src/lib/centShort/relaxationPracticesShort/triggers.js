@@ -55,8 +55,6 @@ export function analyzeRelaxationPractices(allEntries, studyMeta, cohortSnapshot
 
   if (baselineEntries.length) {
     reports.push(generateBaselineReport(baselineEntries, studyMeta));
-  }
-  if (interventionEntries.length) {
     reports.push(generateInterventionReport(baselineEntries, interventionEntries, studyMeta));
   }
   if (optimiseEntries.length) {

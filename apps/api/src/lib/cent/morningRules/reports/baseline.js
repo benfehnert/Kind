@@ -1,8 +1,9 @@
 import { PRIMARY_OUTCOME, SECONDARY_OUTCOMES, HEALTH_EXPLORATION_LABEL } from "../constants.js";
 import { phaseStats, adherenceStats } from "../stats.js";
 import { buildBaselineHeadline } from "../helpers.js";
+import { buildMorningRulesMobileViewForReport } from "./mobileView.js";
 
-export function generateBaselineReport(baselineEntries, studyMeta) {
+export function generateBaselineReport(baselineEntries, studyMeta, options = {}) {
   const endDate = studyMeta.baseline_end_date ?? studyMeta.endDate ?? baselineEntries.at(-1)?.date;
   const adherence = adherenceStats(baselineEntries, studyMeta.start_date, endDate);
   const primaryStats = phaseStats(baselineEntries, PRIMARY_OUTCOME);
@@ -14,7 +15,7 @@ export function generateBaselineReport(baselineEntries, studyMeta) {
   const wk1 = phaseStats(baselineEntries.filter((e) => e.study_week === 1), "afternoon_energy");
   const wk2 = phaseStats(baselineEntries.filter((e) => e.study_week === 2), "afternoon_energy");
 
-  return {
+  const report = {
     type: "BASELINE_SUMMARY",
     reportTitle: "Baseline summary report",
     phaseLabel: "Baseline",
@@ -30,5 +31,15 @@ export function generateBaselineReport(baselineEntries, studyMeta) {
     headline: buildBaselineHeadline(primaryStats, secStats),
     phase_b_guidance:
       "Starting next week you enter the Morning rules phase of your health exploration. Track four morning rules daily — early sunlight, morning movement, caffeine offset, and morning meditation. Log whether you followed each one and rate your afternoon energy and afternoon crash severity each day."
+  };
+
+  return {
+    ...report,
+    mobileView: buildMorningRulesMobileViewForReport(report, {
+      studyMeta,
+      allEntries: options.allEntries ?? baselineEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

@@ -16,7 +16,8 @@ export function ActivityNiceBlock({
   supporterPreview = [],
   onToggleNice,
   onOpenSupporters,
-  disabled = false
+  disabled = false,
+  canToggleNice = true
 }) {
   const showSupporters = count > 0;
 
@@ -35,20 +36,22 @@ export function ActivityNiceBlock({
         </Pressable>
       ) : null}
 
-      <Pressable
-        style={[styles.niceBtn, viewerNiced && styles.niceBtnOn]}
-        onPress={(event) => {
-          event?.stopPropagation?.();
-          onToggleNice?.();
-        }}
-        disabled={disabled}
-        accessibilityRole="button"
-        accessibilityLabel={viewerNiced ? "Remove nice" : "Give nice"}
-        accessibilityState={{ selected: viewerNiced }}
-      >
-        <NiceIcon selected={viewerNiced} size={24} />
-        <Text style={[styles.niceLabel, viewerNiced && styles.niceLabelOn]}>Nice</Text>
-      </Pressable>
+      {canToggleNice ? (
+        <Pressable
+          style={[styles.niceBtn, viewerNiced && styles.niceBtnOn]}
+          onPress={(event) => {
+            event?.stopPropagation?.();
+            onToggleNice?.();
+          }}
+          disabled={disabled}
+          accessibilityRole="button"
+          accessibilityLabel={viewerNiced ? "Remove nice" : "Give nice"}
+          accessibilityState={{ selected: viewerNiced }}
+        >
+          <NiceIcon selected={viewerNiced} size={24} />
+          <Text style={[styles.niceLabel, viewerNiced && styles.niceLabelOn]}>Nice</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

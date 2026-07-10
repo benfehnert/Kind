@@ -6,8 +6,9 @@ import {
 } from "../constants.js";
 import { phaseStats, effectSize, rankRules, adherenceStats } from "../stats.js";
 import { buildLimitations, round1 } from "../helpers.js";
+import { buildMorningRulesMobileViewForReport } from "./mobileView.js";
 
-export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta) {
+export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
   const oValid = optimiseEntries.filter((e) => e.valid_for_analysis);
@@ -31,7 +32,7 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
     PRIMARY_OUTCOME
   );
 
-  return {
+  const report = {
     type: "OPTIMISE_COMPLETION",
     reportTitle: "Optimise completion report",
     phaseLabel: "Optimise",
@@ -63,5 +64,15 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
         ? `During Optimise, your afternoon energy averaged ${round1(optimiseEnergy.mean)}/10 on the 0–10 scale. Keep focusing on ${keepLabels.join(" and ")}.`
         : `During Optimise, your afternoon energy averaged ${round1(optimiseEnergy.mean)}/10 on the 0–10 scale. Continue logging to confirm your best rule combinations.`,
     limitations: buildLimitations(adherence, periodFx, bValid, oValid)
+  };
+
+  return {
+    ...report,
+    mobileView: buildMorningRulesMobileViewForReport(report, {
+      studyMeta,
+      allEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

@@ -5,6 +5,11 @@ import { generateFeedContent } from "../feedContent.js";
 import { morningRulesFeedLibrary } from "../data/morningRulesFeedLibrary.js";
 import { buildMorningRulesContext } from "./cent/morningRules/index.js";
 import { fetchExplorationMeta, fetchConsentedExplorationIds } from "./homeData.js";
+import {
+  REPORT_LABELS,
+  centReportFeedRoute,
+  enrichCentReportFeedItem
+} from "./explorationReportsData.js";
 import { getExplorationTheme } from "./explorationThemes.js";
 import cohortSnapshotMorningRules from "../data/fixtures/cohort-snapshot-morning-rules.json" with { type: "json" };
 import cohortSnapshotEating from "../data/fixtures/cohort-snapshot-eating.json" with { type: "json" };
@@ -54,15 +59,6 @@ const REPORT_GATES = {
   }
 };
 
-const REPORT_LABELS = {
-  BASELINE_SUMMARY: "Baseline summary",
-  INTERVENTION_INTERIM: "Interim analysis",
-  OPTIMISE_COMPLETION: "Optimise phase complete",
-  FINAL_STUDY_COMPLETE: "Personalised trial final report",
-  COHORT_COMPARISON: "Community comparison",
-  KIND_COMPARISON: "Community comparison"
-};
-
 function formatFeedTime(date) {
   if (!date) return "Today";
   const then = new Date(date);
@@ -99,17 +95,21 @@ function centReportToFeedItem(report, explorationMeta, explorationId, generatedA
     iconColor: meta.text || theme.accent,
     displayName: REPORT_LABELS[type] || "Exploration update",
     badge: "blue",
-    badgeLabel: isFinal ? "Report" : "Update",
+    badgeLabel: "Report",
     time: `${feedLabel} · ${formatFeedTime(generatedAt)}`,
     body,
-    highlight: report.phase_b_guidance || report.optimise_guidance || (isFinal ? "Tap to view your full personalised analysis." : ""),
+    highlight:
+      report.phase_b_guidance ||
+      report.optimise_guidance ||
+      (isFinal ? "Tap to view your full personalised analysis." : "Tap to view your report."),
     insightTab: "your",
     _sortAt: generatedAt ? new Date(generatedAt).getTime() : Date.now()
   };
 
-  if (isFinal) {
-    item.route = "ExplorationReport";
-    item.routeParams = { explorationId };
+  const { route, routeParams } = centReportFeedRoute(explorationId, type);
+  if (route) {
+    item.route = route;
+    item.routeParams = routeParams;
   }
 
   return item;
@@ -322,14 +322,15 @@ export async function fetchUpdateFeedItems(individualId, explorationMeta = {}) {
     const feedItem = row.feed_item ?? {};
     const meta = explorationMeta[row.exploration_id] ?? {};
     const theme = getExplorationTheme(row.exploration_id);
+    const enriched = enrichCentReportFeedItem(feedItem, row.update_key, row.exploration_id);
     return stripSortKey({
-      ...feedItem,
-      id: feedItem.id || `update-${row.exploration_id}-${row.update_key}`,
+      ...enriched,
+      id: enriched.id || `update-${row.exploration_id}-${row.update_key}`,
       explorationId: row.exploration_id,
-      avatarBg: feedItem.avatarBg || meta.bg || theme.surface,
-      iconColor: feedItem.iconColor || feedItem.glyphColor || meta.text || theme.accent,
+      avatarBg: enriched.avatarBg || meta.bg || theme.surface,
+      iconColor: enriched.iconColor || enriched.glyphColor || meta.text || theme.accent,
       time:
-        feedItem.time ||
+        enriched.time ||
         `${meta.feedLabel || meta.title || row.exploration_id} · ${formatFeedTime(row.generated_at)}`,
       _sortAt: new Date(row.generated_at).getTime()
     });

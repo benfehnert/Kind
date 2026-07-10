@@ -15,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import { colors, fontFamily, radius, spacing } from "../../theme/colors";
 import { Avatar } from "../primitives/Avatar";
 import { PRESET_SCENE_KEYS } from "../../assets/sceneAvatars";
+import { ProfilePhotoCropModal } from "./ProfilePhotoCropModal";
 
 export function EditNameModal({ visible, initialName, onSave, onClose }) {
   const [name, setName] = useState(initialName);
@@ -58,7 +59,12 @@ export function EditNameModal({ visible, initialName, onSave, onClose }) {
 }
 
 export function EditAvatarModal({ visible, currentAvatar, onSave, onClose }) {
+  const [cropUri, setCropUri] = useState(null);
   const selectScene = (key) => onSave({ type: "scene", key });
+
+  React.useEffect(() => {
+    if (!visible) setCropUri(null);
+  }, [visible]);
 
   const pickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -69,17 +75,17 @@ export function EditAvatarModal({ visible, currentAvatar, onSave, onClose }) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85
+      allowsEditing: false,
+      quality: 1
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
-      onSave({ type: "photo", uri: result.assets[0].uri });
+      setCropUri(result.assets[0].uri);
     }
   };
 
   return (
+    <>
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
@@ -117,6 +123,16 @@ export function EditAvatarModal({ visible, currentAvatar, onSave, onClose }) {
         </View>
       </View>
     </Modal>
+    <ProfilePhotoCropModal
+      visible={Boolean(cropUri)}
+      imageUri={cropUri}
+      onClose={() => setCropUri(null)}
+      onSave={(uri) => {
+        setCropUri(null);
+        onSave({ type: "photo", uri });
+      }}
+    />
+    </>
   );
 }
 

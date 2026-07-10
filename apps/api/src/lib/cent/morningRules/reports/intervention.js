@@ -24,13 +24,20 @@ import {
 } from "../helpers.js";
 import { buildMorningRulesEnergyChart, buildRuleUpliftChart } from "../charts.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildMorningRulesMobileViewForReport } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
-export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta) {
+export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = baselineEntries.filter((e) => e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
 
-  if (iValid.length < MIN_INTERVENTION_DAYS) {
-    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, MIN_INTERVENTION_DAYS, iValid);
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, { MIN_INTERVENTION_DAYS });
+
+  if (iValid.length < thresholds.MIN_INTERVENTION_DAYS) {
+    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, thresholds.MIN_INTERVENTION_DAYS, iValid, {
+      studyMeta,
+      isShort: options.isShort ?? false
+    });
   }
 
   const baselineEnergyMean = phaseStats(bValid, "afternoon_energy").mean;
@@ -89,7 +96,7 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
   const morningRulesEnergyChart = buildMorningRulesEnergyChart(iValid, baselineEnergyMean);
   const ruleUpliftChart = buildRuleUpliftChart(ruleEnergy);
 
-  return {
+  const report = {
     type: "INTERVENTION_INTERIM",
     reportTitle: "Health exploration interim report",
     phaseLabel: "Morning rules",
@@ -128,5 +135,15 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
         note: "Compared with Baseline average"
       }
     ]
+  };
+
+  return {
+    ...report,
+    mobileView: buildMorningRulesMobileViewForReport(report, {
+      studyMeta,
+      allEntries: [...baselineEntries, ...interventionEntries],
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

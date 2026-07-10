@@ -43,7 +43,7 @@
     "items": [
       {
         "reportType": "INTERVENTION_INTERIM",
-        "label": "Interim analysis",
+        "label": "Interim analysis report",
         "headline": "Afternoon crashes eased during your Morning rules phase, with sunlight and stretching showing the strongest lift in afternoon energy.",
         "isFinal": false
       }

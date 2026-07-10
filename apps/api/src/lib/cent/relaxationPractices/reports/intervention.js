@@ -23,13 +23,19 @@ import {
 } from "../helpers.js";
 import { buildPracticeComposureChart, buildHabitStressChart } from "../charts.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildRelaxationPracticesMobileViewForReport } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
-export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta) {
+export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = baselineEntries.filter((e) => e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, { MIN_INTERVENTION_DAYS });
 
-  if (iValid.length < MIN_INTERVENTION_DAYS) {
-    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, MIN_INTERVENTION_DAYS, iValid);
+  if (iValid.length < thresholds.MIN_INTERVENTION_DAYS) {
+    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, thresholds.MIN_INTERVENTION_DAYS, iValid, {
+      studyMeta,
+      isShort: options.isShort ?? false
+    });
   }
 
   const baselineComposureMean = phaseStats(bValid, PRIMARY_OUTCOME).mean;
@@ -73,7 +79,7 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
   const practiceComposureChart = buildPracticeComposureChart(iValid, baselineComposureMean);
   const habitStressChart = buildHabitStressChart(habitStress);
 
-  return {
+  const report = {
     type: "INTERVENTION_INTERIM",
     reportTitle: "Health exploration interim report",
     phaseLabel: "Practices",
@@ -111,5 +117,15 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
         note: `Baseline avg ${round1(phaseStats(bValid, FACTOR_OUTCOME).mean)} → practices ${round1(phaseStats(iValid, FACTOR_OUTCOME).mean)}`
       }
     ]
+  };
+
+  return {
+    ...report,
+    mobileView: buildRelaxationPracticesMobileViewForReport(report, {
+      studyMeta,
+      allEntries: [...baselineEntries, ...interventionEntries],
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

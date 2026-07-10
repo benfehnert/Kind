@@ -7,8 +7,9 @@ import {
 import { phaseStats, effectSize, rankHabits, adherenceStats } from "../stats.js";
 import { buildLimitations, round1, keepListLabel } from "../helpers.js";
 import { meanWindowHours } from "../normalize.js";
+import { buildTimeRestrictedEatingMobileViewForReport } from "./mobileView.js";
 
-export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta) {
+export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
   const oValid = optimiseEntries.filter((e) => e.valid_for_analysis);
@@ -37,7 +38,7 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
   const eightHourWindow = meanWindowHours(oValid);
   const stableTenHour = eightHourWindow === null || tenHourWindow <= eightHourWindow + 0.5;
 
-  return {
+  const report = {
     type: "OPTIMISE_COMPLETION",
     reportTitle: "8-hour window completion report",
     phaseLabel: "8-hour window",
@@ -68,5 +69,15 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
         ? `During the optional 8-hour trial, your daily energy averaged ${round1(optimiseEnergy.mean ?? outputEnergy.mean)}/10. Keep focusing on ${keepLabels.join(" and ")}.`
         : `Your daily energy averaged ${round1(optimiseEnergy.mean ?? outputEnergy.mean)}/10 during week 5. Continue logging to confirm your best timing habits.`,
     limitations: buildLimitations(adherence, periodFx, bValid, oValid.length ? oValid : outputEntries)
+  };
+
+  return {
+    ...report,
+    mobileView: buildTimeRestrictedEatingMobileViewForReport(report, {
+      studyMeta,
+      allEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

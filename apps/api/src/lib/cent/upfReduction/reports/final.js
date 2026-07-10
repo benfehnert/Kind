@@ -36,6 +36,8 @@ import {
 import { buildUpfMoodChart, buildHabitUpliftChart } from "../charts.js";
 import { meanUpfPct } from "../normalize.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildUpfReductionMobileView } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
 function evidenceBadge(habitResult, followedPct, phaseLabel = "reduction") {
   if (habitResult.status !== "valid") return "Insufficient data";
@@ -56,19 +58,24 @@ function badgeColors(badge) {
   return { badgeBg: "#F1EFE8", badgeText: "#444441", bar: "#888780", valColor: "#5F6B5C" };
 }
 
-export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null) {
+export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null, options = {}) {
   const bEntries = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iEntries = allEntries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis);
   const opEntries = allEntries.filter((e) => e.phase === "OPTIMISE" && e.valid_for_analysis);
   const outEntries = allEntries.filter((e) => e.phase === "OUTPUT" && e.valid_for_analysis);
   const active = [...iEntries, ...opEntries, ...outEntries];
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, {
+    MIN_BASELINE_DAYS,
+    MIN_ACTIVE_DAYS
+  });
 
-  if (bEntries.length < MIN_BASELINE_DAYS || active.length < MIN_ACTIVE_DAYS) {
+  if (bEntries.length < thresholds.MIN_BASELINE_DAYS || active.length < thresholds.MIN_ACTIVE_DAYS) {
     return generateInsufficientDataReport(
       "FINAL",
       bEntries.length,
-      MIN_ACTIVE_DAYS,
-      allEntries.filter((e) => e.valid_for_analysis)
+      thresholds.MIN_ACTIVE_DAYS,
+      allEntries.filter((e) => e.valid_for_analysis),
+      { studyMeta, isShort: options.isShort ?? false, cohortSnapshot }
     );
   }
 
@@ -222,78 +229,22 @@ export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null
   };
 
   const mobileReport = {
-    explorationName: "UPF reduction & mood",
-    explorationLabel: HEALTH_EXPLORATION_LABEL,
-    reportTitleLabel: "Personalised trial final report",
-    category: "Diet & Nutrition",
-    subMeta: `${participantName} · ${formatDateRange(studyMeta.start_date, endDate)} · ${loggingPct}% of days logged`,
-    lede:
-      verdict === "BENEFICIAL" || verdict === "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT"
-        ? "Swapping ultra-processed foods for whole alternatives shifted your daily mood. Here's how your UPF intake tracked with how you felt."
-        : "Here's what your own data over this exploration suggests about UPF reduction and your daily mood.",
-    tiles: [
-      {
-        label: "Daily mood",
-        value: `${round1(baselineMood.mean)} → ${round1(tileEndMood)}`,
-        delta: `${tileMoodDelta >= 0 ? "+" : ""}${tileMoodDelta} pts`
-      },
-      {
-        label: "UPF share of diet",
-        value: `${Math.round(baselineUpf)}% → ${Math.round(tileEndUpf)}%`,
-        delta: `${tileUpfDelta >= 0 ? "+" : ""}${tileUpfDelta} pts`
+    ...buildUpfReductionMobileView({
+      reportType: "FINAL_STUDY_COMPLETE",
+      allEntries,
+      studyMeta,
+      cohortSnapshot,
+      isShort: options.isShort ?? false,
+      limitations,
+      keepList: {
+        title: "Your keep list",
+        items: keepItems.length ? keepItems : ["Whole-food breakfast", "Unprocessed snacks"],
+        body:
+          "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
       }
-    ],
-    phaseChart: {
-      title: "Daily mood by phase",
-      min: 4,
-      max: 8,
-      points: [
-        { label: "Baseline", v: round1(baselineMood.mean) },
-        { label: "Reduction", v: round1(reductionMood.mean) },
-        { label: "Week 6", v: round1(week6Mood.mean ?? activeMood.mean) }
-      ]
-    },
-    factors: {
-      title: "What worked for you",
-      sub: "Higher mood on days with lower UPF and these swaps.",
-      rows: factorRows
-    },
-    distribution: {
-      title: "UPF share of daily diet",
-      beforeLabel: "Baseline (wks 1–2)",
-      afterLabel: "Week 6",
-      before: upfDistributionBars(baselineUpfStats),
-      after: upfDistributionBars(week6UpfStats),
-      legend: [
-        { c: UPF_COLORS.high, label: UPF_BAND_LABELS[0] },
-        { c: UPF_COLORS.medium, label: UPF_BAND_LABELS[1] },
-        { c: UPF_COLORS.low, label: UPF_BAND_LABELS[2] }
-      ]
-    },
-    keepList: {
-      title: "Your keep list",
-      items: keepItems.length ? keepItems : ["Whole-food breakfast", "Unprocessed snacks"],
-      body:
-        "Breakfast and snack swaps drove most of your UPF reduction — and the mood lift followed within two weeks. Home-cooked dinners helped on weekends."
-    },
-    compare: {
-      title: "How you compare",
-      body: cohortSnapshot
-        ? buildKindCompareBody(moodDelta, upfDelta, loggingPct, cohortSnapshot)
-        : `Your daily mood changed by ${moodDelta >= 0 ? "+" : ""}${moodDelta} points and UPF share by ${upfDelta} percentage points over the health exploration.`
-    },
-    disclaimer: USER_DISCLAIMER.body,
-    disclaimerInfo: USER_DISCLAIMER,
-    limitations,
-    generalisabilityNote,
+    }),
     upf_mood_chart: upfMoodChart,
     habit_uplift_chart: habitUpliftChart,
-    cta: {
-      label: keepItems.length >= 2 ? "Run a 4-week re-check on your keep-list  →" : "Continue tracking what works  →",
-      toast: keepItems.length >= 2
-        ? `Setting up a focused 4-week re-check on ${keepItems.join(" and ").toLowerCase()}.`
-        : "Keep tracking the swap habits that work best for you."
-    },
     _cent: centReport
   };
 

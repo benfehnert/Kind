@@ -1,26 +1,5 @@
-import { PRIMARY_OUTCOME, FACTOR_OUTCOME, SECONDARY_OUTCOMES, MIN_INTERVENTION_DAYS, HEALTH_EXPLORATION_LABEL } from "../constants.js";
-import { phaseStats } from "../stats.js";
+import { generateInsufficientDataReport as generateCentInsufficientDataReport } from "../../../cent/relaxationPractices/reports/insufficient.js";
 
-export function generateInsufficientDataReport(reportType, currentN, requiredN, currentEntries = []) {
-  const gap = requiredN - currentN;
-  const descriptive = {};
-
-  if (currentEntries.length) {
-    descriptive.primary = phaseStats(currentEntries, PRIMARY_OUTCOME);
-    descriptive.stress = phaseStats(currentEntries, FACTOR_OUTCOME);
-    descriptive.anxiety = phaseStats(currentEntries, "anxiety");
-    descriptive.days_logged = currentEntries.length;
-  }
-
-  return {
-    type: "INSUFFICIENT_DATA",
-    for_report: reportType,
-    valid_days_logged: currentN,
-    valid_days_needed: requiredN,
-    days_gap: gap,
-    message: `You have logged ${currentN} valid days. ${requiredN} are needed for a reliable analysis. Log ${gap} more days to unlock your full report.`,
-    available_summary: descriptive
-  };
+export function generateInsufficientDataReport(reportType, currentN, requiredN, currentEntries = [], options = {}) {
+  return generateCentInsufficientDataReport(reportType, currentN, requiredN, currentEntries, { ...options, isShort: true });
 }
-
-export { MIN_INTERVENTION_DAYS, HEALTH_EXPLORATION_LABEL };

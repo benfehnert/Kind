@@ -111,7 +111,7 @@ export async function buildActsForIndividual(individualId, viewerId) {
       id: `report-${row.exploration_id}`,
       kind: "report",
       explorationId: row.exploration_id,
-      t: `Completed the personalised trial final report for ${title}.`,
+      t: `Completed the final report for ${title}.`,
       time: formatActivityTime(row.generated_at),
       exp: title,
       nc: 0,
@@ -130,6 +130,21 @@ export async function buildActsForIndividual(individualId, viewerId) {
 }
 
 export async function toggleActivityNice(activityPostId, viewerId) {
+  const { rows: ownerRows } = await query(
+    `SELECT individual_id FROM activity_posts WHERE id = $1`,
+    [activityPostId]
+  );
+  if (!ownerRows.length) {
+    const err = new Error("Activity not found");
+    err.status = 404;
+    throw err;
+  }
+  if (ownerRows[0].individual_id === viewerId) {
+    const err = new Error("You cannot nice your own activity");
+    err.status = 403;
+    throw err;
+  }
+
   const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
   const alreadyNiced = await viewerHasNiced(activityPostId, viewerId);
 

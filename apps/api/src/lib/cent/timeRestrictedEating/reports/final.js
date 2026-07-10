@@ -32,6 +32,8 @@ import {
 import { buildWindowEnergyChart, buildHabitUpliftChart } from "../charts.js";
 import { meanWindowHours } from "../normalize.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildTimeRestrictedEatingMobileView } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 import { getExplorationTheme } from "../../../explorationThemes.js";
 
 const theme = getExplorationTheme("eating");
@@ -73,19 +75,24 @@ function hungerDistributionBars(stats) {
   ];
 }
 
-export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null) {
+export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null, options = {}) {
   const bEntries = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iEntries = allEntries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis);
   const opEntries = allEntries.filter((e) => e.phase === "OPTIMISE" && e.valid_for_analysis);
   const outEntries = allEntries.filter((e) => e.phase === "OUTPUT" && e.valid_for_analysis);
   const active = [...iEntries, ...opEntries, ...outEntries];
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, {
+    MIN_BASELINE_DAYS,
+    MIN_ACTIVE_DAYS
+  });
 
-  if (bEntries.length < MIN_BASELINE_DAYS || active.length < MIN_ACTIVE_DAYS) {
+  if (bEntries.length < thresholds.MIN_BASELINE_DAYS || active.length < thresholds.MIN_ACTIVE_DAYS) {
     return generateInsufficientDataReport(
       "FINAL",
       bEntries.length,
-      MIN_ACTIVE_DAYS,
-      allEntries.filter((e) => e.valid_for_analysis)
+      thresholds.MIN_ACTIVE_DAYS,
+      allEntries.filter((e) => e.valid_for_analysis),
+      { studyMeta, isShort: options.isShort ?? false, cohortSnapshot }
     );
   }
 
@@ -236,79 +243,22 @@ export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null
   };
 
   const mobileReport = {
-    explorationName: "Time-restricted eating",
-    explorationLabel: HEALTH_EXPLORATION_LABEL,
-    reportTitleLabel: "Personalised trial final report",
-    category: "Metabolic Health",
-    subMeta: `${participantName} · ${formatDateRange(studyMeta.start_date, endDate)} · ${loggingPct}% of days logged`,
-    lede:
-      verdict === "BENEFICIAL" || verdict === "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT"
-        ? "Compressing your eating window shifted your daily energy curve. Here's what your logs suggest about timing — not calories — for you."
-        : "Here's what your own data over this exploration suggests about meal timing and your daily energy.",
-    tiles: [
-      {
-        label: "Daily energy",
-        value: `${round1(baselineEnergy.mean)} → ${round1(activeEnergy.mean)}`,
-        delta: `${energyDelta >= 0 ? "+" : ""}${energyDelta} pts`
-      },
-      {
-        label: "Eating window",
-        value: `${Math.round(baselineWindow)}h → ${Math.round(activeWindow)}h`,
-        delta: `${windowDelta >= 0 ? "+" : ""}${windowDelta} hrs`
+    ...buildTimeRestrictedEatingMobileView({
+      reportType: "FINAL_STUDY_COMPLETE",
+      allEntries,
+      studyMeta,
+      cohortSnapshot,
+      isShort: options.isShort ?? false,
+      limitations,
+      keepList: {
+        title: "Your keep list",
+        items: keepItems.length ? keepItems : ["10-hour eating window", "First meal ~8am"],
+        body:
+          "Your clearest gains came from a stable window rather than pushing to 8 hours. Hunger comfort normalised by week 4 — worth keeping the rhythm you found."
       }
-    ],
-    phaseChart: {
-      title: "Daily energy by phase",
-      min: 4,
-      max: 8,
-      points: [
-        { label: "Baseline", v: round1(baselineEnergy.mean) },
-        { label: "10-hour", v: round1(tenHourEnergy.mean) },
-        { label: "Week 6", v: round1(week6Energy.mean ?? activeEnergy.mean) }
-      ]
-    },
-    factors: {
-      title: "What worked for you",
-      sub: "Extra daily energy linked to each timing habit.",
-      rows: factorRows
-    },
-    distribution: {
-      title: "Hunger comfort through the day",
-      beforeLabel: "Baseline (weeks 1–2)",
-      afterLabel: "Week 6",
-      before: hungerDistributionBars(baselineHunger),
-      after: hungerDistributionBars(week6Hunger),
-      legend: [
-        { c: HUNGER_COLORS.very_hungry, label: "Very hungry" },
-        { c: HUNGER_COLORS.hungry, label: "Hungry" },
-        { c: HUNGER_COLORS.manageable, label: "Manageable" },
-        { c: HUNGER_COLORS.comfortable, label: "Comfortable" }
-      ]
-    },
-    keepList: {
-      title: "Your keep list",
-      items: keepItems.length ? keepItems : ["10-hour eating window", "First meal ~8am"],
-      body:
-        "Your clearest gains came from a stable window rather than pushing to 8 hours. Hunger comfort normalised by week 4 — worth keeping the rhythm you found."
-    },
-    compare: {
-      title: "How you compare",
-      body: cohortSnapshot
-        ? buildKindCompareBody(energyDelta, loggingPct, cohortSnapshot)
-        : `Your daily energy changed by ${energyDelta >= 0 ? "+" : ""}${energyDelta} points over the health exploration.`
-    },
-    disclaimer: USER_DISCLAIMER.body,
-    disclaimerInfo: USER_DISCLAIMER,
-    limitations,
-    generalisabilityNote,
+    }),
     window_energy_chart: windowEnergyChart,
     habit_uplift_chart: habitUpliftChart,
-    cta: {
-      label: keepItems.length >= 2 ? "Run a 4-week re-check on your keep-list  →" : "Continue tracking what works  →",
-      toast: keepItems.length >= 2
-        ? `Setting up a focused 4-week re-check on ${keepItems.join(" and ").toLowerCase()}.`
-        : "Keep tracking the timing habits that work best for you."
-    },
     _cent: centReport
   };
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -19,10 +19,18 @@ import { colors, fontFamily, radius, spacing } from "../theme/colors";
 import { text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
+import { Card, CardTitle } from "../components/primitives/Card";
 import { MessageReactions } from "../components/activity/MessageReactions";
 import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
 import { ActivityMessageBlock } from "../components/activity/ActivityMessageBlock";
 import { RichTextParts } from "../utils/RichText";
+
+function formatReportDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 function MessageRow({ item, parentName, onReply, onPressProfile, isSelf, onToggleReaction, togglingReaction }) {
   const showReactions = !isSelf(item.sender.slug);
@@ -78,10 +86,16 @@ export default function ActivityDetailScreen() {
   const [sending, setSending] = useState(false);
   const [togglingReaction, setTogglingReaction] = useState(null);
   const [togglingNice, setTogglingNice] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(false);
   const listRef = useRef(null);
   const composerInputRef = useRef(null);
 
   const viewerSlug = profile?.viewerSlug;
+  const viewerOwnsActivity = Boolean(
+    viewerSlug && detail?.owner?.slug && viewerSlug === detail.owner.slug
+  );
+  const isOwnerView = Boolean(detail?.owner?.slug && !viewerOwnsActivity);
 
   const load = useCallback(async () => {
     if (!activityPostId) return;
@@ -112,7 +126,7 @@ export default function ActivityDetailScreen() {
   }, [messages]);
 
   const toggleNice = useCallback(async () => {
-    if (!activityPostId || !detail || togglingNice) return;
+    if (!activityPostId || !detail || togglingNice || viewerOwnsActivity) return;
     const previous = { nc: detail.nc || 0, viewerNiced: !!detail.viewerNiced };
     const optimisticNiced = !previous.viewerNiced;
 
@@ -145,7 +159,7 @@ export default function ActivityDetailScreen() {
     } finally {
       setTogglingNice(false);
     }
-  }, [activityPostId, detail, togglingNice]);
+  }, [activityPostId, detail, togglingNice, viewerOwnsActivity]);
 
   const openSupporters = useCallback(() => {
     if (!activityPostId || !(detail?.nc > 0)) return;
@@ -163,8 +177,67 @@ export default function ActivityDetailScreen() {
 
   const openExploration = useCallback(() => {
     if (!detail?.explorationId) return;
-    navigation.navigate("ExplorationDetail", { id: detail.explorationId });
-  }, [navigation, detail?.explorationId]);
+    if (isOwnerView && detail.owner?.slug) {
+      navigation.navigate("ExplorationSummary", {
+        id: detail.explorationId,
+        ownerSlug: detail.owner.slug,
+        ownerName: detail.owner.name
+      });
+      return;
+    }
+    navigation.navigate("ExplorationSummary", { id: detail.explorationId });
+  }, [navigation, detail?.explorationId, detail?.owner?.slug, detail?.owner?.name, isOwnerView]);
+
+  useEffect(() => {
+    const explorationId = detail?.explorationId;
+    if (!explorationId) {
+      setReports([]);
+      setLoadingReports(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setLoadingReports(true);
+    const reportsUrl =
+      isOwnerView && detail.owner?.slug
+        ? `/community/individuals/${encodeURIComponent(detail.owner.slug)}/explorations/${encodeURIComponent(explorationId)}/reports`
+        : `/me/explorations/${encodeURIComponent(explorationId)}/reports`;
+
+    get(reportsUrl)
+      .then((res) => {
+        if (!cancelled) setReports(res.items || []);
+      })
+      .catch(() => {
+        if (!cancelled) setReports([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingReports(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [detail?.explorationId, detail?.owner?.slug, isOwnerView]);
+
+  const openReport = useCallback(
+    (report) => {
+      if (!detail?.explorationId) return;
+      const ownerSlug = isOwnerView ? detail.owner?.slug : undefined;
+      if (report.isFinal) {
+        navigation.navigate("ExplorationReport", {
+          explorationId: detail.explorationId,
+          ownerSlug
+        });
+        return;
+      }
+      navigation.navigate("CentPhaseReport", {
+        explorationId: detail.explorationId,
+        reportType: report.reportType,
+        ownerSlug
+      });
+    },
+    [navigation, detail?.explorationId, detail?.owner?.slug, isOwnerView]
+  );
 
   const sendMessage = useCallback(async () => {
     const trimmed = draft.trim();
@@ -264,46 +337,99 @@ export default function ActivityDetailScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={
-              <View style={styles.activityCard}>
+              <View style={styles.headerCards}>
                 {detail?.owner?.slug ? (
-                  <Pressable style={styles.ownerRow} onPress={openOwnerProfile} hitSlop={4}>
-                    <Avatar size={32} img={detail.owner.img} initials={detail.owner.initials} />
-                    <Text style={styles.ownerName}>{detail.owner.name}</Text>
-                  </Pressable>
+                  <Card style={styles.sectionCard}>
+                    <CardTitle>Explorer</CardTitle>
+                    <Pressable style={styles.linkRow} onPress={openOwnerProfile} hitSlop={4}>
+                      <Avatar size={40} img={detail.owner.img} initials={detail.owner.initials} />
+                      <View style={styles.linkBody}>
+                        <Text style={styles.ownerName}>{detail.owner.name}</Text>
+                        <Text style={styles.linkHint}>View profile</Text>
+                      </View>
+                      <Text style={styles.chevron}>›</Text>
+                    </Pressable>
+                  </Card>
                 ) : null}
+
                 {detail?.exp ? (
-                  <Pressable onPress={openExploration} disabled={!detail?.explorationId} hitSlop={4}>
-                    <Text style={styles.actPill}>{detail.exp}</Text>
-                  </Pressable>
+                  <Card style={styles.sectionCard}>
+                    <CardTitle>Health exploration</CardTitle>
+                    <Pressable
+                      style={styles.linkRow}
+                      onPress={openExploration}
+                      disabled={!detail?.explorationId}
+                      hitSlop={4}
+                    >
+                      <View style={styles.linkBody}>
+                        <Text style={styles.explorationTitle}>{detail.exp}</Text>
+                        <Text style={styles.linkHint}>View exploration summary</Text>
+                      </View>
+                      <Text style={styles.chevron}>›</Text>
+                    </Pressable>
+                  </Card>
                 ) : null}
-                <Text style={styles.actText}>{detail?.t}</Text>
-                {detail?.detail ? (
-                  <View style={styles.actDetail}>
-                    <RichTextParts
-                      html={detail.detail}
-                      style={styles.actDetailText}
-                      strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
-                    />
+
+                <Card style={styles.sectionCard}>
+                  <CardTitle>Logged data</CardTitle>
+                  <Text style={styles.actText}>{detail?.t}</Text>
+                  {detail?.detail ? (
+                    <View style={styles.actDetail}>
+                      <RichTextParts
+                        html={detail.detail}
+                        style={styles.actDetailText}
+                        strongStyle={{ color: colors.greenDark, ...type.captionStrong }}
+                      />
+                    </View>
+                  ) : null}
+                  <View style={styles.actFoot}>
+                    <Text style={styles.actTime}>{detail?.time}</Text>
+                    <View style={styles.actFootActions}>
+                      <ActivityNiceBlock
+                        count={detail?.nc || 0}
+                        viewerNiced={!!detail?.viewerNiced}
+                        supporterPreview={detail?.supporterPreview || []}
+                        onToggleNice={toggleNice}
+                        onOpenSupporters={openSupporters}
+                        disabled={togglingNice}
+                        canToggleNice={!viewerOwnsActivity}
+                      />
+                      <ActivityMessageBlock
+                        count={detail?.mc || 0}
+                        messagePreview={detail?.messagePreview || []}
+                        onOpenMessages={focusComposer}
+                      />
+                    </View>
                   </View>
+                </Card>
+
+                {detail?.explorationId ? (
+                  <Card style={styles.sectionCard}>
+                    <CardTitle>Reports</CardTitle>
+                    {loadingReports ? (
+                      <ActivityIndicator color={colors.greenDark} style={styles.reportsLoading} />
+                    ) : reports.length === 0 ? (
+                      <Text style={styles.emptyReports}>No reports generated yet.</Text>
+                    ) : (
+                      reports.map((report, index) => (
+                        <Pressable
+                          key={report.reportType}
+                          style={[styles.reportRow, index < reports.length - 1 && styles.reportRowGap]}
+                          onPress={() => openReport(report)}
+                        >
+                          <View style={styles.linkBody}>
+                            <Text style={styles.reportLabel}>{report.label}</Text>
+                            {report.generatedAt ? (
+                              <Text style={styles.reportDate}>{formatReportDate(report.generatedAt)}</Text>
+                            ) : null}
+                          </View>
+                          <Text style={styles.chevron}>›</Text>
+                        </Pressable>
+                      ))
+                    )}
+                  </Card>
                 ) : null}
-                <View style={styles.actFoot}>
-                  <Text style={styles.actTime}>{detail?.time}</Text>
-                  <View style={styles.actFootActions}>
-                    <ActivityNiceBlock
-                      count={detail?.nc || 0}
-                      viewerNiced={!!detail?.viewerNiced}
-                      supporterPreview={detail?.supporterPreview || []}
-                      onToggleNice={toggleNice}
-                      onOpenSupporters={openSupporters}
-                      disabled={togglingNice}
-                    />
-                    <ActivityMessageBlock
-                      count={detail?.mc || 0}
-                      messagePreview={detail?.messagePreview || []}
-                      onOpenMessages={focusComposer}
-                    />
-                  </View>
-                </View>
+
                 <Text style={styles.msgSectionLabel}>{messageHeaderLabel}</Text>
               </View>
             }
@@ -392,32 +518,18 @@ const styles = StyleSheet.create({
   error: { color: colors.textMuted, textAlign: "center", marginBottom: 12 },
   retry: { color: colors.greenDark, fontWeight: "600" },
   listContent: { padding: spacing.screen, paddingBottom: spacing.lg, flexGrow: 1 },
-  activityCard: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.cardY,
-    paddingHorizontal: spacing.cardX,
-    marginBottom: spacing.xl,
-    backgroundColor: colors.surface
-  },
-  ownerRow: {
+  headerCards: { gap: spacing.lg, marginBottom: spacing.xl },
+  sectionCard: { marginBottom: 0 },
+  linkRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md,
-    marginBottom: spacing.md
+    gap: spacing.md
   },
+  linkBody: { flex: 1 },
+  linkHint: { ...text.caption, color: colors.greenDark, marginTop: 2 },
+  chevron: { fontSize: 20, color: colors.greenDark, fontWeight: "600" },
   ownerName: { ...type.feedName, color: colors.text },
-  actPill: {
-    ...type.captionStrong,
-    color: colors.greenDark,
-    backgroundColor: colors.greenLight,
-    alignSelf: "flex-start",
-    borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginBottom: spacing.sm
-  },
+  explorationTitle: { ...type.bodyStrong, color: colors.text },
   actText: { ...text.body },
   actDetail: {
     backgroundColor: colors.greenLight,
@@ -435,6 +547,22 @@ const styles = StyleSheet.create({
   },
   actFootActions: { flexDirection: "row", gap: spacing.sm },
   actTime: { ...text.caption },
+  reportsLoading: { marginVertical: spacing.md },
+  emptyReports: { ...text.caption, color: colors.textMuted },
+  reportRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  reportRowGap: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: spacing.sm,
+    paddingBottom: spacing.md
+  },
+  reportLabel: { ...type.bodyStrong, color: colors.text },
+  reportDate: { ...text.caption, marginTop: 2 },
   msgSectionLabel: {
     ...text.uppercaseLabel,
     marginTop: spacing.xl,

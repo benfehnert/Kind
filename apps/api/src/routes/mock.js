@@ -66,6 +66,92 @@ const MOCK_CENT_PHASE_REPORTS = {
   }
 };
 
+function mockPhaseReport(explorationId, reportType) {
+  const base = MOCK_CENT_PHASE_REPORTS[reportType];
+  if (!base) return null;
+  const exp =
+    explorations[explorationId] ??
+    explorations[`${explorationId}-short`] ??
+    explorations[explorationId.replace(/-short$/, "")];
+  const tiles = base.summary_tiles?.map((tile) => ({
+    label: tile.label,
+    value: tile.value,
+    delta: tile.note || tile.delta
+  }));
+
+  return {
+    ...base,
+    mobileView: {
+      explorationName: exp?.title ?? explorationId,
+      category: exp?.category ?? "Health exploration",
+      reportTitleLabel: REPORT_LABELS[reportType] ?? reportType,
+      subMeta: "You · 1 Mar 2026 – 14 Apr 2026 · 92% of days logged",
+      lede: base.headline,
+      guidance: base.phase_b_guidance ?? base.optimise_guidance ?? null,
+      tiles: tiles?.length ? tiles : undefined,
+      phaseChart: {
+        title: "Afternoon energy by phase",
+        min: 4,
+        max: 8,
+        points:
+          reportType === "BASELINE_SUMMARY"
+            ? [{ label: "Baseline", v: 5.2 }]
+            : [
+                { label: "Baseline", v: 5.2 },
+                { label: "Morning rules", v: 7 },
+                ...(reportType === "OPTIMISE_COMPLETION" ? [{ label: "Optimise", v: 7.4 }] : [])
+              ]
+      },
+      factors:
+        reportType === "BASELINE_SUMMARY"
+          ? undefined
+          : {
+              title: "What worked for you",
+              sub: "Extra afternoon energy on the days you did each rule.",
+              rows: [
+                {
+                  icon: "☀️",
+                  label: "Early sunlight exposure",
+                  value: "+1.4",
+                  width: 85,
+                  bar: "#8A4A1A",
+                  badge: "Moderate · 62% of days",
+                  badgeBg: "#FDF0E4",
+                  badgeText: "#8A4A1A"
+                }
+              ]
+            },
+      distribution: {
+        title: "How your afternoons felt",
+        beforeLabel: "Baseline (weeks 1–2)",
+        before: [
+          { w: 20, c: "#0F6E56" },
+          { w: 30, c: "#EF9F27" },
+          { w: 35, c: "#E24B4A" },
+          { w: 15, c: "#7A1F1F" }
+        ],
+        after:
+          reportType === "BASELINE_SUMMARY"
+            ? undefined
+            : [
+                { w: 35, c: "#0F6E56" },
+                { w: 35, c: "#EF9F27" },
+                { w: 20, c: "#E24B4A" },
+                { w: 10, c: "#7A1F1F" }
+              ],
+        afterLabel: reportType === "BASELINE_SUMMARY" ? undefined : "Morning rules phase",
+        legend: [
+          { c: "#0F6E56", label: "None — no afternoon crash" },
+          { c: "#EF9F27", label: "Mild dip" },
+          { c: "#E24B4A", label: "Noticeable crash" },
+          { c: "#7A1F1F", label: "Severe crash" }
+        ]
+      },
+      limitations: base.limitations
+    }
+  };
+}
+
 function mockReportsList(explorationId) {
   const base = [
     {
@@ -455,6 +541,82 @@ router.get("/community/individuals/:id", (c) => {
   return c.json({ error: "Individual not found" }, 404);
 });
 
+function mockFollowListItem(slug, kind = "individual") {
+  if (kind === "researcher") {
+    const researcher = (community.researchers || []).find((r) => r.id === slug);
+    if (!researcher) return null;
+    return {
+      id: researcher.id,
+      kind: "researcher",
+      name: researcher.name,
+      meta: researcher.title || researcher.org || "Researcher",
+      loc: researcher.org,
+      img: researcher.img,
+      initials: researcher.initials
+    };
+  }
+
+  const person = mockPerson(slug);
+  if (!person) return null;
+  return {
+    id: slug,
+    kind: "individual",
+    name: person.name,
+    loc: person.loc,
+    meta: person.meta,
+    img: person.img,
+    initials: person.initials
+  };
+}
+
+function mockFollowList(slug, mode) {
+  const viewerSlug = profile.viewerSlug;
+
+  if (slug === viewerSlug) {
+    if (mode === "following") {
+      const individuals = (mockSocialMeta.followingExplorerIds || [])
+        .map((id) => mockFollowListItem(id))
+        .filter(Boolean);
+      const researchers = (mockSocialMeta.followingResearcherIds || [])
+        .map((id) => mockFollowListItem(id, "researcher"))
+        .filter(Boolean);
+      return [...individuals, ...researchers];
+    }
+
+    return (mockSocialMeta.followerIdsExpanded || [])
+      .map((id) => mockFollowListItem(id))
+      .filter(Boolean);
+  }
+
+  const allSlugs = [
+    ...Object.keys(community.commUsers || {}),
+    ...(community.basicUsers || []).map((u) => u.id),
+    ...(community.followerOnly || []).map((u) => u.id)
+  ].filter((id) => id !== slug);
+
+  if (mode === "following") {
+    return allSlugs.slice(0, 8).map((id) => mockFollowListItem(id)).filter(Boolean);
+  }
+
+  const followerOnly = (community.followerOnly || []).map((u) => u.id);
+  return [...new Set([...followerOnly, ...allSlugs.slice(0, 4)])]
+    .filter((id) => id !== slug)
+    .map((id) => mockFollowListItem(id))
+    .filter(Boolean);
+}
+
+router.get("/community/individuals/:slug/follows", (c) => {
+  const slug = c.req.param("slug");
+  const mode = c.req.query("mode") === "followers" ? "followers" : "following";
+  const exists =
+    community.commUsers?.[slug] ||
+    [...(community.basicUsers || []), ...(community.followerOnly || [])].some((u) => u.id === slug);
+
+  if (!exists) return c.json({ error: "Individual not found" }, 404);
+
+  return c.json({ items: mockFollowList(slug, mode) });
+});
+
 router.get("/community/individuals/:slug/explorations/:explorationId/reports", (c) => {
   const explorationId = c.req.param("explorationId");
   return c.json({
@@ -467,7 +629,7 @@ router.get("/community/individuals/:slug/explorations/:explorationId/reports", (
 router.get("/community/individuals/:slug/explorations/:explorationId/reports/:reportType", (c) => {
   const explorationId = c.req.param("explorationId");
   const reportType = c.req.param("reportType");
-  const report = MOCK_CENT_PHASE_REPORTS[reportType];
+  const report = mockPhaseReport(explorationId, reportType);
   if (!report) return c.json({ error: "Report not found" }, 404);
   return c.json({
     explorationId,
@@ -686,7 +848,7 @@ router.get("/me/explorations/:id/reports", (c) => {
 router.get("/me/explorations/:id/reports/:reportType", (c) => {
   const explorationId = c.req.param("id");
   const reportType = c.req.param("reportType");
-  const report = MOCK_CENT_PHASE_REPORTS[reportType];
+  const report = mockPhaseReport(explorationId, reportType);
   if (!report) return c.json({ error: "Report not found" }, 404);
   return c.json({
     explorationId,
@@ -777,6 +939,82 @@ router.patch("/social/follows", async (c) => {
 // ---------------------------------------------------------------------------
 // Activity nices
 // ---------------------------------------------------------------------------
+
+function inferMockExplorationId(user, act) {
+  if (act.explorationId) return act.explorationId;
+
+  const expLower = String(act.exp || "").toLowerCase();
+  for (const [id, label] of Object.entries(EXPLORATION_FEED_LABELS)) {
+    const labelLower = label.toLowerCase();
+    if (expLower.includes(labelLower) || labelLower.includes(expLower)) return id;
+  }
+
+  for (const ex of user.exps || []) {
+    const title = String(explorations[ex.id]?.title || ex.name || "").toLowerCase();
+    if (!title) continue;
+    if (expLower.includes(title.slice(0, 12)) || title.includes(expLower.slice(0, 12))) {
+      return ex.id;
+    }
+  }
+
+  return user.exps?.[0]?.id ?? null;
+}
+
+function findMockActivityPost(postId) {
+  const users = [
+    ...Object.entries(community.commUsers || {}).map(([id, u]) => ({ id, ...u })),
+    ...(community.basicUsers || []),
+    ...(community.followerOnly || [])
+  ];
+
+  for (const user of users) {
+    const acts = enrichMockActs(user.id, user.acts || []);
+    const act = acts.find((row) => row.id === postId);
+    if (!act || act.kind === "report") continue;
+
+    const person = mockPerson(user.id);
+    if (!person) continue;
+
+    const messages = ensureMockMessages(postId, 0).map(mapMockMessage);
+    const { mc, messagePreview } = mockMessageSummary(postId);
+    const nicedSlugs = ensureMockNices(postId, 0);
+    const supporters = [...nicedSlugs].map((slug) => mockPerson(slug)).filter(Boolean);
+
+    return {
+      id: postId,
+      t: act.t,
+      detail: act.detail,
+      exp: act.exp,
+      explorationId: inferMockExplorationId(user, act),
+      time: act.time,
+      nc: supporters.length,
+      viewerNiced: nicedSlugs.has(profile.viewerSlug),
+      supporterPreview: supporters.slice(0, 5).map(({ slug, name, img, initials }) => ({
+        slug,
+        name,
+        img,
+        initials
+      })),
+      mc,
+      messagePreview,
+      messages,
+      owner: {
+        slug: person.slug,
+        name: person.name,
+        img: person.img,
+        initials: person.initials
+      }
+    };
+  }
+
+  return null;
+}
+
+router.get("/activity-posts/:id", (c) => {
+  const detail = findMockActivityPost(c.req.param("id"));
+  if (!detail) return c.json({ error: "Activity not found" }, 404);
+  return c.json(detail);
+});
 
 router.patch("/activity-posts/:id/nice", (c) => {
   const postId = c.req.param("id");

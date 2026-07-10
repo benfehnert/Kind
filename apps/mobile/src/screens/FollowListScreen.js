@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
-import { View, FlatList, StyleSheet, Text, Pressable } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, Text, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getResearcher, getUserProfile } from "../data/mock";
+import { get } from "../lib/api";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { colors, fontFamily } from "../theme/colors";
@@ -13,6 +14,8 @@ export default function FollowListScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const mode = params?.mode === "followers" ? "followers" : "following";
+  const userId = params?.userId || null;
+  const userName = params?.userName || null;
   const {
     following,
     followerIdSet,
@@ -24,7 +27,32 @@ export default function FollowListScreen() {
     toggleResearcherFollow
   } = useFollow();
 
+  const [loading, setLoading] = useState(Boolean(userId));
+  const [error, setError] = useState(null);
+  const [remoteRows, setRemoteRows] = useState([]);
+
+  const loadRemoteRows = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await get(`/community/individuals/${userId}/follows?mode=${mode}`);
+      setRemoteRows(result.items || []);
+    } catch (err) {
+      setError(err.message || "Could not load follow list.");
+      setRemoteRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, mode]);
+
+  useEffect(() => {
+    if (userId) loadRemoteRows();
+  }, [userId, loadRemoteRows]);
+
   const rows = useMemo(() => {
+    if (userId) return remoteRows;
+
     if (mode === "following") {
       const individualRows = [...following]
         .map((uid) => {
@@ -56,7 +84,12 @@ export default function FollowListScreen() {
         return u ? { id: uid, kind: "individual", ...u } : null;
       })
       .filter(Boolean);
-  }, [mode, following, followingResearchers, community, followerIdSet]);
+  }, [userId, remoteRows, mode, following, followingResearchers, community, followerIdSet]);
+
+  const title = useMemo(() => {
+    const label = mode === "following" ? "Following" : "Followers";
+    return userName ? `${userName} · ${label}` : label;
+  }, [mode, userName]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
@@ -64,53 +97,68 @@ export default function FollowListScreen() {
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
-        <Text style={styles.hdr}>{mode === "following" ? "Following" : "Followers"}</Text>
+        <Text style={styles.hdr} numberOfLines={1}>
+          {title}
+        </Text>
       </View>
-      <FlatList
-        data={rows}
-        keyExtractor={(item) => `${item.kind}:${item.id}`}
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
-        ListEmptyComponent={<Text style={{ color: colors.textMuted }}>No profiles to show.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Pressable
-              style={{ flex: 1, flexDirection: "row", gap: 12 }}
-              onPress={() =>
-                item.kind === "researcher"
-                  ? navigation.navigate("ResearcherProfile", { researcherId: item.id })
-                  : navigation.navigate("ExplorerProfile", { userId: item.id })
-              }
-            >
-              <Avatar size={44} img={item.img} sceneKey={item.sceneKey} initials={item.initials} avatarUrl={item.avatarUrl} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.meta}>{item.meta || item.loc}</Text>
-              </View>
-            </Pressable>
-            {mode === "following" ? (
-              item.kind === "researcher" ? (
-                <Pressable
-                  style={[styles.fo, isFollowingResearcher(item.id) && styles.fon]}
-                  onPress={() => toggleResearcherFollow(item.id)}
-                >
-                  <Text style={[styles.ft, isFollowingResearcher(item.id) && styles.fton]}>
-                    {isFollowingResearcher(item.id) ? "Following" : "Follow"}
-                  </Text>
-                </Pressable>
-              ) : !isSelf(item.id) ? (
-                <Pressable
-                  style={[styles.fo, isFollowing(item.id) && styles.fon]}
-                  onPress={() => toggleFollow(item.id)}
-                >
-                  <Text style={[styles.ft, isFollowing(item.id) && styles.fton]}>
-                    {isFollowing(item.id) ? "Following" : "Follow"}
-                  </Text>
-                </Pressable>
-              ) : null
-            ) : null}
-          </View>
-        )}
-      />
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.greenDark} />
+        </View>
+      ) : error ? (
+        <View style={styles.center}>
+          <Text style={styles.error}>{error}</Text>
+          <Pressable onPress={loadRemoteRows}>
+            <Text style={styles.retry}>Try again</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <FlatList
+          data={rows}
+          keyExtractor={(item) => `${item.kind}:${item.id}`}
+          contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
+          ListEmptyComponent={<Text style={{ color: colors.textMuted }}>No profiles to show.</Text>}
+          renderItem={({ item }) => (
+            <View style={styles.row}>
+              <Pressable
+                style={{ flex: 1, flexDirection: "row", gap: 12 }}
+                onPress={() =>
+                  item.kind === "researcher"
+                    ? navigation.navigate("ResearcherProfile", { researcherId: item.id })
+                    : navigation.navigate("ExplorerProfile", { userId: item.id })
+                }
+              >
+                <Avatar size={44} img={item.img} sceneKey={item.sceneKey} initials={item.initials} avatarUrl={item.avatarUrl} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.meta}>{item.meta || item.loc}</Text>
+                </View>
+              </Pressable>
+              {mode === "following" ? (
+                item.kind === "researcher" ? (
+                  <Pressable
+                    style={[styles.fo, isFollowingResearcher(item.id) && styles.fon]}
+                    onPress={() => toggleResearcherFollow(item.id)}
+                  >
+                    <Text style={[styles.ft, isFollowingResearcher(item.id) && styles.fton]}>
+                      {isFollowingResearcher(item.id) ? "Following" : "Follow"}
+                    </Text>
+                  </Pressable>
+                ) : !isSelf(item.id) ? (
+                  <Pressable
+                    style={[styles.fo, isFollowing(item.id) && styles.fon]}
+                    onPress={() => toggleFollow(item.id)}
+                  >
+                    <Text style={[styles.ft, isFollowing(item.id) && styles.fton]}>
+                      {isFollowing(item.id) ? "Following" : "Follow"}
+                    </Text>
+                  </Pressable>
+                ) : null
+              ) : null}
+            </View>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -133,6 +181,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.text
   },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
+  error: { color: colors.textMuted, textAlign: "center", marginBottom: 12 },
+  retry: { color: colors.greenDark, fontWeight: "600" },
   row: {
     flexDirection: "row",
     alignItems: "center",

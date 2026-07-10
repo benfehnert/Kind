@@ -1,19 +1,70 @@
 import { query } from "../db.js";
 
 export const REPORT_LABELS = {
-  BASELINE_SUMMARY: "Baseline summary",
-  INTERVENTION_INTERIM: "Interim analysis",
-  OPTIMISE_COMPLETION: "Optimise phase complete",
-  FINAL_STUDY_COMPLETE: "Personalised trial final report",
+  BASELINE_SUMMARY: "Baseline report",
+  INTERVENTION_INTERIM: "Interim analysis report",
+  OPTIMISE_COMPLETION: "Optimise phase report",
+  FINAL_STUDY_COMPLETE: "Final report",
   COHORT_COMPARISON: "Community comparison",
   KIND_COMPARISON: "Community comparison"
 };
 
-const FINAL_REPORT_TYPE = "FINAL_STUDY_COMPLETE";
+export const FINAL_REPORT_TYPE = "FINAL_STUDY_COMPLETE";
 
-function parseReportType(updateKey) {
+const CENT_FEED_REPORT_TYPES = new Set([
+  "BASELINE_SUMMARY",
+  "INTERVENTION_INTERIM",
+  "OPTIMISE_COMPLETION",
+  FINAL_REPORT_TYPE
+]);
+
+export function parseReportType(updateKey) {
   if (!updateKey?.startsWith("cent:")) return null;
   return updateKey.slice("cent:".length);
+}
+
+export function applyReportLabel(report, reportType) {
+  const label = REPORT_LABELS[reportType];
+  if (!report || !label) return report;
+  const next = { ...report, reportTitle: label };
+  if (next.mobileView) {
+    next.mobileView = { ...next.mobileView, reportTitleLabel: label };
+  }
+  return next;
+}
+
+export function centReportFeedRoute(explorationId, reportType) {
+  if (reportType === FINAL_REPORT_TYPE) {
+    return { route: "ExplorationReport", routeParams: { explorationId } };
+  }
+  if (CENT_FEED_REPORT_TYPES.has(reportType)) {
+    return { route: "CentPhaseReport", routeParams: { explorationId, reportType } };
+  }
+  return {};
+}
+
+export function enrichCentReportFeedItem(feedItem, updateKey, explorationId) {
+  const reportType = parseReportType(updateKey);
+  if (!reportType || !CENT_FEED_REPORT_TYPES.has(reportType)) return feedItem;
+
+  const label = REPORT_LABELS[reportType];
+  const isFinal = reportType === FINAL_REPORT_TYPE;
+  const { route, routeParams } = centReportFeedRoute(explorationId, reportType);
+  const guidance = feedItem.highlight;
+  const hasGuidance = guidance && !String(guidance).startsWith("Tap to view");
+
+  return {
+    ...feedItem,
+    displayName: label,
+    badgeLabel: "Report",
+    route,
+    routeParams,
+    highlight: hasGuidance
+      ? guidance
+      : isFinal
+        ? "Tap to view your full personalised analysis."
+        : "Tap to view your report."
+  };
 }
 
 function reportHeadline(content) {
@@ -68,7 +119,7 @@ export async function fetchExplorationPhaseReport(individualId, explorationId, r
   return {
     explorationId,
     reportType,
-    report: rows[0].report_content,
+    report: applyReportLabel(rows[0].report_content, reportType),
     generatedAt: rows[0].generated_at
   };
 }

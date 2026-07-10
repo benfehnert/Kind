@@ -23,8 +23,10 @@ import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
 import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
 import { isShortExploration, isCatalogExploration } from "../lib/centShort/index.js";
 import {
+  applyReportLabel,
   fetchExplorationPhaseReport,
-  fetchExplorationReportsList
+  fetchExplorationReportsList,
+  FINAL_REPORT_TYPE
 } from "../lib/explorationReportsData.js";
 
 const router = new Hono();
@@ -362,7 +364,7 @@ router.get("/me/explorations/:id/report", async (c) => {
 
   return c.json({
     explorationId,
-    report: row.content,
+    report: applyReportLabel(row.content, FINAL_REPORT_TYPE),
     generatedAt: row.generated_at
   });
 });

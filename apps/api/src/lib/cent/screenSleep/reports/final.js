@@ -36,6 +36,8 @@ import {
 import { buildWinddownSleepChart, buildHabitUpliftChart } from "../charts.js";
 import { meanWinddownMinutes } from "../normalize.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildScreenSleepMobileView } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
 function evidenceBadge(habitResult, followedPct, phaseLabel = "active") {
   if (habitResult.status !== "valid") return "Insufficient data";
@@ -74,19 +76,24 @@ function sleepQualityDistributionBars(stats) {
   ];
 }
 
-export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null) {
+export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null, options = {}) {
   const bEntries = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iEntries = allEntries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis);
   const opEntries = allEntries.filter((e) => e.phase === "OPTIMISE" && e.valid_for_analysis);
   const outEntries = allEntries.filter((e) => e.phase === "OUTPUT" && e.valid_for_analysis);
   const active = [...iEntries, ...opEntries, ...outEntries];
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, {
+    MIN_BASELINE_DAYS,
+    MIN_ACTIVE_DAYS
+  });
 
-  if (bEntries.length < MIN_BASELINE_DAYS || active.length < MIN_ACTIVE_DAYS) {
+  if (bEntries.length < thresholds.MIN_BASELINE_DAYS || active.length < thresholds.MIN_ACTIVE_DAYS) {
     return generateInsufficientDataReport(
       "FINAL",
       bEntries.length,
-      MIN_ACTIVE_DAYS,
-      allEntries.filter((e) => e.valid_for_analysis)
+      thresholds.MIN_ACTIVE_DAYS,
+      allEntries.filter((e) => e.valid_for_analysis),
+      { studyMeta, isShort: options.isShort ?? false, cohortSnapshot }
     );
   }
 
@@ -237,79 +244,22 @@ export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null
   };
 
   const mobileReport = {
-    explorationName: "Screen moderation & sleep",
-    explorationLabel: HEALTH_EXPLORATION_LABEL,
-    reportTitleLabel: "Personalised trial final report",
-    category: "Rest & Sleep",
-    subMeta: `${participantName} · ${formatDateRange(studyMeta.start_date, endDate)} · ${loggingPct}% of nights logged`,
-    lede:
-      verdict === "BENEFICIAL" || verdict === "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT"
-        ? "Cutting evening screen time changed how quickly you switched off and how restored mornings felt. Here's your personal sleep story."
-        : "Here's what your own data over this exploration suggests about evening screens and your sleep quality.",
-    tiles: [
-      {
-        label: "Sleep quality",
-        value: `${round1(baselineSleep.mean)} → ${round1(activeSleep.mean)}`,
-        delta: `${sleepDelta >= 0 ? "+" : ""}${sleepDelta} pts`
-      },
-      {
-        label: "Time to fall asleep",
-        value: onsetTile.value,
-        delta: onsetTile.delta
+    ...buildScreenSleepMobileView({
+      reportType: "FINAL_STUDY_COMPLETE",
+      allEntries,
+      studyMeta,
+      cohortSnapshot,
+      isShort: options.isShort ?? false,
+      limitations,
+      keepList: {
+        title: "Your keep list",
+        items: keepItems.length ? keepItems : ["60-min screen-free", "No screens in bed"],
+        body:
+          "The 60-minute buffer made the biggest difference — especially when paired with no in-bed scrolling. Reading on paper helped on tougher nights."
       }
-    ],
-    phaseChart: {
-      title: "Sleep quality by phase",
-      min: 4,
-      max: 9,
-      points: [
-        { label: "Baseline", v: round1(baselineSleep.mean) },
-        { label: "30-min free", v: round1(thirtyMinSleep.mean) },
-        { label: "60-min free", v: round1(week6Sleep.mean ?? activeSleep.mean) }
-      ]
-    },
-    factors: {
-      title: "What worked for you",
-      sub: "Extra sleep quality on nights you followed each habit.",
-      rows: factorRows
-    },
-    distribution: {
-      title: "How rested mornings felt",
-      beforeLabel: "Baseline (wks 1–2)",
-      afterLabel: "Week 6",
-      before: sleepQualityDistributionBars(baselineSleepDist),
-      after: sleepQualityDistributionBars(week6SleepDist),
-      legend: [
-        { c: SLEEP_QUALITY_COLORS.unrested, label: "Unrested" },
-        { c: SLEEP_QUALITY_COLORS.ok, label: "OK" },
-        { c: SLEEP_QUALITY_COLORS.rested, label: "Rested" },
-        { c: SLEEP_QUALITY_COLORS.fully_restored, label: "Fully restored" }
-      ]
-    },
-    keepList: {
-      title: "Your keep list",
-      items: keepItems.length ? keepItems : ["60-min screen-free", "No screens in bed"],
-      body:
-        "The 60-minute buffer made the biggest difference — especially when paired with no in-bed scrolling. Reading on paper helped on tougher nights."
-    },
-    compare: {
-      title: "How you compare",
-      body: cohortSnapshot
-        ? buildKindCompareBody(sleepDelta, loggingPct, cohortSnapshot)
-        : `Your sleep quality changed by ${sleepDelta >= 0 ? "+" : ""}${sleepDelta} points over the health exploration.`
-    },
-    disclaimer: USER_DISCLAIMER.body,
-    disclaimerInfo: USER_DISCLAIMER,
-    limitations,
-    generalisabilityNote,
+    }),
     winddown_sleep_chart: winddownSleepChart,
     habit_uplift_chart: habitUpliftChart,
-    cta: {
-      label: keepItems.length >= 2 ? "Run a 4-week re-check on your keep-list  →" : "Continue tracking what works  →",
-      toast: keepItems.length >= 2
-        ? `Setting up a focused 4-week re-check on ${keepItems.join(" and ").toLowerCase()}.`
-        : "Keep tracking the evening habits that work best for you."
-    },
     _cent: centReport
   };
 

@@ -33,6 +33,8 @@ import {
 } from "../helpers.js";
 import { buildPracticeComposureChart, buildHabitStressChart } from "../charts.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildRelaxationPracticesMobileView } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
 function anxietyDistributionBars(stats) {
   if (!stats?.distribution) {
@@ -52,19 +54,24 @@ function anxietyDistributionBars(stats) {
   ];
 }
 
-export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null) {
+export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null, options = {}) {
   const bEntries = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iEntries = allEntries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis);
   const opEntries = allEntries.filter((e) => e.phase === "OPTIMISE" && e.valid_for_analysis);
   const outEntries = allEntries.filter((e) => e.phase === "OUTPUT" && e.valid_for_analysis);
   const active = [...iEntries, ...opEntries, ...outEntries];
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, {
+    MIN_BASELINE_DAYS,
+    MIN_ACTIVE_DAYS
+  });
 
-  if (bEntries.length < MIN_BASELINE_DAYS || active.length < MIN_ACTIVE_DAYS) {
+  if (bEntries.length < thresholds.MIN_BASELINE_DAYS || active.length < thresholds.MIN_ACTIVE_DAYS) {
     return generateInsufficientDataReport(
       "FINAL",
       bEntries.length,
-      MIN_ACTIVE_DAYS,
-      allEntries.filter((e) => e.valid_for_analysis)
+      thresholds.MIN_ACTIVE_DAYS,
+      allEntries.filter((e) => e.valid_for_analysis),
+      { studyMeta, isShort: options.isShort ?? false, cohortSnapshot }
     );
   }
 
@@ -214,79 +221,22 @@ export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null
   };
 
   const mobileReport = {
-    explorationName: "Relaxation practices & composure",
-    explorationLabel: HEALTH_EXPLORATION_LABEL,
-    reportTitleLabel: "Personalised trial final report",
-    category: "Mental Health",
-    subMeta: `${participantName} · ${formatDateRange(studyMeta.start_date, endDate)} · ${loggingPct}% of days logged`,
-    lede:
-      verdict === "BENEFICIAL" || verdict === "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT"
-        ? "Regular relaxation practices shifted your stress baseline. Here's which techniques your data links to calmer, more composed days."
-        : "Here's what your own data over this exploration suggests about relaxation practices and your composure.",
-    tiles: [
-      {
-        label: "Stress level",
-        value: `${round1(baselineStress.mean)} → ${round1(activeStress.mean)}`,
-        delta: `${stressDelta <= 0 ? "" : "+"}${stressDelta} pts`
-      },
-      {
-        label: "Composure",
-        value: `${round1(baselineComposure.mean)} → ${round1(activeComposure.mean)}`,
-        delta: `${composureDelta >= 0 ? "+" : ""}${composureDelta} pts`
+    ...buildRelaxationPracticesMobileView({
+      reportType: "FINAL_STUDY_COMPLETE",
+      allEntries,
+      studyMeta,
+      cohortSnapshot,
+      isShort: options.isShort ?? false,
+      limitations,
+      keepList: {
+        title: "Your keep list",
+        items: keepItems.length ? keepItems : ["Vagal breathing", "Short nature walk"],
+        body:
+          "Breathing gave you the fastest drop in stress; nature walks sustained composure through the afternoon. PMR helped on high-stress days — worth keeping both core habits."
       }
-    ],
-    phaseChart: {
-      title: "Composure by phase",
-      min: 4,
-      max: 8,
-      points: [
-        { label: "Baseline", v: round1(baselineComposure.mean) },
-        { label: "Practices", v: round1(practicesComposure.mean) },
-        { label: "Week 6", v: round1(week6Composure.mean ?? activeComposure.mean) }
-      ]
-    },
-    factors: {
-      title: "What worked for you",
-      sub: "Lower stress on days you used each practice.",
-      rows: factorRows
-    },
-    distribution: {
-      title: "Anxiety through the week",
-      beforeLabel: "Baseline (wks 1–2)",
-      afterLabel: "Week 6",
-      before: anxietyDistributionBars(baselineAnxiety),
-      after: anxietyDistributionBars(week6Anxiety),
-      legend: [
-        { c: ANXIETY_COLORS.high, label: "High (7–10)" },
-        { c: ANXIETY_COLORS.moderate, label: "Moderate (5–6)" },
-        { c: ANXIETY_COLORS.mild, label: "Mild (3–4)" },
-        { c: ANXIETY_COLORS.calm, label: "Calm (1–2)" }
-      ]
-    },
-    keepList: {
-      title: "Your keep list",
-      items: keepItems.length ? keepItems : ["Vagal breathing", "Short nature walk"],
-      body:
-        "Breathing gave you the fastest drop in stress; nature walks sustained composure through the afternoon. PMR helped on high-stress days — worth keeping both core habits."
-    },
-    compare: {
-      title: "How you compare",
-      body: cohortSnapshot
-        ? buildKindCompareBody(composureDelta, stressDelta, loggingPct, cohortSnapshot)
-        : `Your composure changed by ${composureDelta >= 0 ? "+" : ""}${composureDelta} points and stress by ${stressDelta} points over the health exploration.`
-    },
-    disclaimer: USER_DISCLAIMER.body,
-    disclaimerInfo: USER_DISCLAIMER,
-    limitations,
-    generalisabilityNote,
+    }),
     practice_composure_chart: practiceComposureChart,
     habit_stress_chart: habitStressChart,
-    cta: {
-      label: keepItems.length >= 2 ? "Run a 4-week re-check on your keep-list  →" : "Continue tracking what works  →",
-      toast: keepItems.length >= 2
-        ? `Setting up a focused 4-week re-check on ${keepItems.join(" and ").toLowerCase()}.`
-        : "Keep tracking the relaxation practices that work best for you."
-    },
     _cent: centReport
   };
 

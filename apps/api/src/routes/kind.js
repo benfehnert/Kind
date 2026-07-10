@@ -48,10 +48,12 @@ import {
   SHORT_EXPLORATION_IDS
 } from "../lib/centShort/index.js";
 import {
+  applyReportLabel,
   fetchCommunityExplorationLogs,
   fetchCommunityExplorationRun,
   fetchExplorationPhaseReport,
   fetchExplorationReportsList,
+  FINAL_REPORT_TYPE,
   resolveIndividualIdBySlug
 } from "../lib/explorationReportsData.js";
 
@@ -342,6 +344,90 @@ router.get("/community/individuals/:slug", async (c) => {
   });
 });
 
+router.get("/community/individuals/:slug/follows", async (c) => {
+  const viewerId = await getIndividualId(c.get("user").sub);
+  const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
+  const slug = c.req.param("slug");
+  const mode = c.req.query("mode") === "followers" ? "followers" : "following";
+
+  if (isHiddenFromCommunity(viewerIsAnna, slug)) {
+    return c.json({ error: "Individual not found" }, 404);
+  }
+
+  const individualId = await resolveIndividualIdBySlug(slug);
+  if (!individualId) return c.json({ error: "Individual not found" }, 404);
+
+  const items = [];
+
+  if (mode === "following") {
+    const { rows: individuals } = await query(
+      `SELECT
+         i.slug AS id,
+         i.display_name AS name,
+         i.location AS loc,
+         i.avatar_image_id AS img,
+         i.avatar_initials AS initials,
+         i.profile_meta AS meta
+       FROM individual_follows f
+       JOIN individuals i ON i.id = f.followee_id
+       WHERE f.follower_id = $1
+       ORDER BY i.display_name`,
+      [individualId]
+    );
+    for (const row of individuals) {
+      if (isHiddenFromCommunity(viewerIsAnna, row.id)) continue;
+      items.push({ ...row, kind: "individual" });
+    }
+
+    const { rows: researchers } = await query(
+      `SELECT
+         r.id,
+         r.display_name AS name,
+         r.title,
+         r.organisation AS org,
+         r.avatar_image_id AS img,
+         r.avatar_initials AS initials
+       FROM researcher_follows rf
+       JOIN researchers r ON r.id = rf.researcher_id
+       WHERE rf.individual_id = $1
+       ORDER BY r.display_name`,
+      [individualId]
+    );
+    for (const row of researchers) {
+      items.push({
+        id: row.id,
+        kind: "researcher",
+        name: row.name,
+        meta: row.title || row.org || "Researcher",
+        loc: row.org,
+        img: row.img,
+        initials: row.initials
+      });
+    }
+  } else {
+    const { rows: individuals } = await query(
+      `SELECT
+         i.slug AS id,
+         i.display_name AS name,
+         i.location AS loc,
+         i.avatar_image_id AS img,
+         i.avatar_initials AS initials,
+         i.profile_meta AS meta
+       FROM individual_follows f
+       JOIN individuals i ON i.id = f.follower_id
+       WHERE f.followee_id = $1
+       ORDER BY i.display_name`,
+      [individualId]
+    );
+    for (const row of individuals) {
+      if (isHiddenFromCommunity(viewerIsAnna, row.id)) continue;
+      items.push({ ...row, kind: "individual" });
+    }
+  }
+
+  return c.json({ items });
+});
+
 router.get("/community/individuals/:slug/explorations/:explorationId/reports", async (c) => {
   const viewerId = await getIndividualId(c.get("user").sub);
   const viewerIsAnna = await isAnnaDemoIndividual(viewerId);
@@ -434,7 +520,7 @@ router.get("/community/individuals/:slug/explorations/:explorationId/report", as
   return c.json({
     explorationId,
     ownerSlug: slug,
-    report: row.content,
+    report: applyReportLabel(row.content, FINAL_REPORT_TYPE),
     generatedAt: row.generated_at
   });
 });
@@ -828,8 +914,14 @@ router.patch("/activity-posts/:id/nice", async (c) => {
     return c.json({ error: "Activity not found" }, 404);
   }
 
-  const result = await toggleActivityNice(postId, viewerId);
-  return c.json(result);
+  try {
+    const result = await toggleActivityNice(postId, viewerId);
+    return c.json(result);
+  } catch (err) {
+    if (err.status === 404) return c.json({ error: err.message }, 404);
+    if (err.status === 403) return c.json({ error: err.message }, 403);
+    throw err;
+  }
 });
 
 router.get("/activity-posts/:id/nices", async (c) => {

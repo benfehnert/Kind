@@ -7,8 +7,9 @@ import {
 import { phaseStats, effectSize, rankHabits, adherenceStats } from "../stats.js";
 import { buildLimitations, round1, keepListLabel } from "../helpers.js";
 import { meanUpfPct } from "../normalize.js";
+import { buildUpfReductionMobileViewForReport } from "./mobileView.js";
 
-export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta) {
+export function generateOptimiseReport(allEntries, optimiseEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
   const oValid = optimiseEntries.filter((e) => e.valid_for_analysis);
@@ -37,7 +38,7 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
   const sustainedUpf = meanUpfPct(oValid);
   const stableReduction = sustainedUpf === null || reductionUpf === null || sustainedUpf <= reductionUpf + 5;
 
-  return {
+  const report = {
     type: "OPTIMISE_COMPLETION",
     reportTitle: "Sustained lower UPF completion report",
     phaseLabel: "Sustained lower UPF",
@@ -68,5 +69,15 @@ export function generateOptimiseReport(allEntries, optimiseEntries, intervention
         ? `During the sustained lower-UPF week, your daily mood averaged ${round1(optimiseMood.mean ?? outputMood.mean)}/10. Keep focusing on ${keepLabels.join(" and ")}.`
         : `Your daily mood averaged ${round1(optimiseMood.mean ?? outputMood.mean)}/10 during week 5. Continue logging to confirm your best swap habits.`,
     limitations: buildLimitations(adherence, periodFx, bValid, oValid.length ? oValid : outputEntries)
+  };
+
+  return {
+    ...report,
+    mobileView: buildUpfReductionMobileViewForReport(report, {
+      studyMeta,
+      allEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

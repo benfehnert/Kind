@@ -31,6 +31,8 @@ import {
 } from "../helpers.js";
 import { buildMorningRulesEnergyChart, buildRuleUpliftChart } from "../charts.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildMorningRulesMobileView } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 import { getExplorationTheme } from "../../../explorationThemes.js";
 
 const theme = getExplorationTheme("morning-rules");
@@ -70,18 +72,23 @@ function realCrashPct(stats) {
   return Math.round((stats.distribution.noticeable + stats.distribution.severe) * 100);
 }
 
-export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null) {
+export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null, options = {}) {
   const bEntries = allEntries.filter((e) => e.phase === "BASELINE" && e.valid_for_analysis);
   const iEntries = allEntries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis);
   const opEntries = allEntries.filter((e) => e.phase === "OPTIMISE" && e.valid_for_analysis);
   const active = [...iEntries, ...opEntries];
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, {
+    MIN_BASELINE_DAYS,
+    MIN_ENDOFSTUDY_ACTIVE_DAYS
+  });
 
-  if (bEntries.length < MIN_BASELINE_DAYS || active.length < MIN_ENDOFSTUDY_ACTIVE_DAYS) {
+  if (bEntries.length < thresholds.MIN_BASELINE_DAYS || active.length < thresholds.MIN_ENDOFSTUDY_ACTIVE_DAYS) {
     return generateInsufficientDataReport(
       "FINAL",
       bEntries.length,
-      MIN_ENDOFSTUDY_ACTIVE_DAYS,
-      allEntries.filter((e) => e.valid_for_analysis)
+      thresholds.MIN_ENDOFSTUDY_ACTIVE_DAYS,
+      allEntries.filter((e) => e.valid_for_analysis),
+      { studyMeta, isShort: options.isShort ?? false, cohortSnapshot }
     );
   }
 
@@ -218,81 +225,24 @@ export function generateFinalReport(allEntries, studyMeta, cohortSnapshot = null
   };
 
   const mobileReport = {
-    explorationName: "Morning rules & afternoon energy",
-    explorationLabel: HEALTH_EXPLORATION_LABEL,
-    reportTitleLabel: "Personalised trial final report",
-    category: "Energy & Focus",
-    subMeta: `${participantName} · ${formatDateRange(studyMeta.start_date, endDate)} · ${loggingPct}% of days logged`,
-    lede:
-      verdict === "BENEFICIAL" || verdict === "PROBABLY_BENEFICIAL_PERIOD_EFFECT_PRESENT"
-        ? "Your afternoons got steadier. Here's what your own data — not a study average — suggests worked for you."
-        : "Here's what your own data over this exploration suggests about your afternoon energy and crashes.",
-    tiles: [
-      {
-        label: "Afternoon energy",
-        value: `${round1(baselineEnergy.mean)} → ${round1(activeEnergy.mean)}`,
-        delta: `${energyDelta >= 0 ? "+" : ""}${energyDelta} pts`
-      },
-      {
-        label: "Days with a noticeable or severe afternoon crash",
-        value: `${beforeCrashPct}% → ${afterCrashPct}%`,
-        delta: `${afterCrashPct - beforeCrashPct >= 0 ? "+" : ""}${afterCrashPct - beforeCrashPct} percentage points`
+    ...buildMorningRulesMobileView({
+      reportType: "FINAL_STUDY_COMPLETE",
+      allEntries,
+      studyMeta,
+      cohortSnapshot,
+      isShort: options.isShort ?? false,
+      limitations,
+      keepList: {
+        title: "Your keep list",
+        items: keepItems.length ? keepItems : ["Morning sunlight"],
+        body:
+          keepItems.length >= 2
+            ? "These two tracked most closely with your better afternoons. Worth keeping. You can park meditation and the caffeine delay, or revisit them later."
+            : "Keep logging the morning rules that track with your better afternoons."
       }
-    ],
-    phaseChart: {
-      title: "Afternoon energy by phase",
-      min: 4,
-      max: 8,
-      points: [
-        { label: "Baseline", v: round1(baselineEnergy.mean) },
-        { label: "Morning rules", v: round1(interventionEnergy.mean) },
-        { label: "Optimise", v: round1(optimiseEnergy.mean ?? activeEnergy.mean) }
-      ]
-    },
-    factors: {
-      title: "What worked for you",
-      sub: "Extra afternoon energy on the days you did each rule.",
-      rows: factorRows
-    },
-    distribution: {
-      title: "How your afternoons felt",
-      beforeLabel: "Baseline (weeks 1–2)",
-      afterLabel: "Optimise (weeks 6–7)",
-      before: distributionBars(baselineCrash),
-      after: distributionBars(optimiseEnergy.n ? phaseStats(opEntries, PRIMARY_OUTCOME) : activeCrash),
-      legend: [
-        { c: CRASH_COLORS.none, label: "None — no afternoon crash" },
-        { c: CRASH_COLORS.mild_dip, label: "Mild dip" },
-        { c: CRASH_COLORS.noticeable, label: "Noticeable crash" },
-        { c: CRASH_COLORS.severe, label: "Severe crash" }
-      ]
-    },
-    keepList: {
-      title: "Your keep list",
-      items: keepItems.length ? keepItems : ["Morning sunlight"],
-      body:
-        keepItems.length >= 2
-          ? "These two tracked most closely with your better afternoons. Worth keeping. You can park meditation and the caffeine delay, or revisit them later."
-          : "Keep logging the morning rules that track with your better afternoons."
-    },
-    compare: {
-      title: "How you compare",
-      body: cohortSnapshot
-        ? buildKindCompareBody(energyDelta, loggingPct, cohortSnapshot)
-        : `Your afternoon energy changed by ${energyDelta >= 0 ? "+" : ""}${energyDelta} points over the health exploration.`
-    },
-    disclaimer: USER_DISCLAIMER.body,
-    disclaimerInfo: USER_DISCLAIMER,
-    limitations,
-    generalisabilityNote,
+    }),
     morning_rules_energy_chart: morningRulesEnergyChart,
     rule_uplift_chart: ruleUpliftChart,
-    cta: {
-      label: keepItems.length >= 2 ? `Run a 4-week re-check on your keep-list  →` : "Continue tracking what works  →",
-      toast: keepItems.length >= 2
-        ? `Setting up a focused 4-week re-check on ${keepItems.join(" and ").toLowerCase()}.`
-        : "Keep tracking the rules that work best for you."
-    },
     _cent: centReport
   };
 

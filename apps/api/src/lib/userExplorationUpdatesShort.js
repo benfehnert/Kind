@@ -1,6 +1,7 @@
 import { query } from "../db.js";
 import { getCentShortModule, isShortExploration } from "./centShort/index.js";
 import { fetchExplorationMeta, fetchConsentedExplorationIds } from "./homeData.js";
+import { REPORT_LABELS, centReportFeedRoute } from "./explorationReportsData.js";
 import { getExplorationTheme } from "./explorationThemes.js";
 import cohortSnapshotMorningRulesShort from "../data/fixtures/cohort-snapshot-morning-rules-short.json" with { type: "json" };
 import cohortSnapshotEatingShort from "../data/fixtures/cohort-snapshot-eating-short.json" with { type: "json" };
@@ -20,51 +21,65 @@ const COHORT_BY_SHORT_EXPLORATION = {
 /**
  * Update + report orchestration for the Short (alpha) explorations. This is a
  * deliberately separate pipeline from userExplorationUpdates.js: it drives the
- * centShort analysis modules, uses day-based publication gates (one logged day
+ * centShort analysis modules, uses study-day publication gates (one logged day
  * per full-study week), never runs the full-length feed libraries, and advances
  * week_current so the compressed timeline is visible in the app.
  */
 
-/** Minimum study day before each Short CENT report is published to the feed. */
-const SHORT_REPORT_GATES = {
-  "morning-rules-short": {
-    BASELINE_SUMMARY: 3,
-    INTERVENTION_INTERIM: 6,
-    OPTIMISE_COMPLETION: 7,
-    FINAL_STUDY_COMPLETE: 8
-  },
-  "eating-short": {
-    BASELINE_SUMMARY: 3,
-    INTERVENTION_INTERIM: 5,
-    OPTIMISE_COMPLETION: 6,
-    FINAL_STUDY_COMPLETE: 6
-  },
-  "screen-sleep-short": {
-    BASELINE_SUMMARY: 3,
-    INTERVENTION_INTERIM: 5,
-    OPTIMISE_COMPLETION: 6,
-    FINAL_STUDY_COMPLETE: 6
-  },
-  "relaxation-short": {
-    BASELINE_SUMMARY: 3,
-    INTERVENTION_INTERIM: 5,
-    OPTIMISE_COMPLETION: 6,
-    FINAL_STUDY_COMPLETE: 6
-  },
-  "upf-mood-short": {
-    BASELINE_SUMMARY: 3,
-    INTERVENTION_INTERIM: 5,
-    OPTIMISE_COMPLETION: 6,
-    FINAL_STUDY_COMPLETE: 6
-  }
+const BASELINE_END_DAY = 2;
+const INTERIM_PUBLISH_HOUR = 18;
+
+/** Short exploration length and midpoint day for the timed interim report. */
+const SHORT_EXPLORATION_SCHEDULE = {
+  "morning-rules-short": { durationDays: 8, interimDay: 4 },
+  "eating-short": { durationDays: 6, interimDay: 3 },
+  "screen-sleep-short": { durationDays: 6, interimDay: 3 },
+  "relaxation-short": { durationDays: 6, interimDay: 3 },
+  "upf-mood-short": { durationDays: 6, interimDay: 3 }
 };
 
-const REPORT_LABELS = {
-  BASELINE_SUMMARY: "Baseline summary",
-  INTERVENTION_INTERIM: "Interim analysis",
-  OPTIMISE_COMPLETION: "Optimise phase complete",
-  FINAL_STUDY_COMPLETE: "Personalised trial final report"
-};
+const SHORT_PUBLISHED_REPORT_TYPES = [
+  "BASELINE_SUMMARY",
+  "INTERVENTION_INTERIM",
+  "FINAL_STUDY_COMPLETE"
+];
+
+function parseStartedAt(startedAt) {
+  if (!startedAt) return null;
+  if (typeof startedAt === "string") return startedAt.slice(0, 10);
+  return new Date(startedAt).toISOString().slice(0, 10);
+}
+
+function studyDayInstant(startedAt, studyDay, hour = 0) {
+  const dateStr = parseStartedAt(startedAt);
+  if (!dateStr) return null;
+  const instant = new Date(`${dateStr}T00:00:00Z`);
+  instant.setUTCDate(instant.getUTCDate() + (studyDay - 1));
+  instant.setUTCHours(hour, 0, 0, 0);
+  return instant;
+}
+
+function canPublishShortReport(reportType, explorationId, { startedAt, maxStudyDay, now = new Date() }) {
+  const schedule = SHORT_EXPLORATION_SCHEDULE[explorationId];
+  if (!schedule) return false;
+
+  switch (reportType) {
+    case "BASELINE_SUMMARY":
+      return maxStudyDay >= BASELINE_END_DAY;
+    case "INTERVENTION_INTERIM": {
+      const cutoff = studyDayInstant(startedAt, schedule.interimDay, INTERIM_PUBLISH_HOUR);
+      return (
+        cutoff !== null &&
+        now >= cutoff &&
+        maxStudyDay >= BASELINE_END_DAY
+      );
+    }
+    case "FINAL_STUDY_COMPLETE":
+      return maxStudyDay >= schedule.durationDays;
+    default:
+      return false;
+  }
+}
 
 function formatFeedTime(date) {
   if (!date) return "Today";
@@ -102,17 +117,21 @@ function centReportToFeedItem(report, explorationMeta, explorationId, generatedA
     iconColor: meta.text || theme.accent,
     displayName: REPORT_LABELS[type] || "Exploration update",
     badge: "blue",
-    badgeLabel: isFinal ? "Report" : "Update",
+    badgeLabel: "Report",
     time: `${feedLabel} · ${formatFeedTime(generatedAt)}`,
     body,
-    highlight: report.phase_b_guidance || report.optimise_guidance || (isFinal ? "Tap to view your full personalised analysis." : ""),
+    highlight:
+      report.phase_b_guidance ||
+      report.optimise_guidance ||
+      (isFinal ? "Tap to view your full personalised analysis." : "Tap to view your report."),
     insightTab: "your",
     _sortAt: generatedAt ? new Date(generatedAt).getTime() : Date.now()
   };
 
-  if (isFinal) {
-    item.route = "ExplorationReport";
-    item.routeParams = { explorationId };
+  const { route, routeParams } = centReportFeedRoute(explorationId, type);
+  if (route) {
+    item.route = route;
+    item.routeParams = routeParams;
   }
 
   return item;
@@ -218,11 +237,14 @@ export async function syncShortExplorationUpdates(individualId, explorationId, e
   const cohort = COHORT_BY_SHORT_EXPLORATION[explorationId] ?? null;
   const analysis = centModule.analyze(entries, studyMeta, cohort);
   const reportsByType = new Map((analysis.reports ?? []).map((r) => [r.type, r]));
-  const gates = SHORT_REPORT_GATES[explorationId] ?? {};
-
-  for (const [reportType, minDay] of Object.entries(gates)) {
+  for (const reportType of SHORT_PUBLISHED_REPORT_TYPES) {
     const updateKey = `cent:${reportType}`;
-    if (existingKeys.has(updateKey) || maxStudyDay < minDay) continue;
+    if (
+      existingKeys.has(updateKey) ||
+      !canPublishShortReport(reportType, explorationId, { startedAt, maxStudyDay })
+    ) {
+      continue;
+    }
 
     const report = reportsByType.get(reportType);
     if (!report) continue;

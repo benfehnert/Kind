@@ -2,8 +2,9 @@ import { PRIMARY_OUTCOME, SECONDARY_OUTCOMES, HEALTH_EXPLORATION_LABEL } from ".
 import { phaseStats, adherenceStats } from "../stats.js";
 import { buildBaselineHeadline } from "../helpers.js";
 import { meanUpfPct } from "../normalize.js";
+import { buildUpfReductionMobileViewForReport } from "./mobileView.js";
 
-export function generateBaselineReport(baselineEntries, studyMeta) {
+export function generateBaselineReport(baselineEntries, studyMeta, options = {}) {
   const endDate = studyMeta.baseline_end_date ?? studyMeta.endDate ?? baselineEntries.at(-1)?.date;
   const adherence = adherenceStats(baselineEntries, studyMeta.start_date, endDate);
   const primaryStats = phaseStats(baselineEntries, PRIMARY_OUTCOME);
@@ -16,7 +17,7 @@ export function generateBaselineReport(baselineEntries, studyMeta) {
   const wk1 = phaseStats(baselineEntries.filter((e) => e.study_week === 1), PRIMARY_OUTCOME);
   const wk2 = phaseStats(baselineEntries.filter((e) => e.study_week === 2), PRIMARY_OUTCOME);
 
-  return {
+  const report = {
     type: "BASELINE_SUMMARY",
     reportTitle: "Baseline summary report",
     phaseLabel: "Baseline",
@@ -33,5 +34,15 @@ export function generateBaselineReport(baselineEntries, studyMeta) {
     headline: buildBaselineHeadline(primaryStats, upfMean),
     phase_b_guidance:
       "Starting next week you enter the gradual reduction phase of your health exploration. Log your estimated UPF %, daily mood, energy, and any whole-food swaps each day."
+  };
+
+  return {
+    ...report,
+    mobileView: buildUpfReductionMobileViewForReport(report, {
+      studyMeta,
+      allEntries: options.allEntries ?? baselineEntries,
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

@@ -23,13 +23,19 @@ import {
 import { buildUpfMoodChart, buildHabitUpliftChart } from "../charts.js";
 import { meanUpfPct } from "../normalize.js";
 import { generateInsufficientDataReport } from "./insufficient.js";
+import { buildUpfReductionMobileViewForReport } from "./mobileView.js";
+import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
-export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta) {
+export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = baselineEntries.filter((e) => e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
+  const thresholds = resolveAnalysisThresholds(options.isShort ?? false, { MIN_INTERVENTION_DAYS });
 
-  if (iValid.length < MIN_INTERVENTION_DAYS) {
-    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, MIN_INTERVENTION_DAYS, iValid);
+  if (iValid.length < thresholds.MIN_INTERVENTION_DAYS) {
+    return generateInsufficientDataReport("INTERVENTION_INTERIM", iValid.length, thresholds.MIN_INTERVENTION_DAYS, iValid, {
+      studyMeta,
+      isShort: options.isShort ?? false
+    });
   }
 
   const baselineMoodMean = phaseStats(bValid, PRIMARY_OUTCOME).mean;
@@ -73,7 +79,7 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
   const upfMoodChart = buildUpfMoodChart(iValid, baselineMoodMean);
   const habitUpliftChart = buildHabitUpliftChart(habitMood);
 
-  return {
+  const report = {
     type: "INTERVENTION_INTERIM",
     reportTitle: "Health exploration interim report",
     phaseLabel: "Gradual reduction",
@@ -111,5 +117,15 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
         note: `Baseline avg ${Math.round(meanUpfPct(bValid) ?? 0)}% → reduction phase ${Math.round(meanUpfPct(iValid) ?? 0)}%`
       }
     ]
+  };
+
+  return {
+    ...report,
+    mobileView: buildUpfReductionMobileViewForReport(report, {
+      studyMeta,
+      allEntries: [...baselineEntries, ...interventionEntries],
+      isShort: options.isShort ?? false,
+      cohortSnapshot: options.cohortSnapshot ?? null
+    })
   };
 }

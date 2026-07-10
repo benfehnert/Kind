@@ -501,7 +501,8 @@ async function fetchNetworkActivityPosts(individualId, consentedIds) {
      FROM activity_posts ap
      JOIN individuals i ON i.id = ap.individual_id
      LEFT JOIN activity_nice_counts anc ON anc.activity_post_id = ap.id
-     WHERE ap.individual_id IN (
+     WHERE ap.individual_id != $1
+       AND ap.individual_id IN (
           SELECT followee_id FROM individual_follows WHERE follower_id = $1
         )
      ORDER BY ap.posted_at DESC
@@ -546,47 +547,6 @@ function formatLogSummary(explorationId, fieldValues, feedLabel) {
   }
 
   return `Logged today's check-in for ${label}.`;
-}
-
-async function fetchViewerLogActivity(individualId, consentedIds, explorationMeta) {
-  if (!consentedIds.length) return [];
-
-  const { rows } = await query(
-    `SELECT dl.id, dl.exploration_id, dl.field_values, dl.log_date, dl.created_at
-     FROM daily_logs dl
-     WHERE dl.individual_id = $1
-       AND dl.exploration_id = ANY($2::text[])
-     ORDER BY dl.log_date DESC, dl.created_at DESC
-     LIMIT 5`,
-    [individualId, consentedIds]
-  );
-
-  const { rows: viewerRows } = await query(
-    `SELECT display_name, avatar_initials, avatar_image_id, slug FROM individuals WHERE id = $1`,
-    [individualId]
-  );
-  const viewer = viewerRows[0] ?? {};
-
-  return rows.map((row) => {
-    const meta = explorationMeta[row.exploration_id] ?? {};
-    const feedLabel = meta.feedLabel || meta.title || row.exploration_id;
-    return {
-      id: `log-${row.id}`,
-      type: "activity",
-      explorationId: row.exploration_id,
-      userId: viewer.slug ?? undefined,
-      displayName: "You",
-      badge: "purple",
-      badgeLabel: "Activity",
-      time: `${formatFeedTime(row.created_at)} · ${feedLabel}`,
-      body: formatLogSummary(row.exploration_id, row.field_values, feedLabel),
-      highlight: "",
-      avatarKind: viewer.avatar_image_id ? "image" : "initials",
-      initials: viewer.avatar_initials ?? "Y",
-      avatarKey: viewer.avatar_image_id ? `pravatar-${viewer.avatar_image_id}` : undefined,
-      _sortAt: new Date(row.created_at).getTime()
-    };
-  });
 }
 
 async function fetchViewerMilestones(individualId, consentedIds, explorationMeta) {
@@ -819,9 +779,8 @@ export async function buildActivityFeedItems(individualId) {
   const consentedIds = await fetchConsentedExplorationIds(individualId);
   const explorationMeta = await fetchExplorationMeta(consentedIds);
 
-  const [activityPosts, viewerLogs, viewerMilestones, viewerInsights, incomingMessages] = await Promise.all([
+  const [activityPosts, viewerMilestones, viewerInsights, incomingMessages] = await Promise.all([
     fetchNetworkActivityPosts(individualId, consentedIds),
-    fetchViewerLogActivity(individualId, consentedIds, explorationMeta),
     fetchViewerMilestones(individualId, consentedIds, explorationMeta),
     fetchViewerInsights(individualId, consentedIds),
     fetchIncomingActivityMessages(individualId)
@@ -829,7 +788,6 @@ export async function buildActivityFeedItems(individualId) {
 
   return [
     ...activityPosts.map(mapActivityPost),
-    ...viewerLogs,
     ...viewerMilestones,
     ...viewerInsights,
     ...incomingMessages
