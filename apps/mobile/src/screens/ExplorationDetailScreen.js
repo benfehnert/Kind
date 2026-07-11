@@ -31,8 +31,8 @@ export default function ExplorationDetailScreen() {
   const e = isOwnerView ? (id ? explorations?.[id] : null) : id ? userExplorations[id] : null;
 
   useEffect(() => {
-    if (e) posthog?.capture("exploration details opened");
-  }, [posthog, e]);
+    if (e) posthog?.capture("new exploration details opened", { explorationId: id });
+  }, [posthog, e, id]);
 
   if (!e) {
     return (

@@ -51,15 +51,15 @@ export default function ExplorationReportScreen({ route }) {
         const res = await get(url);
         if (!cancelled && res?.report) {
           setReport(res.report);
-          posthog?.capture("exploration report viewed");
+          posthog?.capture("end of exploration report viewed", { explorationId });
         } else if (!cancelled) {
           setReport(getExplorationReport(explorationId));
-          posthog?.capture("exploration report viewed");
+          posthog?.capture("end of exploration report viewed", { explorationId });
         }
       } catch {
         if (!cancelled) {
           setReport(getExplorationReport(explorationId));
-          posthog?.capture("exploration report viewed");
+          posthog?.capture("end of exploration report viewed", { explorationId });
         }
       } finally {
         if (!cancelled) setLoading(false);

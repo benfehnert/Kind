@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { computeUserPhaseStatuses, computeExplorationProgress } from "../utils/explorationProgress";
 import { isShortExploration } from "../utils/explorationIds";
@@ -40,6 +41,7 @@ function formatFieldValue(field, value) {
 
 export default function ExplorationSummaryScreen() {
   const navigation = useNavigation();
+  const posthog = usePostHog();
   const { params } = useRoute();
   const id = params?.id;
   const ownerSlug = params?.ownerSlug ?? null;
@@ -181,6 +183,12 @@ export default function ExplorationSummaryScreen() {
     () => computeUserPhaseStatuses(e?.phases, e?.weekCurrent, e?.weeksTotal),
     [e?.phases, e?.weekCurrent, e?.weeksTotal]
   );
+
+  useEffect(() => {
+    if (!e || !id) return;
+    if (isOwnerView && loadingOwnerRun && !ownerWeek) return;
+    posthog?.capture("existing exploration details opened", { explorationId: id });
+  }, [e, id, posthog, isOwnerView, loadingOwnerRun, ownerWeek]);
 
   const openReport = (report) => {
     if (report.isFinal) {

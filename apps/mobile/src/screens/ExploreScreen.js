@@ -8,6 +8,7 @@ import {
   Pressable
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
 import { useExplorationStart } from "../hooks/useUserExplorations";
@@ -30,6 +31,7 @@ import {
 
 export default function ExploreScreen() {
   const { explorePage, refetchExplore, explorations, explorationEvidence, feed } = useData();
+  const posthog = usePostHog();
   const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
     useCallback(() => refetchExplore(), [refetchExplore])
   );
@@ -86,6 +88,11 @@ export default function ExploreScreen() {
   const visibleSearchResults = searchResults.slice(0, visibleResultCount);
   const hasMoreSearchResults = searchResults.length > visibleResultCount;
 
+  function handleSearchSubmit() {
+    if (!q.trim()) return;
+    posthog?.capture("searched for exploration");
+  }
+
   return (
     <View style={styles.root}>
       <ScrollView ref={scrollRef} contentContainerStyle={styles.pad} {...scrollViewProps}>
@@ -103,6 +110,8 @@ export default function ExploreScreen() {
             placeholderTextColor={colors.textMuted}
             value={q}
             onChangeText={setQ}
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
           />
         </View>
 

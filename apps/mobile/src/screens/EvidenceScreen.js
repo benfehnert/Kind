@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Linking, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { evidenceExplorationId } from "../utils/explorationIds";
@@ -36,6 +37,7 @@ function resolveExplorationMeta(id, { explorations, explorePage }) {
 
 export default function EvidenceScreen() {
   const { explorationEvidence, explorations, explorePage } = useData();
+  const posthog = usePostHog();
   const navigation = useNavigation();
   const { params } = useRoute();
   const id = params?.id;
@@ -81,6 +83,11 @@ export default function EvidenceScreen() {
   }, [id, cachedEv]);
 
   const ev = cachedEv ?? fetchedEv;
+
+  useEffect(() => {
+    if (!ev || !id) return;
+    posthog?.capture("viewed exploration evidence", { explorationId: id });
+  }, [ev, id, posthog]);
 
   const table = ev?.summaryTable || [];
   const colKeys = table.length ? Object.keys(table[0]) : [];

@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
 import { get, patch } from "../lib/api";
@@ -28,6 +29,7 @@ function normalizeBadges(badges = []) {
 
 export default function ExplorerProfileScreen() {
   const { explorations } = useData();
+  const posthog = usePostHog();
   const navigation = useNavigation();
   const { params } = useRoute();
   const userId = params?.userId;
@@ -89,6 +91,7 @@ export default function ExplorerProfileScreen() {
               : row
           )
         );
+        posthog?.capture("interacted with a community post");
       } catch (err) {
         console.error("[ExplorerProfile] toggle nice failed:", err);
         setActs((prev) =>
@@ -100,7 +103,7 @@ export default function ExplorerProfileScreen() {
         setTogglingNice((prev) => ({ ...prev, [act.id]: false }));
       }
     },
-    [isSelf, togglingNice, userId]
+    [isSelf, posthog, togglingNice, userId]
   );
 
   const openSupporters = useCallback(

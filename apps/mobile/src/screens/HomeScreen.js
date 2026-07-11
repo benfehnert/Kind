@@ -71,7 +71,7 @@ export default function HomeScreen() {
   const { showToast } = useUiShell();
   const navigation = useNavigation();
   const route = useRoute();
-  const activityNice = useActivityNice();
+  const activityNice = useActivityNice(posthog);
   const [showLog, setShowLog] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);

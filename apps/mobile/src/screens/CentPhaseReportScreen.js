@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { colors } from "../theme/colors";
@@ -8,8 +9,15 @@ import ExplorationReportContent from "../components/reports/ExplorationReportCon
 
 const DEFAULT_THEME = { bg: "#FDF0E4", text: "#8A4A1A" };
 
+const REPORT_VIEW_EVENTS = {
+  BASELINE_SUMMARY: "baseline report viewed",
+  INTERVENTION_INTERIM: "interim report viewed",
+  OPTIMISE_COMPLETION: "optimise report viewed"
+};
+
 export default function CentPhaseReportScreen({ route }) {
   const navigation = useNavigation();
+  const posthog = usePostHog();
   const explorationId = route?.params?.explorationId;
   const reportType = route?.params?.reportType;
   const ownerSlug = route?.params?.ownerSlug ?? null;
@@ -45,6 +53,8 @@ export default function CentPhaseReportScreen({ route }) {
         if (!cancelled && res?.report) {
           setReport(res.report);
           setGeneratedAt(res.generatedAt ?? null);
+          const event = REPORT_VIEW_EVENTS[reportType];
+          if (event) posthog?.capture(event, { explorationId });
         }
       } catch {
         if (!cancelled) {
@@ -60,7 +70,7 @@ export default function CentPhaseReportScreen({ route }) {
     return () => {
       cancelled = true;
     };
-  }, [explorationId, reportType, ownerSlug, profile?.viewerSlug]);
+  }, [explorationId, reportType, ownerSlug, profile?.viewerSlug, posthog]);
 
   if (loading) {
     return (

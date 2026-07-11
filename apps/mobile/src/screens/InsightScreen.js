@@ -92,17 +92,12 @@ export default function InsightScreen() {
 
   const openLoggedData = useCallback(() => {
     if (!explorationId) return;
-    posthog?.capture("opened observation data source", { explorationId });
     navigation.navigate("ExplorationSummary", { id: explorationId });
-  }, [explorationId, navigation, posthog]);
+  }, [explorationId, navigation]);
 
   const openReport = useCallback(
     (report) => {
       if (!explorationId) return;
-      posthog?.capture("opened report from insights", {
-        explorationId,
-        reportType: report.reportType
-      });
       if (report.isFinal) {
         navigation.navigate("ExplorationReport", { explorationId });
         return;
@@ -112,7 +107,7 @@ export default function InsightScreen() {
         reportType: report.reportType
       });
     },
-    [explorationId, navigation, posthog]
+    [explorationId, navigation]
   );
 
   useEffect(() => {
@@ -279,9 +274,6 @@ export default function InsightScreen() {
                   disabled={!c.explorationId}
                   onPress={() => {
                     if (!c.explorationId) return;
-                    posthog?.capture("opened evidence from community insight", {
-                      explorationId: c.explorationId
-                    });
                     navigation.navigate("Evidence", { id: c.explorationId });
                   }}
                   style={({ pressed }) => [

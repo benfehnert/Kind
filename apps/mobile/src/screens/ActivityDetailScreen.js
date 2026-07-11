@@ -154,13 +154,14 @@ export default function ActivityDetailScreen() {
             }
           : prev
       );
+      posthog?.capture("interacted with a community post");
     } catch (err) {
       console.error("[ActivityDetail] toggle nice failed:", err);
       setDetail((prev) => (prev ? { ...prev, ...previous } : prev));
     } finally {
       setTogglingNice(false);
     }
-  }, [activityPostId, detail, togglingNice, viewerOwnsActivity]);
+  }, [activityPostId, detail, togglingNice, viewerOwnsActivity, posthog]);
 
   const openSupporters = useCallback(() => {
     if (!activityPostId || !(detail?.nc > 0)) return;

@@ -6,7 +6,7 @@ import { patch } from "../lib/api";
  * `activityPostId`. Lets feed screens (Home, Explore) support tapping the
  * Nice icon directly on a card without waiting on a full feed refetch.
  */
-export function useActivityNice() {
+export function useActivityNice(posthog) {
   const [overrides, setOverrides] = useState({});
   const [pending, setPending] = useState({});
 
@@ -37,6 +37,7 @@ export function useActivityNice() {
           ...prev,
           [activityPostId]: { nc: result.nc, viewerNiced: result.viewerNiced }
         }));
+        posthog?.capture("interacted with a community post");
       } catch (err) {
         console.error("[useActivityNice] toggle nice failed:", err);
         setOverrides((prev) => ({ ...prev, [activityPostId]: current }));
@@ -44,7 +45,7 @@ export function useActivityNice() {
         setPending((prev) => ({ ...prev, [activityPostId]: false }));
       }
     },
-    [getState, pending]
+    [getState, pending, posthog]
   );
 
   return { getState, toggle, pending };
