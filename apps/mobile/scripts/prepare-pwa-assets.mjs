@@ -5,7 +5,6 @@
  */
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,20 +22,22 @@ const backgroundColor = web.backgroundColor || themeColor;
 const display = web.display || "standalone";
 const startUrl = web.startUrl || "/";
 
-const sourceIcon = path.join(assetsDir, "app-icon.png");
 const indexPath = path.join(distDir, "index.html");
 
-function resizeIcon(size, dest) {
-  fs.mkdirSync(path.dirname(dest), { recursive: true });
-  execSync(`sips -z ${size} ${size} "${sourceIcon}" --out "${dest}"`, { stdio: "inherit" });
-}
+const pwaAssets = [
+  { src: "favicon.ico", dest: "favicon.ico" },
+  { src: "apple-touch-icon.png", dest: "apple-touch-icon.png" },
+  { src: "icon-192.png", dest: "icon-192.png" },
+  { src: "icon-512.png", dest: "icon-512.png" }
+];
 
-function ensureFavicon() {
-  const faviconSrc = path.join(assetsDir, "favicon.ico");
-  const faviconDest = path.join(distDir, "favicon.ico");
-  if (fs.existsSync(faviconSrc)) {
-    fs.copyFileSync(faviconSrc, faviconDest);
+function copyAsset(filename, destName = filename) {
+  const src = path.join(assetsDir, filename);
+  const dest = path.join(distDir, destName);
+  if (!fs.existsSync(src)) {
+    throw new Error(`PWA asset not found: ${src}`);
   }
+  fs.copyFileSync(src, dest);
 }
 
 function writeManifest(iconFiles) {
@@ -95,18 +96,11 @@ function main() {
   if (!fs.existsSync(distDir)) {
     throw new Error(`dist directory not found: ${distDir}`);
   }
-  if (!fs.existsSync(sourceIcon)) {
-    throw new Error(`app icon not found: ${sourceIcon}`);
+
+  for (const { src, dest } of pwaAssets) {
+    copyAsset(src, dest);
   }
 
-  const icon192 = path.join(distDir, "icon-192.png");
-  const icon512 = path.join(distDir, "icon-512.png");
-  const appleTouchIcon = path.join(distDir, "apple-touch-icon.png");
-
-  resizeIcon(192, icon192);
-  resizeIcon(512, icon512);
-  resizeIcon(180, appleTouchIcon);
-  ensureFavicon();
   writeManifest([
     { src: "/icon-192.png", sizes: "192x192" },
     { src: "/icon-512.png", sizes: "512x512" },
@@ -117,7 +111,7 @@ function main() {
   console.log("Prepared PWA assets:");
   console.log(`  name: ${name}`);
   console.log(`  short_name: ${shortName}`);
-  console.log("  manifest.json, apple-touch-icon.png, icon-192.png, icon-512.png");
+  console.log("  manifest.json, apple-touch-icon.png, icon-192.png, icon-512.png, favicon.ico");
 }
 
 main();
