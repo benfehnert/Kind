@@ -53,8 +53,6 @@ export default function CentPhaseReportScreen({ route }) {
         if (!cancelled && res?.report) {
           setReport(res.report);
           setGeneratedAt(res.generatedAt ?? null);
-          const event = REPORT_VIEW_EVENTS[reportType];
-          if (event) posthog?.capture(event, { explorationId });
         }
       } catch {
         if (!cancelled) {
@@ -70,7 +68,13 @@ export default function CentPhaseReportScreen({ route }) {
     return () => {
       cancelled = true;
     };
-  }, [explorationId, reportType, ownerSlug, profile?.viewerSlug, posthog]);
+  }, [explorationId, reportType, ownerSlug, profile?.viewerSlug]);
+
+  useEffect(() => {
+    if (!report || !reportType) return;
+    const event = REPORT_VIEW_EVENTS[reportType];
+    if (event) posthog?.capture(event, { explorationId, reportType });
+  }, [report, reportType, explorationId, posthog]);
 
   if (loading) {
     return (

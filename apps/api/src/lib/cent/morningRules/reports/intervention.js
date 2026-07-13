@@ -27,6 +27,11 @@ import { generateInsufficientDataReport } from "./insufficient.js";
 import { buildMorningRulesMobileViewForReport } from "./mobileView.js";
 import { resolveAnalysisThresholds } from "../../shared/mobileView.js";
 
+function realCrashPct(stats) {
+  if (!stats?.distribution) return null;
+  return Math.round((stats.distribution.noticeable + stats.distribution.severe) * 100);
+}
+
 export function generateInterventionReport(baselineEntries, interventionEntries, studyMeta, options = {}) {
   const bValid = baselineEntries.filter((e) => e.valid_for_analysis);
   const iValid = interventionEntries.filter((e) => e.valid_for_analysis);
@@ -41,9 +46,13 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
   }
 
   const baselineEnergyMean = phaseStats(bValid, "afternoon_energy").mean;
+  const baselineCrashStats = phaseStats(bValid, PRIMARY_OUTCOME);
+  const interventionCrashStats = phaseStats(iValid, PRIMARY_OUTCOME);
+  const beforeCrashPct = realCrashPct(baselineCrashStats);
+  const afterCrashPct = realCrashPct(interventionCrashStats);
   const crashEff = effectSize(
-    phaseStats(bValid, PRIMARY_OUTCOME),
-    phaseStats(iValid, PRIMARY_OUTCOME),
+    baselineCrashStats,
+    interventionCrashStats,
     PRIMARY_OUTCOME
   );
   const secEffs = Object.fromEntries(
@@ -123,16 +132,33 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
     summary_tiles: [
       {
         label: "Afternoon crash severity change",
-        value: crashEff.mean_diff != null ? round1(crashEff.mean_diff) : "—",
-        note: crashEff.improved ? "Improved vs Baseline" : "Compared with Baseline"
+        value:
+          beforeCrashPct != null && afterCrashPct != null
+            ? `${beforeCrashPct}% → ${afterCrashPct}%`
+            : crashEff.crash_reduction_pct != null
+              ? `${crashEff.crash_reduction_pct >= 0 ? "+" : ""}${round1(crashEff.crash_reduction_pct)} percentage points`
+              : "—",
+        note:
+          beforeCrashPct != null && afterCrashPct != null
+            ? `${afterCrashPct - beforeCrashPct >= 0 ? "+" : ""}${afterCrashPct - beforeCrashPct} percentage points`
+            : crashEff.improved
+              ? "Improved vs Baseline"
+              : "Compared with Baseline"
       },
       {
         label: "Afternoon energy change",
         value:
+          secEffs.afternoon_energy?.mean_diff != null && baselineEnergyMean != null
+            ? `${round1(baselineEnergyMean)} → ${round1(baselineEnergyMean + secEffs.afternoon_energy.mean_diff)}`
+            : secEffs.afternoon_energy?.mean_diff != null
+              ? `${secEffs.afternoon_energy.mean_diff >= 0 ? "+" : ""}${round1(secEffs.afternoon_energy.mean_diff)} points`
+              : baselineEnergyMean != null
+                ? `${round1(baselineEnergyMean)}`
+                : "—",
+        note:
           secEffs.afternoon_energy?.mean_diff != null
-            ? `${secEffs.afternoon_energy.mean_diff >= 0 ? "+" : ""}${round1(secEffs.afternoon_energy.mean_diff)} points`
-            : "—",
-        note: "Compared with Baseline average"
+            ? `${secEffs.afternoon_energy.mean_diff >= 0 ? "+" : ""}${round1(secEffs.afternoon_energy.mean_diff)} pts`
+            : "Compared with Baseline average"
       }
     ]
   };

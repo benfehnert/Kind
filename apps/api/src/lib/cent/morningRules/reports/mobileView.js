@@ -200,23 +200,30 @@ export function buildMorningRulesMobileView({
     ];
   }
 
-  if (reportType !== "BASELINE_SUMMARY" && baselineEnergy.mean != null) {
+  if (reportType !== "BASELINE_SUMMARY") {
+    const tiles = [];
     const compareEnergy = reportType === "INTERVENTION_INTERIM" ? interventionEnergy : activeEnergy;
-    const energyDelta = round1((compareEnergy.mean ?? baselineEnergy.mean) - baselineEnergy.mean);
-    const beforeCrashPct = realCrashPct(baselineCrash);
-    const afterCrash = reportType === "INTERVENTION_INTERIM" ? phaseStats(iEntries, PRIMARY_OUTCOME) : phaseStats(opEntries.length ? opEntries : active, PRIMARY_OUTCOME);
-    const afterCrashPct = realCrashPct(afterCrash);
-
-    view.tiles = [
-      {
+    if (baselineEnergy.mean != null) {
+      const energyDelta = round1((compareEnergy.mean ?? baselineEnergy.mean) - baselineEnergy.mean);
+      tiles.push({
         label: "Afternoon energy",
         value:
           compareEnergy.mean != null
             ? `${round1(baselineEnergy.mean)} → ${round1(compareEnergy.mean)}`
             : `${round1(baselineEnergy.mean)}`,
         delta: compareEnergy.mean != null ? `${energyDelta >= 0 ? "+" : ""}${energyDelta} pts` : "Baseline only"
-      },
-      {
+      });
+    }
+
+    const beforeCrashPct = realCrashPct(baselineCrash);
+    const afterCrash =
+      reportType === "INTERVENTION_INTERIM"
+        ? phaseStats(iEntries, PRIMARY_OUTCOME)
+        : phaseStats(opEntries.length ? opEntries : active, PRIMARY_OUTCOME);
+    const afterCrashPct = realCrashPct(afterCrash);
+
+    if (beforeCrashPct != null || afterCrashPct != null) {
+      tiles.push({
         label: "Days with a noticeable or severe afternoon crash",
         value:
           afterCrashPct != null && beforeCrashPct != null
@@ -228,8 +235,10 @@ export function buildMorningRulesMobileView({
           afterCrashPct != null && beforeCrashPct != null
             ? `${afterCrashPct - beforeCrashPct >= 0 ? "+" : ""}${afterCrashPct - beforeCrashPct} percentage points`
             : "Compared with Baseline"
-      }
-    ];
+      });
+    }
+
+    if (tiles.length) view.tiles = tiles;
   }
 
   const phasePoints = [];

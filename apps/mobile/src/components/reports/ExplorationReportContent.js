@@ -133,9 +133,27 @@ function renderCompareBody(text, palette) {
   });
 }
 
+function tilesFromSummaryTiles(report) {
+  return report.summary_tiles?.map((tile) => ({
+    label: tile.label,
+    value: tile.value,
+    delta: tile.note || tile.delta
+  }));
+}
+
 function normalizeReportView(report) {
   if (!report) return null;
-  if (report.mobileView) return report.mobileView;
+
+  const summaryTiles = tilesFromSummaryTiles(report);
+
+  if (report.mobileView) {
+    const view = { ...report.mobileView };
+    if (!view.tiles?.length && summaryTiles?.length) {
+      view.tiles = summaryTiles;
+    }
+    return view;
+  }
+
   if (report.explorationName || report.phaseChart || report.tiles) return report;
   return {
     explorationName: null,
@@ -143,11 +161,7 @@ function normalizeReportView(report) {
     lede: report.headline || report.lede,
     guidance: report.phase_b_guidance || report.optimise_guidance,
     limitations: report.limitations || report.quality_warnings,
-    tiles: report.summary_tiles?.map((tile) => ({
-      label: tile.label,
-      value: tile.value,
-      delta: tile.note || tile.delta
-    }))
+    tiles: summaryTiles
   };
 }
 
@@ -235,7 +249,7 @@ export default function ExplorationReportContent({
                 <View key={tile.label} style={[styles.tile, { backgroundColor: palette.tileBg }]}>
                   <Text style={[styles.tileLabel, { color: palette.textSecondary }]}>{tile.label}</Text>
                   <Text style={[styles.tileValue, { color: palette.textPrimary }]}>{tile.value}</Text>
-                  {tile.delta ? (
+                  {tile.delta != null && tile.delta !== "" ? (
                     <Text style={[styles.tileDelta, { color: palette.success }]}>{tile.delta}</Text>
                   ) : null}
                 </View>
@@ -350,10 +364,12 @@ export default function ExplorationReportContent({
 
           {limitations.length ? (
             <View style={[styles.limitationsCard, { borderColor: palette.border }]}>
+              <Text style={[styles.limitationsTitle, { color: palette.textPrimary }]}>Important to note</Text>
               {limitations.map((item) => (
-                <Text key={item} style={[styles.limitationItem, { color: palette.textSecondary }]}>
-                  · {item}
-                </Text>
+                <View key={item} style={styles.limitationRow}>
+                  <Text style={[styles.limitationBullet, { color: palette.textPrimary }]}>•</Text>
+                  <Text style={[styles.limitationItem, { color: palette.textPrimary }]}>{item}</Text>
+                </View>
               ))}
             </View>
           ) : null}
@@ -468,7 +484,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: colors.surface
   },
-  limitationItem: { fontSize: 12, lineHeight: 18, marginBottom: 4 },
+  limitationsTitle: { fontSize: 14, fontWeight: "600", marginBottom: 10 },
+  limitationRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8
+  },
+  limitationBullet: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "700",
+    width: 18,
+    textAlign: "left"
+  },
+  limitationItem: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: "500",
+    textAlign: "left"
+  },
   infoCard: { borderRadius: 16, padding: 16, marginBottom: 12 },
   infoTitle: { fontSize: 13, fontWeight: "600", marginBottom: 6 },
   infoBody: { fontSize: 13, lineHeight: 21 },

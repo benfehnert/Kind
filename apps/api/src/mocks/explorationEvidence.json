@@ -9,7 +9,7 @@
         "id": "sunlight",
         "title": "1. Early Sunlight Exposure",
         "mechanism": "Morning light hitting the retina triggers the suprachiasmatic nucleus (SCN) to release a cortisol pulse and suppress melatonin, anchoring your 24-hour clock. A well-anchored clock produces a sharper, more defined alertness curve — meaning the afternoon trough is shallower and briefer.",
-        "evidence": "A landmark study by Wright et al. (2013) showed that just one week of natural light exposure reset circadian timing by ~2 hours and dramatically reduced social jetlag. Leocadio-Miguel et al. (2017) found that outdoor light exposure in the morning was the strongest environmental predictor of circadian alignment across a large population sample.",
+        "evidence": "A landmark study by Wright et al. (2013) showed that just one week of natural light exposure reset circadian timing by ~2 hours and dramatically reduced social jetlag. Leocadio-Miguel et al. (2017) found that humans are sensitive to latitude-linked sunlight signals, producing a morning-to-evening chronotype cline across a large Brazilian sample.",
         "practical": "10–30 minutes of outdoor light within 30–60 minutes of waking appears sufficient on bright days; overcast days require longer exposure.",
         "sources": [
           {
@@ -17,8 +17,8 @@
             "url": "https://doi.org/10.1016/j.cub.2013.06.039"
           },
           {
-            "label": "Leocadio-Miguel MA et al. (2017). Daytime light exposure as a zeitgeber. Scientific Reports.",
-            "url": "https://doi.org/10.1038/s41598-017-17756-5"
+            "label": "Leocadio-Miguel MA et al. (2017). Latitudinal cline of chronotype. Scientific Reports.",
+            "url": "https://doi.org/10.1038/s41598-017-05797-w"
           }
         ]
       },
@@ -26,15 +26,15 @@
         "id": "movement",
         "title": "2. Morning Stretching / Movement",
         "mechanism": "Light-to-moderate morning movement elevates core body temperature and amplifies the cortisol awakening response (CAR) — a natural cortisol surge in the first 30–45 minutes post-waking. A stronger CAR is associated with better sustained cognitive performance and reduced fatigue across the day.",
-        "evidence": "Clow et al. (2010) comprehensively reviewed the CAR and established its role as a preparatory stress-inoculation response — people with blunted CARs show worse sustained attention. Separate work by Myllymäki et al. found that morning exercise had significantly less disruption to subsequent sleep architecture than evening exercise, suggesting it works with the body’s clock rather than against it.",
+        "evidence": "Clow et al. (2004) comprehensively reviewed the CAR and established its role as a preparatory stress-inoculation response — people with blunted CARs show worse sustained attention. Separate work by Myllymäki et al. found that morning exercise had significantly less disruption to subsequent sleep architecture than evening exercise, suggesting it works with the body’s clock rather than against it.",
         "sources": [
           {
-            "label": "Clow A et al. (2010). The cortisol awakening response: methodological issues and significance. Stress.",
-            "url": "https://pubmed.ncbi.nlm.nih.gov/20359991/"
+            "label": "Clow A et al. (2004). The cortisol awakening response: methodological issues and significance. Stress.",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/15204030/"
           },
           {
             "label": "Myllymäki T et al. (2011). Effects of vigorous late-night exercise on sleep quality. Journal of Sleep Research.",
-            "url": "https://doi.org/10.1111/j.1365-2869.2011.00940.x"
+            "url": "https://doi.org/10.1111/j.1365-2869.2010.00874.x"
           }
         ]
       },
@@ -46,11 +46,11 @@
         "sources": [
           {
             "label": "Landolt HP (2008). Sleep homeostasis: a role for adenosine in humans? Biochemical Pharmacology.",
-            "url": "https://doi.org/10.1016/j.bcp.2008.04.024"
+            "url": "https://doi.org/10.1016/j.bcp.2008.02.024"
           },
           {
             "label": "Nehlig A (2010). Is caffeine a cognitive enhancer? Journal of Alzheimer’s Disease.",
-            "url": "https://doi.org/10.3233/JAD-2010-1413"
+            "url": "https://doi.org/10.3233/jad-2010-091315"
           }
         ]
       },
@@ -66,7 +66,7 @@
           },
           {
             "label": "Pascoe MC et al. (2017). Mindfulness mediates the physiological markers of stress. Journal of Psychiatric Research.",
-            "url": "https://doi.org/10.1016/j.jpsychires.2016.07.004"
+            "url": "https://doi.org/10.1016/j.jpsychires.2017.08.004"
           }
         ]
       }
@@ -119,11 +119,11 @@
         "sources": [
           {
             "label": "Zaccaro A et al. (2018). How Breath-Control Can Change Your Life. Frontiers in Human Neuroscience.",
-            "url": "https://doi.org/10.3389/fnhum.2018.00389"
+            "url": "https://doi.org/10.3389/fnhum.2018.00353"
           },
           {
             "label": "Brown RP & Gerbarg PL. (2005). Sudarshan Kriya Yogic Breathing in the Treatment of Stress and Anxiety. Journal of Alternative and Complementary Medicine.",
-            "url": "https://pubmed.ncbi.nlm.nih.gov/16398575/"
+            "url": "https://doi.org/10.1089/acm.2005.11.711"
           }
         ]
       },
@@ -139,7 +139,7 @@
           },
           {
             "label": "Conrad A & Roth WT. (2007). Muscle relaxation therapy for anxiety disorders. Journal of Anxiety Disorders.",
-            "url": "https://doi.org/10.1016/j.janxdis.2007.04.010"
+            "url": "https://doi.org/10.1016/j.janxdis.2006.08.001"
           }
         ]
       },
@@ -155,7 +155,7 @@
           },
           {
             "label": "Hunter MR et al. (2019). Urban nature experiences reduce stress based on salivary biomarkers. Frontiers in Psychology.",
-            "url": "https://doi.org/10.3389/fpsyg.2019.00322"
+            "url": "https://doi.org/10.3389/fpsyg.2019.00722"
           }
         ]
       },
@@ -171,11 +171,11 @@
           },
           {
             "label": "Lazar SW et al. (2005). Meditation experience is associated with increased cortical thickness. NeuroReport.",
-            "url": "https://pubmed.ncbi.nlm.nih.gov/15723060/"
+            "url": "https://pubmed.ncbi.nlm.nih.gov/16272874/"
           },
           {
             "label": "Khoury B et al. (2015). Mindfulness-based stress reduction for healthy individuals: A meta-analysis. Journal of Psychosomatic Research.",
-            "url": "https://doi.org/10.1016/j.jpsychores.2014.07.002"
+            "url": "https://doi.org/10.1016/j.jpsychores.2015.03.009"
           }
         ]
       }
@@ -256,7 +256,7 @@
           },
           {
             "label": "Gomez-Donoso C et al. (2020). Ultra-processed food consumption and the incidence of depression in a Mediterranean cohort: the SUN Project. European Journal of Nutrition.",
-            "url": "https://doi.org/10.1007/s00394-019-02183-4"
+            "url": "https://doi.org/10.1007/s00394-019-01970-1"
           }
         ]
       },
@@ -268,11 +268,11 @@
         "sources": [
           {
             "label": "Knüppel A et al. (2017). Sugar intake from sweet food and beverages, common mental disorder and depression: prospective findings from the Whitehall II study. Scientific Reports.",
-            "url": "https://doi.org/10.1038/s41598-017-05668-7"
+            "url": "https://doi.org/10.1038/s41598-017-05649-7"
           },
           {
             "label": "Breymeyer KL et al. (2016). Subjective mood and energy levels of healthy weight and overweight/obese healthy adults on high- and low-glycemic load experimental diets. Appetite.",
-            "url": "https://doi.org/10.1016/j.appet.2016.12.026"
+            "url": "https://doi.org/10.1016/j.appet.2016.08.008"
           }
         ]
       },
@@ -288,7 +288,7 @@
           },
           {
             "label": "Parletta N et al. (2019). A Mediterranean-style dietary intervention supplemented with fish oil improves diet quality and mental health in people with depression. Nutritional Neuroscience.",
-            "url": "https://doi.org/10.1080/1028415X.2018.1553132"
+            "url": "https://doi.org/10.1080/1028415x.2017.1411320"
           }
         ]
       }
@@ -364,11 +364,11 @@
         "sources": [
           {
             "label": "Exelmans L & Van den Bulck J. (2015). Bedtime mobile phone use and sleep in adults. Social Science & Medicine.",
-            "url": "https://doi.org/10.1016/j.socscimed.2015.06.022"
+            "url": "https://doi.org/10.1016/j.socscimed.2015.11.037"
           },
           {
             "label": "Hale L & Guan S. (2015). Screen time and sleep among school-aged children and adolescents: A systematic literature review. Sleep Medicine Reviews.",
-            "url": "https://doi.org/10.1016/j.smrv.2015.11.004"
+            "url": "https://doi.org/10.1016/j.smrv.2014.07.007"
           }
         ]
       },
@@ -396,11 +396,11 @@
         "sources": [
           {
             "label": "Cain N & Gradisar M. (2010). Electronic media use and sleep in school-aged children and adolescents: A review. Sleep Medicine.",
-            "url": "https://doi.org/10.1016/j.sleep.2009.10.009"
+            "url": "https://doi.org/10.1016/j.sleep.2010.02.006"
           },
           {
             "label": "Gringras P et al. (2015). Bigger, Brighter, Bluer-Better? Current Light-Emitting Devices — Adverse Sleep Properties and Preventable Strategies. Frontiers in Public Health.",
-            "url": "https://doi.org/10.3389/fpubh.2015.00204"
+            "url": "https://doi.org/10.3389/fpubh.2015.00233"
           }
         ]
       }
@@ -461,11 +461,11 @@
         "sources": [
           {
             "label": "Panda S. (2016). Circadian physiology of metabolism. Science.",
-            "url": "https://doi.org/10.1126/science.aaf1580"
+            "url": "https://doi.org/10.1126/science.aah4967"
           },
           {
             "label": "Chaix A et al. (2019). Time-Restricted Eating to Prevent and Manage Chronic Metabolic Diseases. Annual Review of Nutrition.",
-            "url": "https://doi.org/10.1146/annurev-nutr-082017-051610"
+            "url": "https://doi.org/10.1146/annurev-nutr-082018-124320"
           }
         ]
       },
@@ -481,7 +481,7 @@
           },
           {
             "label": "Wilkinson MJ et al. (2020). Ten-Hour Time-Restricted Eating Reduces Weight, Blood Pressure, and Atherogenic Lipids in Patients with Metabolic Syndrome. Cell Metabolism.",
-            "url": "https://doi.org/10.1016/j.cmet.2020.06.006"
+            "url": "https://doi.org/10.1016/j.cmet.2019.11.004"
           }
         ]
       },

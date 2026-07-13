@@ -103,18 +103,30 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
       {
         label: "Composure change",
         value:
+          composureEff.mean_diff != null && baselineComposureMean != null
+            ? `${round1(baselineComposureMean)} → ${round1(baselineComposureMean + composureEff.mean_diff)}`
+            : composureEff.mean_diff != null
+              ? `${composureEff.mean_diff >= 0 ? "+" : ""}${round1(composureEff.mean_diff)} points`
+              : "—",
+        note:
           composureEff.mean_diff != null
-            ? `${composureEff.mean_diff >= 0 ? "+" : ""}${round1(composureEff.mean_diff)} points`
-            : "—",
-        note: "Compared with Baseline average"
+            ? `${composureEff.mean_diff >= 0 ? "+" : ""}${round1(composureEff.mean_diff)} pts`
+            : "Compared with Baseline average"
       },
       {
         label: "Stress change",
         value:
+          stressEff.mean_diff != null &&
+          phaseStats(bValid, FACTOR_OUTCOME).mean != null &&
+          phaseStats(iValid, FACTOR_OUTCOME).mean != null
+            ? `${round1(phaseStats(bValid, FACTOR_OUTCOME).mean)} → ${round1(phaseStats(iValid, FACTOR_OUTCOME).mean)}`
+            : stressEff.mean_diff != null
+              ? `${stressEff.mean_diff <= 0 ? "" : "+"}${round1(stressEff.mean_diff)} points`
+              : "—",
+        note:
           stressEff.mean_diff != null
-            ? `${round1(stressEff.mean_diff)} points`
-            : "—",
-        note: `Baseline avg ${round1(phaseStats(bValid, FACTOR_OUTCOME).mean)} → practices ${round1(phaseStats(iValid, FACTOR_OUTCOME).mean)}`
+            ? `${stressEff.mean_diff <= 0 ? "" : "+"}${round1(stressEff.mean_diff)} pts`
+            : `Baseline avg ${round1(phaseStats(bValid, FACTOR_OUTCOME).mean)} → practices ${round1(phaseStats(iValid, FACTOR_OUTCOME).mean)}`
       }
     ]
   };

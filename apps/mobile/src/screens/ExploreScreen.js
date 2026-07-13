@@ -11,7 +11,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
 import { useData } from "../context/DataContext";
 import { useUiShell } from "../context/UiContext";
-import { useExplorationStart } from "../hooks/useUserExplorations";
+import { useExplorationStart, useUserExplorations } from "../hooks/useUserExplorations";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, radius, spacing } from "../theme/colors";
 import { REM } from "../theme/tokens";
@@ -40,6 +40,7 @@ export default function ExploreScreen() {
   const available = explorePage?.availableExplorations ?? [];
   const recommended = explorePage?.recommendedExplorations ?? [];
   const startExploration = useExplorationStart();
+  const userExplorations = useUserExplorations();
   const { showToast } = useUiShell();
   const navigation = useNavigation();
   const route = useRoute();
@@ -47,6 +48,7 @@ export default function ExploreScreen() {
   const [visibleResultCount, setVisibleResultCount] = useState(RESULTS_PAGE_SIZE);
   const scrollRef = useRef(null);
   const searchRef = useRef(null);
+  const lastCapturedQuery = useRef("");
 
   useEffect(() => {
     if (!route.params?.focusSearch) return;
@@ -88,9 +90,25 @@ export default function ExploreScreen() {
   const visibleSearchResults = searchResults.slice(0, visibleResultCount);
   const hasMoreSearchResults = searchResults.length > visibleResultCount;
 
+  useEffect(() => {
+    const query = q.trim();
+    if (query.length < 2) return;
+
+    const timer = setTimeout(() => {
+      if (query === lastCapturedQuery.current) return;
+      lastCapturedQuery.current = query;
+      posthog?.capture("searched for exploration", { queryLength: query.length });
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [q, posthog]);
+
   function handleSearchSubmit() {
-    if (!q.trim()) return;
-    posthog?.capture("searched for exploration");
+    const query = q.trim();
+    if (query.length < 2) return;
+    if (query === lastCapturedQuery.current) return;
+    lastCapturedQuery.current = query;
+    posthog?.capture("searched for exploration", { queryLength: query.length });
   }
 
   return (
@@ -118,7 +136,9 @@ export default function ExploreScreen() {
         {visibleSearchResults.length > 0 ? (
           <View style={styles.searchResults}>
             {visibleSearchResults.map((result) => {
-              const { screen, params } = getExploreSearchNavigation(result.kind, result.explorationId);
+              const { screen, params } = getExploreSearchNavigation(result.kind, result.explorationId, {
+                userExplorations
+              });
               return (
                 <Pressable
                   key={result.key}

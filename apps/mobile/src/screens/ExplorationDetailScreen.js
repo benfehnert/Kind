@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
+import { isExplorationEngaged, useCaptureOnFocus } from "../lib/analytics";
 import { getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
@@ -15,7 +16,7 @@ import { PrimaryButton } from "../components/primitives/Buttons";
 export default function ExplorationDetailScreen() {
   const posthog = usePostHog();
   const { community, explorePage, explorations } = useData();
-  const { explorationHydrating } = useConsent();
+  const { explorationHydrating, activeExplorationId } = useConsent();
   const userExplorations = useUserExplorations();
   const startExploration = useExplorationStart();
   const { showToast } = useUiShell();
@@ -30,9 +31,18 @@ export default function ExplorationDetailScreen() {
   const isOwnerView = Boolean(ownerSlug);
   const e = isOwnerView ? (id ? explorations?.[id] : null) : id ? userExplorations[id] : null;
 
-  useEffect(() => {
-    if (e) posthog?.capture("new exploration details opened", { explorationId: id });
-  }, [posthog, e, id]);
+  const isEngaged = e
+    ? isOwnerView
+      ? ownerActive
+      : isExplorationEngaged(e, { activeExplorationId, explorePage })
+    : false;
+  const detailEvent = e
+    ? isEngaged
+      ? "existing exploration details opened"
+      : "new exploration details opened"
+    : null;
+
+  useCaptureOnFocus(posthog, detailEvent, { explorationId: id });
 
   if (!e) {
     return (

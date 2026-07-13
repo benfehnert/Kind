@@ -103,18 +103,28 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
       {
         label: "Daily energy change",
         value:
+          energyEff.mean_diff != null && baselineEnergyMean != null
+            ? `${round1(baselineEnergyMean)} → ${round1(baselineEnergyMean + energyEff.mean_diff)}`
+            : energyEff.mean_diff != null
+              ? `${energyEff.mean_diff >= 0 ? "+" : ""}${round1(energyEff.mean_diff)} points`
+              : "—",
+        note:
           energyEff.mean_diff != null
-            ? `${energyEff.mean_diff >= 0 ? "+" : ""}${round1(energyEff.mean_diff)} points`
-            : "—",
-        note: "Compared with Baseline average"
+            ? `${energyEff.mean_diff >= 0 ? "+" : ""}${round1(energyEff.mean_diff)} pts`
+            : "Compared with Baseline average"
       },
       {
         label: "Eating window change",
         value:
+          windowEff.mean_diff != null && meanWindowHours(bValid) != null && meanWindowHours(iValid) != null
+            ? `${Math.round(meanWindowHours(bValid))}h → ${Math.round(meanWindowHours(iValid))}h`
+            : windowEff.mean_diff != null
+              ? `${windowEff.mean_diff >= 0 ? "+" : ""}${round1(windowEff.mean_diff)} hrs`
+              : "—",
+        note:
           windowEff.mean_diff != null
-            ? `${round1(windowEff.mean_diff)} hours`
-            : "—",
-        note: `Baseline avg ${round1(meanWindowHours(bValid))}h → 10-hour phase ${round1(meanWindowHours(iValid))}h`
+            ? `${windowEff.mean_diff >= 0 ? "+" : ""}${round1(windowEff.mean_diff)} hrs`
+            : `Baseline avg ${round1(meanWindowHours(bValid))}h → 10-hour phase ${round1(meanWindowHours(iValid))}h`
       }
     ]
   };

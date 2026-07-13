@@ -1,4 +1,8 @@
 import { query } from "../db.js";
+import {
+  maxStudyDayFromLogRows,
+  updateUserExplorationMetrics
+} from "./explorationMetrics.js";
 import { isAnnaDemoIndividual } from "./demoAccount.js";
 import { getCentModule } from "./cent/index.js";
 import { generateFeedContent } from "../feedContent.js";
@@ -179,7 +183,7 @@ export async function syncExplorationUpdates(individualId, explorationId, explor
   }
 
   const { rows: ueRows } = await query(
-    `SELECT id, started_at FROM user_explorations
+    `SELECT id, started_at, weeks_total FROM user_explorations
      WHERE individual_id = $1 AND exploration_id = $2`,
     [individualId, explorationId]
   );
@@ -205,7 +209,10 @@ export async function syncExplorationUpdates(individualId, explorationId, explor
   );
 
   const entries = centModule.loadDayEntries(logRows, startedAt);
-  const maxStudyDay = Math.max(...entries.map((e) => e.study_day ?? 0));
+  const maxStudyDay = maxStudyDayFromLogRows(logRows, startedAt);
+
+  await updateUserExplorationMetrics(individualId, explorationId);
+
   const studyMeta = centModule.buildStudyMeta({
     start_date: startedAt,
     end_date: logRows.at(-1)?.log_date,

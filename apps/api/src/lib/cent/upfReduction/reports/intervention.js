@@ -103,18 +103,28 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
       {
         label: "Daily mood change",
         value:
+          moodEff.mean_diff != null && baselineMoodMean != null
+            ? `${round1(baselineMoodMean)} → ${round1(baselineMoodMean + moodEff.mean_diff)}`
+            : moodEff.mean_diff != null
+              ? `${moodEff.mean_diff >= 0 ? "+" : ""}${round1(moodEff.mean_diff)} points`
+              : "—",
+        note:
           moodEff.mean_diff != null
-            ? `${moodEff.mean_diff >= 0 ? "+" : ""}${round1(moodEff.mean_diff)} points`
-            : "—",
-        note: "Compared with Baseline average"
+            ? `${moodEff.mean_diff >= 0 ? "+" : ""}${round1(moodEff.mean_diff)} pts`
+            : "Compared with Baseline average"
       },
       {
         label: "UPF share change",
         value:
+          upfEff.mean_diff != null && meanUpfPct(bValid) != null && meanUpfPct(iValid) != null
+            ? `${Math.round(meanUpfPct(bValid))}% → ${Math.round(meanUpfPct(iValid))}%`
+            : upfEff.mean_diff != null
+              ? `${upfEff.mean_diff >= 0 ? "+" : ""}${round1(upfEff.mean_diff)} pts`
+              : "—",
+        note:
           upfEff.mean_diff != null
-            ? `${round1(upfEff.mean_diff)} pts`
-            : "—",
-        note: `Baseline avg ${Math.round(meanUpfPct(bValid) ?? 0)}% → reduction phase ${Math.round(meanUpfPct(iValid) ?? 0)}%`
+            ? `${upfEff.mean_diff >= 0 ? "+" : ""}${round1(upfEff.mean_diff)} pts`
+            : `Baseline avg ${Math.round(meanUpfPct(bValid) ?? 0)}% → reduction phase ${Math.round(meanUpfPct(iValid) ?? 0)}%`
       }
     ]
   };

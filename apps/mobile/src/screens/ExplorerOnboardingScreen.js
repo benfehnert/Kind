@@ -27,6 +27,22 @@ import {
   renderFinishStep
 } from "../components/onboarding/stepRenderers";
 
+const Q1_APPROACH = {
+  actively_exploring: "optimiser",
+  specific_goals: "improver",
+  understand_concern: "explorer",
+  none_of_these: "none"
+};
+
+const Q2_BEHAVIOURS = {
+  tracked_metrics: "trackedMetrics",
+  tested_supplement: "selfExperiment",
+  science_content: "scienceContent",
+  structured_programme: "followedProgramme",
+  fitness_tracker: "fitnessTracker",
+  diet_changes: "changedDiet"
+};
+
 function mapAnswersToConsent(answers) {
   return {
     platform_participation: Boolean(answers.consentPrivacy),
@@ -114,15 +130,30 @@ export default function ExplorerOnboardingScreen() {
       return;
     }
 
+    if (step?.id === "health-approach") {
+      const approach = Q1_APPROACH[answers.healthApproach];
+      if (approach) posthog?.capture("onboarding q1 answered", { approach });
+    }
+    if (step?.id === "recent-health-activities") {
+      const behaviours = (answers.recentHealthActivities || [])
+        .map((v) => Q2_BEHAVIOURS[v])
+        .filter(Boolean);
+      posthog?.capture("onboarding q2 answered", { behaviours });
+    }
+
     setStage((s) => s + 1);
   }, [
+    answers.healthApproach,
     answers.name,
+    answers.recentHealthActivities,
     answers.signupEmail,
     answers.signupPassword,
     busy,
     canContinue,
+    posthog,
     signup,
     stage,
+    step?.id,
     step?.type,
     updateAnswers,
     visibleSteps.length

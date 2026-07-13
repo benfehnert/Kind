@@ -51,15 +51,12 @@ export default function ExplorationReportScreen({ route }) {
         const res = await get(url);
         if (!cancelled && res?.report) {
           setReport(res.report);
-          posthog?.capture("end of exploration report viewed", { explorationId });
         } else if (!cancelled) {
           setReport(getExplorationReport(explorationId));
-          posthog?.capture("end of exploration report viewed", { explorationId });
         }
       } catch {
         if (!cancelled) {
           setReport(getExplorationReport(explorationId));
-          posthog?.capture("end of exploration report viewed", { explorationId });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -70,7 +67,15 @@ export default function ExplorationReportScreen({ route }) {
     return () => {
       cancelled = true;
     };
-  }, [explorationId, ownerSlug, ownerName, posthog, profile?.viewerSlug]);
+  }, [explorationId, ownerSlug, ownerName, profile?.viewerSlug]);
+
+  useEffect(() => {
+    if (!report) return;
+    posthog?.capture("end of exploration report viewed", {
+      explorationId,
+      reportType: "FINAL_STUDY_COMPLETE"
+    });
+  }, [report, explorationId, posthog]);
 
   if (loading) {
     return (

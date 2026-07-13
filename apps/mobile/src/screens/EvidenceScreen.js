@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, Linking, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
+import { useCaptureOnFocus } from "../lib/analytics";
 import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { evidenceExplorationId } from "../utils/explorationIds";
@@ -84,10 +85,7 @@ export default function EvidenceScreen() {
 
   const ev = cachedEv ?? fetchedEv;
 
-  useEffect(() => {
-    if (!ev || !id) return;
-    posthog?.capture("viewed exploration evidence", { explorationId: id });
-  }, [ev, id, posthog]);
+  useCaptureOnFocus(posthog, id ? "viewed exploration evidence" : null, { explorationId: id });
 
   const table = ev?.summaryTable || [];
   const colKeys = table.length ? Object.keys(table[0]) : [];

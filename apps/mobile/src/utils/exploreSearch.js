@@ -144,14 +144,16 @@ export function filterExploreSearchResults(items, query) {
   return items.filter((item) => item.searchText.includes(norm));
 }
 
-export function getExploreSearchNavigation(kind, explorationId) {
+export function getExploreSearchNavigation(kind, explorationId, { userExplorations } = {}) {
   if (kind === "evidence" || kind === "science") {
     return { screen: "Evidence", params: { id: explorationId } };
   }
-  return {
-    screen: "ExplorationSummary",
-    params: { id: catalogExplorationId(explorationId) }
-  };
+  const id = catalogExplorationId(explorationId);
+  const ue = userExplorations?.[id];
+  if (ue?.userConsented || ue?.active) {
+    return { screen: "ExplorationSummary", params: { id } };
+  }
+  return { screen: "ExplorationDetail", params: { id } };
 }
 
 export { RESULTS_PAGE_SIZE };

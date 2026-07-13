@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
+import { useCaptureOnFocus } from "../lib/analytics";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { computeUserPhaseStatuses, computeExplorationProgress } from "../utils/explorationProgress";
 import { isShortExploration } from "../utils/explorationIds";
@@ -184,11 +185,17 @@ export default function ExplorationSummaryScreen() {
     [e?.phases, e?.weekCurrent, e?.weeksTotal]
   );
 
-  useEffect(() => {
-    if (!e || !id) return;
-    if (isOwnerView && loadingOwnerRun && !ownerWeek) return;
-    posthog?.capture("existing exploration details opened", { explorationId: id });
-  }, [e, id, posthog, isOwnerView, loadingOwnerRun, ownerWeek]);
+  const isEngaged = e
+    ? isOwnerView
+      ? (ownerActive ?? Boolean(ownerRun?.isActive))
+      : Boolean(e.userConsented || e.active)
+    : false;
+
+  useCaptureOnFocus(
+    isEngaged ? posthog : null,
+    "existing exploration details opened",
+    { explorationId: id }
+  );
 
   const openReport = (report) => {
     if (report.isFinal) {

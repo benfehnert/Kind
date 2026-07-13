@@ -19,6 +19,7 @@ import {
   resolveActiveExplorationId
 } from "../lib/meData.js";
 import { recordActivityFromLog } from "../lib/homeData.js";
+import { updateUserExplorationMetrics } from "../lib/explorationMetrics.js";
 import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
 import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
 import { isShortExploration, isCatalogExploration } from "../lib/centShort/index.js";
@@ -432,11 +433,7 @@ router.post("/me/logs", async (c) => {
     [individualId, explorationId, userExplorationId, logDate, JSON.stringify(fieldValues)]
   );
 
-  await query(
-    `UPDATE user_explorations SET streak_days = streak_days + 1, updated_at = NOW()
-     WHERE id = $1`,
-    [userExplorationId]
-  );
+  await updateUserExplorationMetrics(individualId, explorationId);
 
   await recordActivityFromLog(individualId, explorationId, rows[0].field_values, userExplorationId);
 

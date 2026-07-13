@@ -1,5 +1,9 @@
 import { query } from "../db.js";
 import { getCentShortModule, isShortExploration } from "./centShort/index.js";
+import {
+  maxStudyDayFromLogRows,
+  updateUserExplorationMetrics
+} from "./explorationMetrics.js";
 import { fetchExplorationMeta, fetchConsentedExplorationIds } from "./homeData.js";
 import { REPORT_LABELS, centReportFeedRoute } from "./explorationReportsData.js";
 import { getExplorationTheme } from "./explorationThemes.js";
@@ -59,7 +63,15 @@ function studyDayInstant(startedAt, studyDay, hour = 0) {
   return instant;
 }
 
-function canPublishShortReport(reportType, explorationId, { startedAt, maxStudyDay, now = new Date() }) {
+function countValidInterventionEntries(entries) {
+  return entries.filter((e) => e.phase === "INTERVENTION" && e.valid_for_analysis).length;
+}
+
+function canPublishShortReport(
+  reportType,
+  explorationId,
+  { startedAt, maxStudyDay, interventionValidCount = 0, now = new Date() }
+) {
   const schedule = SHORT_EXPLORATION_SCHEDULE[explorationId];
   if (!schedule) return false;
 
@@ -71,7 +83,8 @@ function canPublishShortReport(reportType, explorationId, { startedAt, maxStudyD
       return (
         cutoff !== null &&
         now >= cutoff &&
-        maxStudyDay >= BASELINE_END_DAY
+        maxStudyDay >= BASELINE_END_DAY &&
+        interventionValidCount >= 1
       );
     }
     case "FINAL_STUDY_COMPLETE":
@@ -146,13 +159,25 @@ async function fetchExistingUpdateKeys(individualId, explorationId) {
   return new Set(rows.map((r) => r.update_key));
 }
 
+const UPSERTABLE_REPORT_KEYS = new Set(["cent:BASELINE_SUMMARY", "cent:INTERVENTION_INTERIM"]);
+
 async function persistUpdate(individualId, explorationId, updateKey, feedItem, reportContent = null) {
+  const upsert = UPSERTABLE_REPORT_KEYS.has(updateKey);
   const { rows } = await query(
-    `INSERT INTO user_exploration_updates
-       (individual_id, exploration_id, update_key, feed_item, report_content)
-     VALUES ($1, $2, $3, $4::jsonb, $5::jsonb)
-     ON CONFLICT (individual_id, exploration_id, update_key) DO NOTHING
-     RETURNING generated_at`,
+    upsert
+      ? `INSERT INTO user_exploration_updates
+           (individual_id, exploration_id, update_key, feed_item, report_content)
+         VALUES ($1, $2, $3, $4::jsonb, $5::jsonb)
+         ON CONFLICT (individual_id, exploration_id, update_key) DO UPDATE SET
+           feed_item = EXCLUDED.feed_item,
+           report_content = EXCLUDED.report_content,
+           generated_at = NOW()
+         RETURNING generated_at`
+      : `INSERT INTO user_exploration_updates
+           (individual_id, exploration_id, update_key, feed_item, report_content)
+         VALUES ($1, $2, $3, $4::jsonb, $5::jsonb)
+         ON CONFLICT (individual_id, exploration_id, update_key) DO NOTHING
+         RETURNING generated_at`,
     [
       individualId,
       explorationId,
@@ -216,17 +241,9 @@ export async function syncShortExplorationUpdates(individualId, explorationId, e
   );
 
   const entries = centModule.loadDayEntries(logRows, startedAt);
-  const maxStudyDay = entries.length ? Math.max(...entries.map((e) => e.study_day ?? 0)) : 0;
+  const maxStudyDay = maxStudyDayFromLogRows(logRows, startedAt);
 
-  // One logged study day maps to one full-study week for the short timeline.
-  if (weeksTotal && maxStudyDay > 0) {
-    await query(
-      `UPDATE user_explorations
-       SET week_current = LEAST($1::int, weeks_total), updated_at = NOW()
-       WHERE id = $2`,
-      [maxStudyDay, userExplorationId]
-    );
-  }
+  await updateUserExplorationMetrics(individualId, explorationId);
 
   const studyMeta = centModule.buildStudyMeta({
     start_date: startedAt,
@@ -237,12 +254,18 @@ export async function syncShortExplorationUpdates(individualId, explorationId, e
   const cohort = COHORT_BY_SHORT_EXPLORATION[explorationId] ?? null;
   const analysis = centModule.analyze(entries, studyMeta, cohort);
   const reportsByType = new Map((analysis.reports ?? []).map((r) => [r.type, r]));
+  const interventionValidCount = countValidInterventionEntries(entries);
+  const publishContext = { startedAt, maxStudyDay, interventionValidCount };
+
   for (const reportType of SHORT_PUBLISHED_REPORT_TYPES) {
     const updateKey = `cent:${reportType}`;
-    if (
-      existingKeys.has(updateKey) ||
-      !canPublishShortReport(reportType, explorationId, { startedAt, maxStudyDay })
-    ) {
+    const upsertable = UPSERTABLE_REPORT_KEYS.has(updateKey);
+    const alreadyStored = existingKeys.has(updateKey);
+
+    if (!canPublishShortReport(reportType, explorationId, publishContext)) {
+      continue;
+    }
+    if (alreadyStored && !upsertable) {
       continue;
     }
 
@@ -268,8 +291,10 @@ export async function syncShortExplorationUpdates(individualId, explorationId, e
     if (savedAt) {
       feedItem.time = `${meta.feedLabel || meta.title || explorationId} · ${formatFeedTime(savedAt)}`;
       feedItem._sortAt = new Date(savedAt).getTime();
-      newItems.push(feedItem);
-      existingKeys.add(updateKey);
+      if (!alreadyStored) {
+        newItems.push(feedItem);
+        existingKeys.add(updateKey);
+      }
     }
   }
 

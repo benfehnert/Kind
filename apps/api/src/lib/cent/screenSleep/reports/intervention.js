@@ -103,18 +103,28 @@ export function generateInterventionReport(baselineEntries, interventionEntries,
       {
         label: "Sleep quality change",
         value:
+          sleepEff.mean_diff != null && baselineSleepMean != null
+            ? `${round1(baselineSleepMean)} → ${round1(baselineSleepMean + sleepEff.mean_diff)}`
+            : sleepEff.mean_diff != null
+              ? `${sleepEff.mean_diff >= 0 ? "+" : ""}${round1(sleepEff.mean_diff)} points`
+              : "—",
+        note:
           sleepEff.mean_diff != null
-            ? `${sleepEff.mean_diff >= 0 ? "+" : ""}${round1(sleepEff.mean_diff)} points`
-            : "—",
-        note: "Compared with Baseline average"
+            ? `${sleepEff.mean_diff >= 0 ? "+" : ""}${round1(sleepEff.mean_diff)} pts`
+            : "Compared with Baseline average"
       },
       {
         label: "Wind-down time change",
         value:
+          winddownEff.mean_diff != null && meanWinddownMinutes(bValid) != null && meanWinddownMinutes(iValid) != null
+            ? `${round1(meanWinddownMinutes(bValid))} min → ${round1(meanWinddownMinutes(iValid))} min`
+            : winddownEff.mean_diff != null
+              ? `${winddownEff.mean_diff >= 0 ? "+" : ""}${round1(winddownEff.mean_diff)} min`
+              : "—",
+        note:
           winddownEff.mean_diff != null
             ? `${winddownEff.mean_diff >= 0 ? "+" : ""}${round1(winddownEff.mean_diff)} min`
-            : "—",
-        note: `Baseline avg ${round1(meanWinddownMinutes(bValid))} min → 30-min phase ${round1(meanWinddownMinutes(iValid))} min`
+            : `Baseline avg ${round1(meanWinddownMinutes(bValid))} min → 30-min phase ${round1(meanWinddownMinutes(iValid))} min`
       }
     ]
   };
