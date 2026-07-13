@@ -125,7 +125,7 @@ export function ProfileProvider({ children }) {
     async (nextAvatar) => {
       setAvatar(nextAvatar);
       persist({ displayName, avatar: nextAvatar });
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) return true;
 
       try {
         let updatedProfile = null;
@@ -153,8 +153,9 @@ export function ProfileProvider({ children }) {
           setAvatar(savedAvatar);
           persist({ displayName, avatar: savedAvatar });
         }
+        return true;
       } catch {
-        // local state kept
+        return false;
       }
     },
     [displayName, persist, isAuthenticated, refetchProfile]

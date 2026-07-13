@@ -6,6 +6,7 @@ import {
 } from "../src/lib/explorationStreak.js";
 import {
   maxStudyDayFromLogRows,
+  shouldMarkExplorationComplete,
   weekCurrentFromMaxStudyDay
 } from "../src/lib/explorationMetrics.js";
 
@@ -69,6 +70,21 @@ test("weekCurrentFromMaxStudyDay maps full exploration study days to weeks", () 
   assert.equal(weekCurrentFromMaxStudyDay(15, 6, false), 3);
   assert.equal(weekCurrentFromMaxStudyDay(7, 6, false), 1);
   assert.equal(weekCurrentFromMaxStudyDay(42, 6, false), 6);
+});
+
+test("shouldMarkExplorationComplete when week_current reaches weeks_total", () => {
+  assert.equal(
+    shouldMarkExplorationComplete({ weekCurrent: 6, weeksTotal: 6, status: "active" }),
+    true
+  );
+  assert.equal(
+    shouldMarkExplorationComplete({ weekCurrent: 5, weeksTotal: 6, status: "active" }),
+    false
+  );
+  assert.equal(
+    shouldMarkExplorationComplete({ weekCurrent: 6, weeksTotal: 6, status: "complete" }),
+    false
+  );
 });
 
 test("relaxation-short scenario: gap on day 6 still reaches day 6 of 6", () => {

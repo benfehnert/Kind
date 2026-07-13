@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { ExplorationLogFields } from "../logging/ExplorationLogFields";
 import { Badge } from "../primitives/Badge";
+import { PrimaryButton } from "../primitives/Buttons";
 import { colors, radius, spacing } from "../../theme/colors";
 import { type } from "../../theme/typography";
 
@@ -11,7 +12,9 @@ export function ExplorationLogSection({
   onChange,
   index,
   total,
-  loggedToday = false
+  loggedToday = false,
+  onSave,
+  saving = false
 }) {
   const multi = total > 1;
 
@@ -54,6 +57,15 @@ export function ExplorationLogSection({
           onChange={onChange}
         />
       </View>
+
+      {multi && onSave ? (
+        <PrimaryButton
+          title={saving ? "Saving…" : loggedToday ? "Already logged today" : "Log exploration data"}
+          onPress={onSave}
+          disabled={saving || loggedToday}
+          style={styles.saveBtn}
+        />
+      ) : null}
     </View>
   );
 }
@@ -116,5 +128,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border
+  },
+  saveBtn: {
+    marginTop: spacing.lg,
+    marginBottom: 0
   }
 });

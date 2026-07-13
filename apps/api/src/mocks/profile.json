@@ -20,6 +20,7 @@
   "summaryTitle": "My exploration summary",
   "summaryRows": [
     { "label": "Active explorations", "value": "1 of 5 available" },
+    { "label": "Complete explorations", "value": "4 complete" },
     { "label": "Baseline afternoon energy", "value": "4.8 / 10" },
     { "label": "Current afternoon energy", "value": "6.8 / 10", "valueTone": "green" },
     { "label": "Total logs submitted", "value": "12" }

@@ -17,6 +17,14 @@ export function explorationTotalDays(weeksTotal, isShort = false) {
   return isShort ? weeks : weeks * 7;
 }
 
+export function isExplorationComplete(run) {
+  if (!run) return false;
+  if (run.status === "complete") return true;
+  const weeksTotal = Number(run.weeksTotal ?? 0);
+  const weekCurrent = Number(run.weekCurrent ?? 0);
+  return weeksTotal > 0 && weekCurrent >= weeksTotal;
+}
+
 /** Progress as % of elapsed days over total exploration length. */
 export function computeExplorationProgress({ startedAt, weeksTotal, weekCurrent, isShort = false } = {}) {
   const totalDays = explorationTotalDays(weeksTotal, isShort);

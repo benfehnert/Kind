@@ -3,6 +3,35 @@ import { daysBetween, parseDate } from "./centShort/shared/math.js";
 import { isShortExploration } from "./centShort/index.js";
 import { computeExplorationStreak } from "./explorationStreak.js";
 
+export function shouldMarkExplorationComplete({ weekCurrent, weeksTotal, status } = {}) {
+  if (status === "complete") return false;
+  const total = Number(weeksTotal);
+  const current = Number(weekCurrent);
+  return total > 0 && current >= total;
+}
+
+export async function markUserExplorationComplete(individualId, explorationId) {
+  const { rows } = await query(
+    `UPDATE user_explorations SET
+       status = 'complete',
+       completed_at = COALESCE(completed_at, CURRENT_DATE),
+       week_current = weeks_total,
+       is_active = FALSE,
+       updated_at = NOW()
+     WHERE individual_id = $1 AND exploration_id = $2 AND status != 'complete'
+     RETURNING exploration_id`,
+    [individualId, explorationId]
+  );
+  if (!rows.length) return false;
+
+  await query(
+    `UPDATE exploration_consents SET is_active = FALSE, updated_at = NOW()
+     WHERE individual_id = $1 AND exploration_id = $2`,
+    [individualId, explorationId]
+  );
+  return true;
+}
+
 /** Max study day from raw log dates, independent of cent phase filtering. */
 export function maxStudyDayFromLogRows(logRows, startedAt) {
   const start = parseDate(startedAt);
@@ -28,12 +57,12 @@ export function weekCurrentFromMaxStudyDay(maxStudyDay, weeksTotal, isShort = fa
 /** Recompute streak_days and week_current from daily_logs for one exploration run. */
 export async function updateUserExplorationMetrics(individualId, explorationId) {
   const { rows: ueRows } = await query(
-    `SELECT id, started_at, weeks_total FROM user_explorations
+    `SELECT id, started_at, weeks_total, status::text AS status FROM user_explorations
      WHERE individual_id = $1 AND exploration_id = $2`,
     [individualId, explorationId]
   );
   const ue = ueRows[0];
-  if (!ue) return;
+  if (!ue) return { newlyCompleted: false };
 
   const { rows: logRows } = await query(
     `SELECT log_date FROM daily_logs
@@ -54,11 +83,20 @@ export async function updateUserExplorationMetrics(individualId, explorationId) 
        WHERE id = $3`,
       [weekCurrent, streakDays, ue.id]
     );
-    return;
+  } else {
+    await query(
+      `UPDATE user_explorations SET streak_days = $1, updated_at = NOW() WHERE id = $2`,
+      [streakDays, ue.id]
+    );
   }
 
-  await query(
-    `UPDATE user_explorations SET streak_days = $1, updated_at = NOW() WHERE id = $2`,
-    [streakDays, ue.id]
-  );
+  const newlyCompleted = shouldMarkExplorationComplete({
+    weekCurrent,
+    weeksTotal: ue.weeks_total,
+    status: ue.status
+  })
+    ? await markUserExplorationComplete(individualId, explorationId)
+    : false;
+
+  return { newlyCompleted };
 }

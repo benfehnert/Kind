@@ -12,16 +12,20 @@ import {
   buildLogFieldSummary
 } from "../utils/explorationStartContent";
 import { isShortExploration } from "../utils/explorationIds";
+import { resolveExplorationMeta } from "../utils/resolveExplorationMeta";
 import { colors, fontFamily, spacing } from "../theme/colors";
 
 export default function ExplorationStartedScreen() {
-  const { explorations: catalog, refetchHome } = useData();
+  const { explorations: catalog, explorePage, refetchHome } = useData();
   const userExplorations = useUserExplorations();
   const navigation = useNavigation();
   const posthog = usePostHog();
   const { params } = useRoute();
   const explorationId = params?.id;
-  const exploration = explorationId ? userExplorations[explorationId] || catalog[explorationId] : null;
+  const exploration = explorationId
+    ? userExplorations[explorationId] ??
+      resolveExplorationMeta(explorationId, { explorations: catalog, explorePage })
+    : null;
 
   if (!exploration) {
     return (

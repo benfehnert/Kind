@@ -5,7 +5,9 @@ const PRACTICE_PATTERNS = {
   vagal_breathing: /vagal/i,
   pmr: /progressive muscle|pmr/i,
   nature_walk: /nature walk/i,
-  meditation: /meditation|visuali/i
+  meditation: /meditation|visuali/i,
+  aerobic_activity: /aerobic/i,
+  yoga: /yoga/i
 };
 
 function clampNumeric(value, min, max) {
@@ -22,7 +24,9 @@ function parsePractices(fieldValues) {
     vagal_breathing: false,
     pmr: false,
     nature_walk: false,
-    meditation: false
+    meditation: false,
+    aerobic_activity: false,
+    yoga: false
   };
   for (const label of practicesArr) {
     for (const [key, pattern] of Object.entries(PRACTICE_PATTERNS)) {

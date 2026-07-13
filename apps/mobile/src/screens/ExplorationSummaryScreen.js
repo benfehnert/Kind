@@ -6,6 +6,7 @@ import { useCaptureOnFocus } from "../lib/analytics";
 import { useUserExplorations } from "../hooks/useUserExplorations";
 import { computeUserPhaseStatuses, computeExplorationProgress } from "../utils/explorationProgress";
 import { isShortExploration } from "../utils/explorationIds";
+import { resolveExplorationMeta } from "../utils/resolveExplorationMeta";
 import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { colors } from "../theme/colors";
@@ -51,12 +52,13 @@ export default function ExplorationSummaryScreen() {
   const ownerWeeksTotal = params?.ownerWeeksTotal;
   const ownerActive = params?.ownerActive;
 
-  const { explorations, profile } = useData();
+  const { explorations, explorePage, profile } = useData();
   const userExplorations = useUserExplorations();
   const isOwnerView = Boolean(ownerSlug) && ownerSlug !== profile?.viewerSlug;
 
-  const ownExploration = !isOwnerView && id ? userExplorations[id] : null;
-  const catalogExploration = id ? explorations?.[id] : null;
+  const catalogExploration = id ? resolveExplorationMeta(id, { explorations, explorePage }) : null;
+  const ownExploration =
+    !isOwnerView && id ? userExplorations[id] ?? catalogExploration : null;
 
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(true);

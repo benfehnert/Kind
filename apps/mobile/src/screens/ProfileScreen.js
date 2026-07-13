@@ -10,6 +10,8 @@ import { useProfile } from "../context/ProfileContext";
 import { useUiShell } from "../context/UiContext";
 import { requestDailyReminderPermission } from "../lib/notifications";
 import { formatConsentDate } from "../hooks/useUserExplorations";
+import { isExplorationComplete } from "../utils/explorationProgress";
+import { isShortExploration } from "../utils/explorationIds";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
 import { colors, radius, spacing } from "../theme/colors";
 import { layout, text } from "../theme/textStyles";
@@ -34,8 +36,15 @@ export default function ProfileScreen() {
     useCallback(() => refetchProfile?.(), [refetchProfile])
   );
   const { followingCount } = useFollow();
-  const { privacyPrefs, prefsHydrating, updatePrivacyPref, showCommunityWithdrawNotice, explorationConsents, activeExplorationId } =
-    useConsent();
+  const {
+    privacyPrefs,
+    prefsHydrating,
+    updatePrivacyPref,
+    showCommunityWithdrawNotice,
+    explorationConsents,
+    activeExplorationId,
+    explorationRuns
+  } = useConsent();
   const { displayName, avatar, initials, avatarProps, updateDisplayName, updateAvatar } = useProfile();
   const { logout } = useAuth();
   const { showToast } = useUiShell();
@@ -56,11 +65,18 @@ export default function ProfileScreen() {
     .filter(([, v]) => v?.granted)
     .map(([id, v]) => {
       const ex = explorations?.[id];
+      const run = explorationRuns?.[id];
+      const complete = isExplorationComplete(run);
+      const weekCurrent = run?.weekCurrent ?? null;
+      const weeksTotal = run?.weeksTotal ?? Number(ex?.duration?.match(/\d+/)?.[0]) ?? null;
       return {
         id,
         title: ex?.feedLabel || ex?.title || id,
         consentedAt: v.consentedAt,
-        active: activeExplorationId === id
+        active: !complete && activeExplorationId === id,
+        complete,
+        weekCurrent,
+        weeksTotal
       };
     });
 
@@ -221,13 +237,21 @@ export default function ProfileScreen() {
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.exploreTitle}>{ex.title}</Text>
-                  {ex.consentedAt ? (
+                  {ex.complete ? (
+                    <Text style={styles.exploreMeta}>Complete</Text>
+                  ) : ex.weekCurrent && ex.weeksTotal ? (
+                    <Text style={styles.exploreMeta}>
+                      {isShortExploration(ex.id) ? "Day" : "Week"} {ex.weekCurrent} of {ex.weeksTotal}
+                    </Text>
+                  ) : ex.consentedAt ? (
                     <Text style={styles.exploreMeta}>
                       Exploration consent · {formatConsentDate(ex.consentedAt)}
                     </Text>
                   ) : null}
                 </View>
-                <Badge variant="amber">Active</Badge>
+                <Badge variant={ex.complete ? "teal" : "amber"}>
+                  {ex.complete ? "Complete" : "Active"}
+                </Badge>
               </Pressable>
             ))
           )}
@@ -351,8 +375,12 @@ export default function ProfileScreen() {
       <EditAvatarModal
         visible={avatarModalOpen}
         currentAvatar={avatar}
-        onSave={(next) => {
-          updateAvatar(next);
+        onSave={async (next) => {
+          const saved = await updateAvatar(next);
+          if (!saved) {
+            showToast("Could not save your profile image. Please try again.");
+            return;
+          }
           setAvatarModalOpen(false);
         }}
         onClose={() => setAvatarModalOpen(false)}

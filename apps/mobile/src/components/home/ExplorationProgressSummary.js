@@ -56,7 +56,9 @@ export function ExplorationProgressSummary({ explorations, starterMode = false }
             </View>
           </View>
           <View style={styles.meta}>
-            <Badge variant="amber">Active</Badge>
+            <Badge variant={ex.status === "complete" ? "teal" : "amber"}>
+              {ex.status === "complete" ? "Complete" : "Active"}
+            </Badge>
             {ex.weekCurrent && ex.weeksTotal ? (
               <Badge variant="teal">
                 {isShortExploration(ex.id) ? "Day" : "Week"} {ex.weekCurrent} of {ex.weeksTotal}

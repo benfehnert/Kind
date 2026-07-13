@@ -12,8 +12,10 @@ export function DailyCheckinCard({
   logValues,
   onChange,
   onSave,
+  onSaveExploration,
   onCancel,
   saving = false,
+  savingExplorationId = null,
   loggedExplorationIds = [],
   logFormTitle = "Today's log"
 }) {
@@ -46,6 +48,8 @@ export function DailyCheckinCard({
           index={index}
           total={explorations.length}
           loggedToday={loggedExplorationIds.includes(ex.id)}
+          onSave={multi && onSaveExploration ? () => onSaveExploration(ex.id) : undefined}
+          saving={saving && savingExplorationId === ex.id}
         />
       ))}
 
@@ -53,7 +57,7 @@ export function DailyCheckinCard({
         <GhostButton title="Cancel" onPress={onCancel} style={styles.actionBtn} />
         <PrimaryButton
           style={styles.saveBtn}
-          title={saving ? "Saving…" : multi ? "Save all logs" : "Save"}
+          title={saving ? "Saving…" : multi ? "Log all data" : "Save"}
           onPress={onSave}
           disabled={saving}
         />

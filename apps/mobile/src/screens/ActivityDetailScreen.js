@@ -16,6 +16,7 @@ import { usePostHog } from "posthog-react-native";
 import { get, patch, post } from "../lib/api";
 import { useData } from "../context/DataContext";
 import { colors, fontFamily, radius, spacing } from "../theme/colors";
+import { REM } from "../theme/tokens";
 import { text } from "../theme/textStyles";
 import { type } from "../theme/typography";
 import { Avatar } from "../components/primitives/Avatar";
@@ -636,7 +637,9 @@ const styles = StyleSheet.create({
     minHeight: 44,
     maxHeight: 120,
     textAlignVertical: "top",
-    ...text.body,
+    fontFamily: fontFamily.regular,
+    fontSize: REM,
+    lineHeight: Math.round(REM * 1.55),
     color: colors.text,
     backgroundColor: colors.bg
   },

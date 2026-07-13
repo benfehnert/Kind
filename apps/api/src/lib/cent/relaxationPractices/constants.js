@@ -9,20 +9,24 @@ export const PRIMARY_OUTCOME = "composure";
 export const FACTOR_OUTCOME = "stress";
 export const SECONDARY_OUTCOMES = ["stress", "anxiety"];
 
-export const HABITS = ["vagal_breathing", "pmr", "nature_walk", "meditation"];
+export const HABITS = ["vagal_breathing", "pmr", "nature_walk", "meditation", "aerobic_activity", "yoga"];
 
 export const HABIT_LABELS = {
   vagal_breathing: "Vagal breathing",
   pmr: "Progressive muscle relaxation",
   nature_walk: "Short nature walk",
-  meditation: "Meditation / visualisation"
+  meditation: "Meditation / visualisation",
+  aerobic_activity: "Aerobic activity",
+  yoga: "Yoga"
 };
 
 export const HABIT_ICONS = {
   vagal_breathing: "🌬️",
   pmr: "💪",
   nature_walk: "🌿",
-  meditation: "🧘"
+  meditation: "🧘",
+  aerobic_activity: "🏃",
+  yoga: "🪷"
 };
 
 export const MIN_BASELINE_DAYS = 7;

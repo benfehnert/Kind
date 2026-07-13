@@ -180,7 +180,7 @@
       {
         "type": "select",
         "id": "te_first",
-        "label": "First meal today",
+        "label": "First meal yesterday",
         "opts": [
           "Before 7am",
           "7–8am",
@@ -193,7 +193,7 @@
       {
         "type": "select",
         "id": "te_last",
-        "label": "Last meal today",
+        "label": "Last meal yesterday",
         "opts": [
           "Before 4pm",
           "4–6pm",
@@ -206,7 +206,7 @@
       {
         "type": "range",
         "id": "te_energy",
-        "label": "Energy levels today",
+        "label": "Energy levels yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -218,7 +218,7 @@
       {
         "type": "range",
         "id": "te_hunger",
-        "label": "Hunger comfort today",
+        "label": "Hunger comfort yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -230,7 +230,7 @@
       {
         "type": "range",
         "id": "te_mood",
-        "label": "Mood today",
+        "label": "Mood yesterday",
         "min": 1,
         "max": 10,
         "val": 7,
@@ -434,7 +434,9 @@
           "Vagal breathing",
           "Progressive muscle relaxation",
           "Short nature walk",
-          "Meditation / visualisation"
+          "Meditation / visualisation",
+          "Aerobic activity",
+          "Yoga"
         ],
         "multi": true
       },
@@ -537,7 +539,7 @@
       {
         "type": "range",
         "id": "upf_pct",
-        "label": "Estimated % of diet that was UPF today",
+        "label": "Estimated % of my diet that was UPF yesterday",
         "min": 0,
         "max": 100,
         "val": 45,
@@ -547,7 +549,7 @@
       {
         "type": "range",
         "id": "upf_mood",
-        "label": "Mood today",
+        "label": "Mood yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -559,7 +561,7 @@
       {
         "type": "range",
         "id": "upf_energy",
-        "label": "Energy levels today",
+        "label": "Energy levels yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -765,7 +767,7 @@
       {
         "type": "select",
         "id": "te_first",
-        "label": "First meal today",
+        "label": "First meal yesterday",
         "opts": [
           "Before 7am",
           "7–8am",
@@ -778,7 +780,7 @@
       {
         "type": "select",
         "id": "te_last",
-        "label": "Last meal today",
+        "label": "Last meal yesterday",
         "opts": [
           "Before 4pm",
           "4–6pm",
@@ -791,7 +793,7 @@
       {
         "type": "range",
         "id": "te_energy",
-        "label": "Energy levels today",
+        "label": "Energy levels yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -803,7 +805,7 @@
       {
         "type": "range",
         "id": "te_hunger",
-        "label": "Hunger comfort today",
+        "label": "Hunger comfort yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -815,7 +817,7 @@
       {
         "type": "range",
         "id": "te_mood",
-        "label": "Mood today",
+        "label": "Mood yesterday",
         "min": 1,
         "max": 10,
         "val": 7,
@@ -1021,7 +1023,9 @@
           "Vagal breathing",
           "Progressive muscle relaxation",
           "Short nature walk",
-          "Meditation / visualisation"
+          "Meditation / visualisation",
+          "Aerobic activity",
+          "Yoga"
         ],
         "multi": true
       },
@@ -1125,7 +1129,7 @@
       {
         "type": "range",
         "id": "upf_pct",
-        "label": "Estimated % of diet that was UPF today",
+        "label": "Estimated % of my diet that was UPF yesterday",
         "min": 0,
         "max": 100,
         "val": 45,
@@ -1135,7 +1139,7 @@
       {
         "type": "range",
         "id": "upf_mood",
-        "label": "Mood today",
+        "label": "Mood yesterday",
         "min": 1,
         "max": 10,
         "val": 6,
@@ -1147,7 +1151,7 @@
       {
         "type": "range",
         "id": "upf_energy",
-        "label": "Energy levels today",
+        "label": "Energy levels yesterday",
         "min": 1,
         "max": 10,
         "val": 6,

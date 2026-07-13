@@ -6,35 +6,8 @@ import { useCaptureOnFocus } from "../lib/analytics";
 import { useData } from "../context/DataContext";
 import { get } from "../lib/api";
 import { evidenceExplorationId } from "../utils/explorationIds";
+import { resolveExplorationMeta } from "../utils/resolveExplorationMeta";
 import { colors, fontFamily } from "../theme/colors";
-
-function resolveExplorationMeta(id, { explorations, explorePage }) {
-  if (!id) return null;
-
-  if (explorations?.[id]) {
-    return { ...explorations[id], id };
-  }
-
-  const fromExplore = [
-    ...(explorePage?.activeExplorations ?? []),
-    ...(explorePage?.availableExplorations ?? []),
-    ...(explorePage?.recommendedExplorations ?? [])
-  ].find((entry) => entry?.id === id);
-
-  if (fromExplore) return fromExplore;
-
-  const shortId = id.endsWith("-short") ? id : `${id}-short`;
-  if (explorations?.[shortId]) {
-    return { ...explorations[shortId], id: shortId };
-  }
-
-  const parentId = evidenceExplorationId(id);
-  if (parentId !== id && explorations?.[parentId]) {
-    return { ...explorations[parentId], id: parentId };
-  }
-
-  return null;
-}
 
 export default function EvidenceScreen() {
   const { explorationEvidence, explorations, explorePage } = useData();

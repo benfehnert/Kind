@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 
 let getToken = () => null;
@@ -76,11 +78,19 @@ export function patch(path, body) {
 
 export async function uploadProfileAvatar(uri) {
   const formData = new FormData();
-  formData.append("file", {
-    uri,
-    name: "avatar.jpg",
-    type: "image/jpeg"
-  });
+
+  if (Platform.OS === "web") {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    formData.append("file", blob, "avatar.jpg");
+  } else {
+    formData.append("file", {
+      uri,
+      name: "avatar.jpg",
+      type: "image/jpeg"
+    });
+  }
+
   return request("POST", "/profile/avatar", formData);
 }
 

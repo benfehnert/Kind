@@ -367,8 +367,8 @@ export default function ExplorationReportContent({
               <Text style={[styles.limitationsTitle, { color: palette.textPrimary }]}>Important to note</Text>
               {limitations.map((item) => (
                 <View key={item} style={styles.limitationRow}>
-                  <Text style={[styles.limitationBullet, { color: palette.textPrimary }]}>•</Text>
-                  <Text style={[styles.limitationItem, { color: palette.textPrimary }]}>{item}</Text>
+                  <Text style={[styles.limitationBullet, { color: palette.textSecondary }]}>•</Text>
+                  <Text style={[styles.limitationItem, { color: palette.textSecondary }]}>{item}</Text>
                 </View>
               ))}
             </View>
@@ -492,16 +492,15 @@ const styles = StyleSheet.create({
   },
   limitationBullet: {
     fontSize: 16,
-    lineHeight: 22,
+    lineHeight: 18,
     fontWeight: "700",
     width: 18,
     textAlign: "left"
   },
   limitationItem: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 22,
-    fontWeight: "500",
+    fontSize: 12,
+    lineHeight: 18,
     textAlign: "left"
   },
   infoCard: { borderRadius: 16, padding: 16, marginBottom: 12 },

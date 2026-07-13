@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
@@ -9,6 +9,7 @@ import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { useUserExplorations, useExplorationStart } from "../hooks/useUserExplorations";
 import { isShortExploration } from "../utils/explorationIds";
+import { resolveExplorationMeta } from "../utils/resolveExplorationMeta";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { PrimaryButton } from "../components/primitives/Buttons";
@@ -29,7 +30,11 @@ export default function ExplorationDetailScreen() {
   const ownerWeeksTotal = params?.ownerWeeksTotal;
   const ownerActive = params?.ownerActive;
   const isOwnerView = Boolean(ownerSlug);
-  const e = isOwnerView ? (id ? explorations?.[id] : null) : id ? userExplorations[id] : null;
+  const e = useMemo(() => {
+    if (!id) return null;
+    if (isOwnerView) return resolveExplorationMeta(id, { explorations, explorePage });
+    return userExplorations[id] ?? resolveExplorationMeta(id, { explorations, explorePage });
+  }, [id, isOwnerView, userExplorations, explorations, explorePage]);
 
   const isEngaged = e
     ? isOwnerView

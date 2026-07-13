@@ -30,6 +30,18 @@ async function fetchUserActiveExplorationCount(individualId) {
   return rows[0]?.count ?? 0;
 }
 
+async function fetchUserCompleteExplorationCount(individualId) {
+  const { rows } = await query(
+    `SELECT COUNT(*)::int AS count
+     FROM user_explorations
+     WHERE individual_id = $1
+       AND exploration_id = ANY($2::text[])
+       AND status = 'complete'`,
+    [individualId, SHORT_EXPLORATION_IDS]
+  );
+  return rows[0]?.count ?? 0;
+}
+
 async function fetchTotalLogCount(individualId) {
   const { rows } = await query(
     `SELECT COUNT(*)::int AS count FROM daily_logs WHERE individual_id = $1`,
@@ -66,9 +78,10 @@ async function fetchMorningRulesEnergySummary(individualId) {
 }
 
 export async function buildSummaryRows(individualId) {
-  const [catalogCount, activeCount, totalLogs, energy] = await Promise.all([
+  const [catalogCount, activeCount, completeCount, totalLogs, energy] = await Promise.all([
     fetchAvailableExplorationCount(),
     fetchUserActiveExplorationCount(individualId),
+    fetchUserCompleteExplorationCount(individualId),
     fetchTotalLogCount(individualId),
     fetchMorningRulesEnergySummary(individualId)
   ]);
@@ -77,6 +90,10 @@ export async function buildSummaryRows(individualId) {
     {
       label: "Active explorations",
       value: `${activeCount} of ${catalogCount} available`
+    },
+    {
+      label: "Complete explorations",
+      value: `${completeCount} complete`
     }
   ];
 
@@ -100,7 +117,8 @@ export async function buildSummaryRows(individualId) {
     value: String(totalLogs)
   });
 
-  const hasSummaryData = activeCount > 0 || totalLogs > 0 || Boolean(energy?.baseline);
+  const hasSummaryData =
+    activeCount > 0 || completeCount > 0 || totalLogs > 0 || Boolean(energy?.baseline);
 
   return {
     summaryRows: rows,

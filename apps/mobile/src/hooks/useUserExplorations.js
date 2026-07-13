@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { useData } from "../context/DataContext";
 import { useConsent } from "../context/ConsentContext";
-import { computeExplorationProgress } from "../utils/explorationProgress";
+import { computeExplorationProgress, isExplorationComplete } from "../utils/explorationProgress";
 import { isShortExploration } from "../utils/explorationIds";
 
 function isExplorationActive(id, activeExplorationId, run) {
+  if (isExplorationComplete(run)) return false;
   return activeExplorationId === id || run?.isActive === true;
 }
 
@@ -105,6 +106,7 @@ export function listConsentedExplorations(explorations, explorationConsents, act
       const weeksTotal = run?.weeksTotal ?? Number(ex?.duration?.match(/\d+/)?.[0]) ?? null;
       const weekCurrent = run?.weekCurrent ?? 1;
       const isShort = isShortExploration(id);
+      const complete = isExplorationComplete(run);
       return {
         id,
         title: ex?.feedLabel || ex?.title || id,
@@ -116,6 +118,7 @@ export function listConsentedExplorations(explorations, explorationConsents, act
         granted: true,
         consentedAt: v.consentedAt,
         active: isExplorationActive(id, activeExplorationId, run),
+        status: complete ? "complete" : "active",
         weekCurrent,
         weeksTotal,
         streakDays: run?.streakDays ?? 0,
@@ -126,7 +129,8 @@ export function listConsentedExplorations(explorations, explorationConsents, act
           isShort
         })
       };
-    });
+    })
+    .filter((entry) => entry.status !== "complete");
 }
 
 export function formatConsentDate(iso) {

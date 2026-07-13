@@ -75,6 +75,8 @@ export default function HomeScreen() {
   const [showLog, setShowLog] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingExplorationId, setSavingExplorationId] = useState(null);
+  const [sessionSavedIds, setSessionSavedIds] = useState([]);
   const [prefilling, setPrefilling] = useState(false);
   const [chip, setChip] = useState("all");
   const [tipsExpanded, setTipsExpanded] = useState(false);
@@ -82,7 +84,6 @@ export default function HomeScreen() {
   const [extraFeedItems, setExtraFeedItems] = useState([]);
   const [expandingFeed, setExpandingFeed] = useState(false);
   const [reminderDismissed, setReminderDismissed] = useState(false);
-  const [lastSavedNames, setLastSavedNames] = useState([]);
   const completedExplorationsTracked = useRef(new Set());
   const pendingOpenLogRef = useRef(false);
 
@@ -108,20 +109,25 @@ export default function HomeScreen() {
   );
 
   const logExplorations = useMemo(
-    () => listConsentedExplorationForms(explorations, explorationConsents),
-    [explorations, explorationConsents]
+    () => listConsentedExplorationForms(explorations, explorationConsents, explorationRuns),
+    [explorations, explorationConsents, explorationRuns]
   );
 
   const loggedExplorationIds = home.loggedExplorationIds || [];
 
+  const effectiveLoggedExplorationIds = useMemo(
+    () => [...new Set([...loggedExplorationIds, ...sessionSavedIds])],
+    [loggedExplorationIds, sessionSavedIds]
+  );
+
   const pendingLogExplorations = useMemo(
-    () => getPendingLogExplorations(logExplorations, loggedExplorationIds),
-    [logExplorations, loggedExplorationIds]
+    () => getPendingLogExplorations(logExplorations, effectiveLoggedExplorationIds),
+    [logExplorations, effectiveLoggedExplorationIds]
   );
 
   const checkinComplete = useMemo(
-    () => allExplorationsLogged(logExplorations, loggedExplorationIds),
-    [logExplorations, loggedExplorationIds]
+    () => allExplorationsLogged(logExplorations, effectiveLoggedExplorationIds),
+    [logExplorations, effectiveLoggedExplorationIds]
   );
 
   const multiExplorationLog = logExplorations.length > 1;
@@ -154,18 +160,6 @@ export default function HomeScreen() {
       }
     }
   }, [posthog, progressExplorations]);
-
-  const savedConfirmBody = useMemo(() => {
-    const tail = home.confirm.body.replace(/^Your data has been saved\.\s*/i, "");
-    const names = lastSavedNames.length ? lastSavedNames : logExplorations.map((ex) => ex.title);
-    if (names.length > 1) {
-      return `Daily check-in complete for ${names.join(" and ")}. ${tail}`;
-    }
-    if (names.length === 1) {
-      return `Daily check-in complete for ${names[0]}. ${tail}`;
-    }
-    return home.confirm.body;
-  }, [home.confirm.body, lastSavedNames, logExplorations]);
 
   const logButtonTitle = useMemo(() => {
     if (multiExplorationLog) {
@@ -221,6 +215,7 @@ export default function HomeScreen() {
   const openCheckin = useCallback(async () => {
     setShowLog(true);
     setSaved(false);
+    setSessionSavedIds([]);
     if (!starterMode || logExplorations.length > 0) {
       await prefillCheckin();
     }
@@ -246,8 +241,9 @@ export default function HomeScreen() {
     if (explorationHydrating) return;
     if (logExplorations.length > 0) return;
     if (pendingOpenLogRef.current) return;
+    if (starterMode) return;
     setShowLog(false);
-  }, [showLog, explorationHydrating, logExplorations.length]);
+  }, [showLog, explorationHydrating, logExplorations.length, starterMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -395,33 +391,39 @@ export default function HomeScreen() {
   );
   const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(handleHomeRefresh);
 
-  async function handleSaveLogs() {
-    if (saving || logExplorations.length === 0) return;
+  async function handleSaveLogs(explorationId = null) {
+    const targets = explorationId
+      ? logExplorations.filter((ex) => ex.id === explorationId)
+      : logExplorations;
+    if (saving || targets.length === 0) return;
     setSaving(true);
-    let saveSucceeded = false;
+    if (explorationId) setSavingExplorationId(explorationId);
+
     try {
       await Promise.all(
-        logExplorations.map((ex) =>
+        targets.map((ex) =>
           post("/me/logs", {
             explorationId: ex.id,
             fieldValues: formatLogFieldValues(ex.fields, logValues[ex.id] || {})
           })
         )
       );
-      saveSucceeded = true;
     } catch {
       showToast("Could not save your log. Please try again.");
       setSaving(false);
+      setSavingExplorationId(null);
       return;
     }
 
-    setLastSavedNames(logExplorations.map((ex) => ex.title));
-    setSaved(true);
-    setShowLog(false);
+    const savedNames = targets.map((ex) => ex.title);
+    const updatedSessionSaved = explorationId
+      ? [...new Set([...sessionSavedIds, explorationId])]
+      : sessionSavedIds;
+    if (explorationId) setSessionSavedIds(updatedSessionSaved);
+
     posthog?.capture("daily log submitted");
     setSaving(false);
-
-    if (!saveSucceeded) return;
+    setSavingExplorationId(null);
 
     try {
       await Promise.all([refreshExplorationRuns(), refetchHome(), refetchInsight()]);
@@ -429,6 +431,20 @@ export default function HomeScreen() {
       console.log("[HomeScreen] post-save refetch failed:", err);
       showToast("Saved — pull to refresh your feed.");
     }
+
+    const allNowLogged = allExplorationsLogged(
+      logExplorations,
+      loggedExplorationIds,
+      updatedSessionSaved
+    );
+
+    if (!explorationId || allNowLogged) {
+      setSaved(true);
+      setShowLog(false);
+      return;
+    }
+
+    showToast(`Saved ${savedNames[0]}.`);
   }
 
   function handleFeedPress(item) {
@@ -511,11 +527,7 @@ export default function HomeScreen() {
         ) : null}
 
         {showLog && !saved && starterMode && logExplorations.length === 0 ? (
-          <StarterCheckinCard
-            logFormTitle={home.logFormTitle}
-            onCancel={() => setShowLog(false)}
-            onBrowseExplorations={goToExplore}
-          />
+          <StarterCheckinCard onBrowseExplorations={goToExplore} />
         ) : null}
 
         {showLog && !saved && logExplorations.length > 0 && prefilling ? (
@@ -535,10 +547,15 @@ export default function HomeScreen() {
                 [explorationId]: { ...prev[explorationId], [fieldId]: value }
               }))
             }
-            onSave={handleSaveLogs}
-            onCancel={() => setShowLog(false)}
+            onSave={() => handleSaveLogs()}
+            onSaveExploration={handleSaveLogs}
+            onCancel={() => {
+              setShowLog(false);
+              setSessionSavedIds([]);
+            }}
             saving={saving}
-            loggedExplorationIds={loggedExplorationIds}
+            savingExplorationId={savingExplorationId}
+            loggedExplorationIds={effectiveLoggedExplorationIds}
             logFormTitle={home.logFormTitle}
           />
         ) : null}
@@ -546,7 +563,13 @@ export default function HomeScreen() {
         {saved && (
           <Card style={{ backgroundColor: colors.greenLight, borderColor: colors.greenDark }}>
             <Text style={styles.confirmTitle}>{home.confirm.title}</Text>
-            <Text style={styles.confirmBody}>{savedConfirmBody}</Text>
+            <Text style={styles.confirmBody}>{home.confirm.body}</Text>
+            <PrimaryButton
+              title="See logged data"
+              onPress={openCheckin}
+              backgroundColor={colors.greenDark}
+              style={{ marginTop: spacing.md, marginBottom: 0 }}
+            />
           </Card>
         )}
 

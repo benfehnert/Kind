@@ -19,7 +19,10 @@ import {
   resolveActiveExplorationId
 } from "../lib/meData.js";
 import { recordActivityFromLog } from "../lib/homeData.js";
-import { updateUserExplorationMetrics } from "../lib/explorationMetrics.js";
+import {
+  markUserExplorationComplete,
+  updateUserExplorationMetrics
+} from "../lib/explorationMetrics.js";
 import { syncExplorationUpdates } from "../lib/userExplorationUpdates.js";
 import { syncShortExplorationUpdates } from "../lib/userExplorationUpdatesShort.js";
 import { isShortExploration, isCatalogExploration } from "../lib/centShort/index.js";
@@ -303,16 +306,10 @@ router.post("/me/explorations/:id/complete", async (c) => {
   if (!isCatalogExploration(explorationId)) {
     return c.json({ error: "Exploration not available" }, 400);
   }
-  await query(
-    `UPDATE user_explorations SET
-       status = 'complete',
-       completed_at = COALESCE(completed_at, CURRENT_DATE),
-       week_current = weeks_total,
-       is_active = FALSE,
-       updated_at = NOW()
-     WHERE individual_id = $1 AND exploration_id = $2`,
-    [individualId, explorationId]
-  );
+  const marked = await markUserExplorationComplete(individualId, explorationId);
+  if (!marked) {
+    return c.json({ error: "Exploration not found or already complete" }, 404);
+  }
 
   const report = await generateUserReport(individualId, explorationId);
   if (!report) return c.json({ error: "Report template not found" }, 404);
@@ -433,7 +430,10 @@ router.post("/me/logs", async (c) => {
     [individualId, explorationId, userExplorationId, logDate, JSON.stringify(fieldValues)]
   );
 
-  await updateUserExplorationMetrics(individualId, explorationId);
+  const { newlyCompleted } = await updateUserExplorationMetrics(individualId, explorationId);
+  if (newlyCompleted) {
+    await generateUserReport(individualId, explorationId);
+  }
 
   await recordActivityFromLog(individualId, explorationId, rows[0].field_values, userExplorationId);
 

@@ -22,13 +22,18 @@ export function avatarPropsFromFields({ avatarKey, avatarUrl, img, sceneKey, ini
 
 /** Map a person/feed item object (mixed API shapes) to Avatar props. */
 export function avatarPropsFromPerson(person = {}) {
-  return avatarPropsFromFields({
+  const props = avatarPropsFromFields({
     avatarKey: person.avatarKey,
     avatarUrl: person.avatarUrl,
     img: person.img,
     sceneKey: person.sceneKey,
     initials: person.initials
   });
+
+  if (person.photoUrl && !props.photoUrl) props.photoUrl = person.photoUrl;
+  if (person.photoUri && !props.photoUri) props.photoUri = person.photoUri;
+
+  return props;
 }
 
 /** Map a home feed item to Avatar props. */

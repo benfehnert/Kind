@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
 import { colors, radius, spacing } from "../../theme/colors";
 import { type } from "../../theme/typography";
+import { defaultRangeValue } from "../../utils/explorationLogState";
 
 export function ExplorationLogFields({ fields, values, onChange }) {
   return (fields || []).map((field) => {
@@ -39,7 +40,7 @@ export function ExplorationLogFields({ fields, values, onChange }) {
     }
 
     if (field.type === "range") {
-      const val = values[field.id] ?? field.val ?? field.min ?? 0;
+      const val = values[field.id] ?? defaultRangeValue(field);
       const step = field.step ?? 1;
       return (
         <View key={field.id} style={styles.block}>
@@ -72,7 +73,7 @@ export function ExplorationLogFields({ fields, values, onChange }) {
     }
 
     if (field.type === "select") {
-      const selectedIdx = values[field.id] ?? field.sel ?? 0;
+      const selectedIdx = values[field.id];
       return (
         <View key={field.id} style={styles.block}>
           <Text style={styles.label}>{field.label}</Text>

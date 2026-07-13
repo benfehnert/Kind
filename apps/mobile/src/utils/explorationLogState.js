@@ -1,12 +1,20 @@
+export function defaultRangeValue(field) {
+  const min = Number(field.min ?? 0);
+  const max = Number(field.max ?? min);
+  const step = Number(field.step ?? 1);
+  const midpoint = (min + max) / 2;
+  return Math.round(midpoint / step) * step;
+}
+
 export function buildInitialFieldValues(fields) {
   const values = {};
   for (const f of fields || []) {
     if (f.type === "checks") {
       values[f.id] = (f.opts || []).map(() => false);
     } else if (f.type === "range") {
-      values[f.id] = Number(f.val ?? f.min ?? 0);
+      values[f.id] = defaultRangeValue(f);
     } else if (f.type === "select") {
-      values[f.id] = Number(f.sel ?? 0);
+      values[f.id] = null;
     }
   }
   return values;
@@ -20,9 +28,11 @@ export function buildInitialLogValues(explorationList) {
   return out;
 }
 
-export function listConsentedExplorationForms(explorations, explorationConsents) {
+import { isExplorationComplete } from "./explorationProgress";
+
+export function listConsentedExplorationForms(explorations, explorationConsents, explorationRuns = {}) {
   return Object.entries(explorationConsents || {})
-    .filter(([, v]) => v?.granted)
+    .filter(([id, v]) => v?.granted && !isExplorationComplete(explorationRuns[id]))
     .map(([id]) => {
       const ex = explorations?.[id];
       if (!ex?.fields?.length) return null;
@@ -49,10 +59,14 @@ export function formatLogFieldValues(fields, values) {
       const checked = raw || [];
       fieldValues[field.id] = (field.opts || []).filter((_, idx) => checked[idx]);
     } else if (field.type === "range") {
-      fieldValues[field.id] = Number(raw ?? field.val ?? field.min ?? 0);
+      fieldValues[field.id] = Number(raw ?? defaultRangeValue(field));
     } else if (field.type === "select") {
-      const idx = Number(raw ?? field.sel ?? 0);
-      fieldValues[field.id] = field.opts?.[idx] ?? "";
+      if (raw === null || raw === undefined) {
+        fieldValues[field.id] = "";
+      } else {
+        const idx = Number(raw);
+        fieldValues[field.id] = field.opts?.[idx] ?? "";
+      }
     }
   }
   return fieldValues;
@@ -71,7 +85,7 @@ export function parseLogFieldValues(fields, fieldValuesFromApi = {}) {
       values[field.id] = Number(raw);
     } else if (field.type === "select") {
       const idx = (field.opts || []).indexOf(raw);
-      values[field.id] = idx >= 0 ? idx : Number(field.sel ?? 0);
+      values[field.id] = idx >= 0 ? idx : null;
     }
   }
   return values;

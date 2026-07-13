@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useData } from "../context/DataContext";
+import { resolveExplorationMeta } from "../utils/resolveExplorationMeta";
 import { useConsent } from "../context/ConsentContext";
 import { useUiShell } from "../context/UiContext";
 import { OnboardingContinueButton } from "../components/onboarding/OnboardingContinueButton";
@@ -29,11 +30,13 @@ function buildAtAGlance(exploration) {
 }
 
 export default function ExplorationConsentScreen() {
-  const { explorations, refetchExplore } = useData();
+  const { explorations, explorePage, refetchExplore } = useData();
   const navigation = useNavigation();
   const { params } = useRoute();
   const explorationId = params?.id;
-  const exploration = explorationId ? explorations[explorationId] : null;
+  const exploration = explorationId
+    ? resolveExplorationMeta(explorationId, { explorations, explorePage })
+    : null;
   const { privacyPrefs, enrollInExploration } = useConsent();
   const { showToast } = useUiShell();
   const [optIn, setOptIn] = useState(false);
