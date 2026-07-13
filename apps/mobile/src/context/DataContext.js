@@ -4,6 +4,27 @@ import { get } from "../lib/api";
 
 const DataContext = createContext(null);
 
+function parseCommunityIndividualsResponse(communityIndividuals, socialMeta) {
+  const commUsers = {};
+  const basicUsers = [];
+  const followerOnly = [];
+  for (const u of communityIndividuals.items || []) {
+    const { tier, id, ...rest } = u;
+    if (tier === "comm") commUsers[id] = { ...rest };
+    else if (tier === "basic") basicUsers.push({ id, ...rest });
+    else followerOnly.push({ id, ...rest });
+  }
+  return {
+    commUsers,
+    basicUsers,
+    followerOnly,
+    researchers: undefined,
+    socialMeta,
+    explorationFollowers: communityIndividuals.explorationFollowers || {},
+    canViewIndividuals: communityIndividuals.canViewIndividuals !== false
+  };
+}
+
 export function DataProvider({ children }) {
   const [data, setData] = useState(null);
 
@@ -44,23 +65,9 @@ export function DataProvider({ children }) {
       explorations[id] = rest;
     }
 
-    const commUsers = {};
-    const basicUsers = [];
-    const followerOnly = [];
-    for (const u of communityIndividuals.items || []) {
-      const { tier, id, ...rest } = u;
-      if (tier === "comm") commUsers[id] = { ...rest };
-      else if (tier === "basic") basicUsers.push({ id, ...rest });
-      else followerOnly.push({ id, ...rest });
-    }
     const community = {
-      commUsers,
-      basicUsers,
-      followerOnly,
-      researchers: communityResearchers.items || [],
-      socialMeta: socialFollows,
-      explorationFollowers: communityIndividuals.explorationFollowers || {},
-      canViewIndividuals: communityIndividuals.canViewIndividuals !== false
+      ...parseCommunityIndividualsResponse(communityIndividuals, socialFollows),
+      researchers: communityResearchers.items || []
     };
 
     return {
@@ -171,6 +178,26 @@ export function DataProvider({ children }) {
     return socialFollows;
   }, [applySocialFollows]);
 
+  const refetchCommunityIndividuals = useCallback(async () => {
+    const [communityIndividuals, socialFollows] = await Promise.all([
+      get("/community/individuals"),
+      get("/social/follows")
+    ]);
+    setData((prev) => {
+      if (!prev) return prev;
+      const parsed = parseCommunityIndividualsResponse(communityIndividuals, socialFollows);
+      return {
+        ...prev,
+        community: {
+          ...prev.community,
+          ...parsed,
+          researchers: prev.community?.researchers || []
+        }
+      };
+    });
+    return communityIndividuals;
+  }, []);
+
   const updateSocialFollows = useCallback(
     ({ followSlug, unfollowSlug, followResearcherId, unfollowResearcherId } = {}) => {
       setData((prev) => {
@@ -231,6 +258,7 @@ export function DataProvider({ children }) {
             refetchInsight,
             refetchProfile,
             refetchSocialFollows,
+            refetchCommunityIndividuals,
             updateSocialFollows,
             applySocialFollows
           }
@@ -242,6 +270,7 @@ export function DataProvider({ children }) {
       refetchInsight,
       refetchProfile,
       refetchSocialFollows,
+      refetchCommunityIndividuals,
       updateSocialFollows,
       applySocialFollows
     ]

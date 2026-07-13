@@ -27,6 +27,45 @@ import { ActivityNiceBlock } from "../components/activity/ActivityNiceBlock";
 import { ActivityMessageBlock } from "../components/activity/ActivityMessageBlock";
 import { RichTextParts } from "../utils/RichText";
 
+const MESSAGE_POLL_MS = 4000;
+
+function emptyReactions() {
+  return {
+    heart: { count: 0, viewerReacted: false },
+    clap: { count: 0, viewerReacted: false }
+  };
+}
+
+function buildOptimisticMessage(profile, body, parentMessageId) {
+  const hero = profile?.hero || {};
+  const nav = profile?.navProfile || {};
+  const avatarKey = hero.avatarKey || nav.avatarKey;
+  const avatarUrl = hero.avatarUrl || nav.avatarUrl;
+
+  return {
+    id: `pending-${Date.now()}`,
+    body,
+    time: "Just now",
+    parentMessageId: parentMessageId ?? null,
+    sender: {
+      slug: profile?.viewerSlug,
+      name: hero.name || "You",
+      img: avatarKey?.startsWith("pravatar-")
+        ? parseInt(avatarKey.replace("pravatar-", ""), 10)
+        : undefined,
+      initials: nav.initials || hero.initials,
+      avatarKey,
+      avatarUrl: avatarKey === "photo" ? avatarUrl : undefined
+    },
+    reactions: emptyReactions()
+  };
+}
+
+function messageThreadSignature(messages = []) {
+  const last = messages[messages.length - 1];
+  return `${messages.length}:${last?.id ?? ""}:${last?.body ?? ""}`;
+}
+
 function formatReportDate(dateStr) {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -112,12 +151,46 @@ export default function ActivityDetailScreen() {
     }
   }, [activityPostId]);
 
-  // Refetch every time this screen gains focus so nices/messages left by
-  // other people while we were away show up as soon as we look again.
+  const refreshMessages = useCallback(async () => {
+    if (!activityPostId || sending || togglingReaction) return;
+    try {
+      const result = await get(`/activity-posts/${activityPostId}/messages`);
+      let shouldScroll = false;
+      setDetail((prev) => {
+        if (!prev) return prev;
+        const nextMessages = result.messages || [];
+        if (
+          messageThreadSignature(prev.messages) === messageThreadSignature(nextMessages) &&
+          prev.mc === result.mc
+        ) {
+          return prev;
+        }
+        if (nextMessages.length > (prev.messages?.length ?? 0)) {
+          shouldScroll = true;
+        }
+        return {
+          ...prev,
+          messages: nextMessages,
+          mc: result.mc ?? nextMessages.length,
+          messagePreview: result.messagePreview || []
+        };
+      });
+      if (shouldScroll) {
+        setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    } catch {
+      // Keep the current thread visible if a background refresh fails.
+    }
+  }, [activityPostId, sending, togglingReaction]);
+
+  // Refetch on focus, then poll while this activity stays open so everyone
+  // viewing the thread sees new messages without leaving the screen.
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load])
+      const intervalId = setInterval(refreshMessages, MESSAGE_POLL_MS);
+      return () => clearInterval(intervalId);
+    }, [load, refreshMessages])
   );
 
   const messages = detail?.messages || [];
@@ -246,31 +319,51 @@ export default function ActivityDetailScreen() {
     const trimmed = draft.trim();
     if (!trimmed || !activityPostId || sending) return;
 
+    const parentMessageId = replyTo?.id ?? null;
+    const replyTarget = replyTo;
+    const optimistic = buildOptimisticMessage(profile, trimmed, parentMessageId);
+    const rollbackSnapshotRef = { current: null };
+
+    setDetail((prev) => {
+      rollbackSnapshotRef.current = prev;
+      if (!prev) return prev;
+      return {
+        ...prev,
+        messages: [...(prev.messages || []), optimistic],
+        mc: (prev.mc ?? prev.messages?.length ?? 0) + 1
+      };
+    });
+    setDraft("");
+    setReplyTo(null);
     setSending(true);
+    setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+
     try {
       const result = await post(`/activity-posts/${activityPostId}/messages`, {
         body: trimmed,
-        parentMessageId: replyTo?.id ?? undefined
+        parentMessageId: parentMessageId ?? undefined
       });
       setDetail((prev) =>
         prev
           ? {
               ...prev,
               messages: result.messages || [],
-              mc: result.mc ?? result.messages?.length ?? 0
+              mc: result.mc ?? result.messages?.length ?? 0,
+              messagePreview: result.messagePreview || []
             }
           : prev
       );
-      setDraft("");
-      setReplyTo(null);
       posthog?.capture("interacted with a community post");
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (err) {
+      setDetail(rollbackSnapshotRef.current);
+      setDraft(trimmed);
+      if (replyTarget) setReplyTo(replyTarget);
       setError(err.message || "Could not send message.");
     } finally {
       setSending(false);
     }
-  }, [activityPostId, draft, posthog, replyTo, sending]);
+  }, [activityPostId, draft, posthog, profile, replyTo, sending]);
 
   const toggleReaction = useCallback(
     async (message, reactionType) => {

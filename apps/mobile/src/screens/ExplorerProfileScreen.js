@@ -19,6 +19,11 @@ import { BackIcon } from "../components/icons/ProtoIcons";
 import { isShortExploration } from "../utils/explorationIds";
 
 const RECENT_ACTIVITY_LIMIT = 6;
+const ACTIVITY_MESSAGE_POLL_MS = 4000;
+
+function messagePreviewSignature(preview = []) {
+  return preview.map((person) => person.slug).join(",");
+}
 
 function normalizeBadges(badges = []) {
   return badges.map((b) => ({
@@ -53,10 +58,39 @@ export default function ExplorerProfileScreen() {
     }
   }, [userId]);
 
+  const refreshActMessageSummaries = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await get(`/community/individuals/${userId}`);
+      const freshActs = (data.acts || []).slice(0, RECENT_ACTIVITY_LIMIT);
+      setActs((prev) =>
+        prev.map((act) => {
+          const fresh = freshActs.find((row) => row.id === act.id);
+          if (!fresh || fresh.kind === "report") return act;
+          if (
+            act.mc === fresh.mc &&
+            messagePreviewSignature(act.messagePreview) === messagePreviewSignature(fresh.messagePreview)
+          ) {
+            return act;
+          }
+          return {
+            ...act,
+            mc: fresh.mc,
+            messagePreview: fresh.messagePreview || []
+          };
+        })
+      );
+    } catch {
+      // Ignore background refresh failures on profile cards.
+    }
+  }, [userId]);
+
   useFocusEffect(
     useCallback(() => {
       loadProfile();
-    }, [loadProfile])
+      const intervalId = setInterval(refreshActMessageSummaries, ACTIVITY_MESSAGE_POLL_MS);
+      return () => clearInterval(intervalId);
+    }, [loadProfile, refreshActMessageSummaries])
   );
 
   const toggleNice = useCallback(

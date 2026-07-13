@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { getResearcher, getUserProfile } from "../data/mock";
 import { get } from "../lib/api";
 import { useData } from "../context/DataContext";
 import { useFollow } from "../context/FollowContext";
+import { useSupplementalFollowRows } from "../hooks/useFollowedIndividualProfiles";
 import { colors, fontFamily } from "../theme/colors";
 import { Avatar } from "../components/primitives/Avatar";
 import { avatarPropsFromPerson } from "../lib/avatarProps";
@@ -23,6 +24,7 @@ export default function FollowListScreen() {
     isFollowing,
     toggleFollow,
     isSelf,
+    selfSlug,
     followingResearchers,
     isFollowingResearcher,
     toggleResearcherFollow
@@ -51,8 +53,32 @@ export default function FollowListScreen() {
     if (userId) loadRemoteRows();
   }, [userId, loadRemoteRows]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) loadRemoteRows();
+    }, [userId, loadRemoteRows])
+  );
+
+  const isOwnFollowingList = mode === "following" && userId && selfSlug && userId === selfSlug;
+  const supplementalRows = useSupplementalFollowRows({
+    following,
+    remoteRows,
+    enabled: Boolean(isOwnFollowingList && !loading)
+  });
+
   const rows = useMemo(() => {
-    if (userId) return remoteRows;
+    if (userId) {
+      if (mode !== "following" || !isOwnFollowingList) return remoteRows;
+      const merged = [...remoteRows];
+      const seen = new Set(remoteRows.map((row) => row.id));
+      for (const row of supplementalRows) {
+        if (!row?.id || seen.has(row.id)) continue;
+        seen.add(row.id);
+        merged.push(row);
+      }
+      merged.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      return merged;
+    }
 
     if (mode === "following") {
       const individualRows = [...following]
@@ -85,7 +111,7 @@ export default function FollowListScreen() {
         return u ? { id: uid, kind: "individual", ...u } : null;
       })
       .filter(Boolean);
-  }, [userId, remoteRows, mode, following, followingResearchers, community, followerIdSet]);
+  }, [userId, remoteRows, mode, isOwnFollowingList, supplementalRows, following, followingResearchers, community, followerIdSet]);
 
   const title = useMemo(() => {
     const label = mode === "following" ? "Following" : "Followers";

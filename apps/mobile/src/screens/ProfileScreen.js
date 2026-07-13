@@ -178,12 +178,30 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.ff}>
-          <Pressable style={styles.ffCell} onPress={() => navigation.navigate("FollowList", { mode: "following" })}>
+          <Pressable
+            style={styles.ffCell}
+            onPress={() =>
+              navigation.navigate("FollowList", {
+                mode: "following",
+                userId: profile.viewerSlug,
+                userName: displayName
+              })
+            }
+          >
             <Text style={styles.ffN}>{followingCount}</Text>
             <Text style={styles.ffL}>Following</Text>
           </Pressable>
           <View style={styles.ffDiv} />
-          <Pressable style={styles.ffCell} onPress={() => navigation.navigate("FollowList", { mode: "followers" })}>
+          <Pressable
+            style={styles.ffCell}
+            onPress={() =>
+              navigation.navigate("FollowList", {
+                mode: "followers",
+                userId: profile.viewerSlug,
+                userName: displayName
+              })
+            }
+          >
             <Text style={styles.ffN}>{profile.followStats.followers}</Text>
             <Text style={styles.ffL}>Followers</Text>
           </Pressable>

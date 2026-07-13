@@ -6,6 +6,7 @@ import { SearchGlassIcon } from "../components/icons/ProtoIcons";
 import { getUserProfile, getResearcher } from "../data/mock";
 import { useData } from "../context/DataContext";
 import { useUserExplorations } from "../hooks/useUserExplorations";
+import { useFollowedIndividualProfiles } from "../hooks/useFollowedIndividualProfiles";
 import { useFollow } from "../context/FollowContext";
 import { useConsent } from "../context/ConsentContext";
 import { usePullToRefresh } from "../hooks/usePullToRefresh";
@@ -47,16 +48,17 @@ function getExplorationStats(u) {
 
 export default function CommunityScreen() {
   const posthog = usePostHog();
-  const { community, exploreCopy, explorePage, refetchExplore, refetchSocialFollows } = useData();
+  const { community, exploreCopy, explorePage, refetchExplore, refetchCommunityIndividuals } = useData();
   const { refreshing, webPullDistance, scrollViewProps } = usePullToRefresh(
     useCallback(
-      () => Promise.all([refetchExplore?.(), refetchSocialFollows?.()]),
-      [refetchExplore, refetchSocialFollows]
+      () => Promise.all([refetchExplore?.(), refetchCommunityIndividuals?.()]),
+      [refetchExplore, refetchCommunityIndividuals]
     )
   );
   const explorations = useUserExplorations();
   const navigation = useNavigation();
-  const { isFollowing, toggleFollow, isFollowingResearcher, toggleResearcherFollow, followerIdSet, isSelf } = useFollow();
+  const { isFollowing, toggleFollow, isFollowingResearcher, toggleResearcherFollow, followerIdSet, isSelf, following } =
+    useFollow();
   const { privacyPrefs } = useConsent();
   const [tab, setTab] = useState("all");
   const [q, setQ] = useState("");
@@ -84,17 +86,36 @@ export default function CommunityScreen() {
   useFocusEffect(
     useCallback(() => {
       refetchExplore?.();
-    }, [refetchExplore])
+      refetchCommunityIndividuals?.();
+    }, [refetchExplore, refetchCommunityIndividuals])
   );
 
-  const allPeople = useMemo(() => {
+  const directoryPeople = useMemo(() => {
     if (!canViewIndividuals) return [];
     const base = [...(community.basicUsers || []), ...(community.followerOnly || [])];
     const rich = Object.keys(community.commUsers || {}).map((id) => ({ id, ...community.commUsers[id] }));
-    const merged = [...rich, ...base].filter((u) => !isSelf(u.id));
+    return [...rich, ...base].filter((u) => !isSelf(u.id));
+  }, [community, isSelf, canViewIndividuals]);
+
+  const directoryIds = useMemo(() => new Set(directoryPeople.map((u) => u.id)), [directoryPeople]);
+  const followedOnlyPeople = useFollowedIndividualProfiles({
+    following,
+    knownIds: directoryIds,
+    isSelf,
+    enabled: canViewIndividuals
+  });
+
+  const allPeople = useMemo(() => {
+    const merged = [...directoryPeople];
+    const seen = new Set(directoryIds);
+    for (const person of followedOnlyPeople) {
+      if (!person?.id || seen.has(person.id)) continue;
+      seen.add(person.id);
+      merged.push(person);
+    }
     merged.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     return merged;
-  }, [community, isSelf, canViewIndividuals]);
+  }, [directoryPeople, directoryIds, followedOnlyPeople]);
 
   const people = useMemo(() => {
     const filtered = allPeople.filter((u) => {

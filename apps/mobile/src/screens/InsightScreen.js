@@ -85,25 +85,30 @@ export default function InsightScreen() {
   }, [route.params?.community]);
 
   const explorationId = insight.activeExplorationId;
-  const rulesChart = insight.rulesChart;
-  const showRulesChart = insight.hasPersonalData && rulesChart?.bars?.length > 0;
+  const dailyCheckIns = insight.dailyCheckIns;
+  const adherenceExplorations = insight.adherence?.explorations || [];
   const reportItems = insight.reports?.items || [];
   const showCommunityInsights = insight.showCommunityInsights !== false;
 
-  const openLoggedData = useCallback(() => {
-    if (!explorationId) return;
-    navigation.navigate("ExplorationSummary", { id: explorationId });
-  }, [explorationId, navigation]);
+  const openLoggedData = useCallback(
+    (targetExplorationId) => {
+      const id = targetExplorationId || explorationId;
+      if (!id) return;
+      navigation.navigate("ExplorationSummary", { id });
+    },
+    [explorationId, navigation]
+  );
 
   const openReport = useCallback(
     (report) => {
-      if (!explorationId) return;
+      const expId = report.explorationId || explorationId;
+      if (!expId) return;
       if (report.isFinal) {
-        navigation.navigate("ExplorationReport", { explorationId });
+        navigation.navigate("ExplorationReport", { explorationId: expId });
         return;
       }
       navigation.navigate("CentPhaseReport", {
-        explorationId,
+        explorationId: expId,
         reportType: report.reportType
       });
     },
@@ -144,12 +149,12 @@ export default function InsightScreen() {
               {(insight.observations.rows || []).map((r, i) => (
                 <Pressable
                   key={i}
-                  disabled={!explorationId}
-                  onPress={openLoggedData}
+                  disabled={!r.explorationId && !explorationId}
+                  onPress={() => openLoggedData(r.explorationId)}
                   style={({ pressed }) => [
                     styles.obsRow,
                     i === insight.observations.rows.length - 1 && { borderBottomWidth: 0 },
-                    pressed && explorationId && { opacity: 0.7 }
+                    pressed && (r.explorationId || explorationId) && { opacity: 0.7 }
                   ]}
                 >
                   <View
@@ -167,7 +172,9 @@ export default function InsightScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.obsTitle}>{r.title}</Text>
                     <Text style={styles.obsBody}>{r.body}</Text>
-                    {explorationId ? <Text style={styles.obsLink}>View your logged data</Text> : null}
+                    {r.explorationId || explorationId ? (
+                      <Text style={styles.obsLink}>View your logged data</Text>
+                    ) : null}
                   </View>
                 </Pressable>
               ))}
@@ -203,12 +210,12 @@ export default function InsightScreen() {
               )}
             </Card>
 
-            {showRulesChart ? (
+            {dailyCheckIns ? (
               <Card>
-                <Text style={styles.cardEyebrow}>{rulesChart.cardTitle}</Text>
-                <Text style={styles.chartHint}>{rulesChart.chartHint}</Text>
+                <Text style={styles.cardEyebrow}>{dailyCheckIns.cardTitle}</Text>
+                <Text style={styles.chartHint}>{dailyCheckIns.chartHint}</Text>
                 <View style={styles.chartRow}>
-                  {rulesChart.bars.map((b, i) => (
+                  {(dailyCheckIns.bars || []).map((b, i) => (
                     <View key={i} style={styles.barCol}>
                       <View style={{ flex: 1, justifyContent: "flex-end", width: "100%" }}>
                         <View
@@ -216,23 +223,26 @@ export default function InsightScreen() {
                             styles.barBase,
                             {
                               height: Math.max(4, (90 * b.h) / 100),
-                              backgroundColor: b.crash ? colors.orange : colors.greenDark
+                              backgroundColor: b.logged ? colors.orange : colors.greenDark
                             }
                           ]}
                         />
                       </View>
+                      {dailyCheckIns.labels?.[i] ? (
+                        <Text style={styles.dayLabel}>{dailyCheckIns.labels[i]}</Text>
+                      ) : null}
                     </View>
                   ))}
                 </View>
                 <View style={{ flexDirection: "row", gap: 16, marginTop: 8 }}>
-                  {(rulesChart.legend || []).map((lg, i) => (
+                  {(dailyCheckIns.legend || []).map((lg, i) => (
                     <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <View
                         style={{
                           width: 10,
                           height: 10,
                           borderRadius: 2,
-                          backgroundColor: lg.crash ? colors.orange : colors.greenDark
+                          backgroundColor: lg.logged ? colors.orange : colors.greenDark
                         }}
                       />
                       <Text style={{ fontSize: 11, color: colors.textMuted }}>{lg.label}</Text>
@@ -244,20 +254,36 @@ export default function InsightScreen() {
 
             <Card>
               <Text style={styles.cardEyebrow}>{insight.adherence.cardTitle}</Text>
-              <View style={styles.adRow}>
-                <Text style={styles.adLabel}>{insight.adherence.weekLabel}</Text>
-                <Text style={styles.adPct}>{insight.adherence.weekPct}</Text>
-              </View>
-              <View style={styles.pbar}>
-                <View style={[styles.pfill, { width: insight.adherence.weekPct }]} />
-              </View>
-              <View style={[styles.adRow, { marginTop: spacing.lg }]}>
-                <Text style={styles.adLabel}>{insight.adherence.overallLabel}</Text>
-                <Text style={styles.adPct}>{insight.adherence.overallPct}</Text>
-              </View>
-              <View style={styles.pbar}>
-                <View style={[styles.pfill, { width: insight.adherence.overallPct }]} />
-              </View>
+              {adherenceExplorations.length ? (
+                adherenceExplorations.map((exp, i) => (
+                  <View
+                    key={exp.explorationId}
+                    style={i < adherenceExplorations.length - 1 ? styles.adExplorationBlock : null}
+                  >
+                    <View style={styles.adRow}>
+                      <Text style={styles.adLabel}>{exp.title}</Text>
+                      <Text style={styles.adPct}>{exp.pct}</Text>
+                    </View>
+                    <View style={styles.segmentBar}>
+                      {(exp.days || []).map((day, dayIndex) => (
+                        <View
+                          key={dayIndex}
+                          style={[
+                            styles.segment,
+                            {
+                              backgroundColor: day.adherent ? colors.orange : colors.greenDark
+                            }
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyBody}>
+                  Join an active exploration to track your check-in adherence here.
+                </Text>
+              )}
             </Card>
           </>
         ) : (
@@ -357,6 +383,7 @@ const styles = StyleSheet.create({
   chartRow: { flexDirection: "row", height: heights.chart, gap: spacing.sm, alignItems: "flex-end", marginBottom: spacing.md },
   barCol: { flex: 1, alignItems: "center", height: "100%" },
   barBase: { width: "100%", borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  dayLabel: { fontSize: 10, color: colors.textMuted, marginTop: 6, textAlign: "center" },
   obsRow: {
     flexDirection: "row",
     gap: spacing.lg,
@@ -394,13 +421,19 @@ const styles = StyleSheet.create({
   },
   adLabel: { ...type.chip, color: colors.textMuted },
   adPct: { ...type.chip, color: colors.greenDark },
-  pbar: {
-    height: 6,
-    backgroundColor: colors.border,
+  adExplorationBlock: { marginBottom: spacing.lg },
+  segmentBar: {
+    flexDirection: "row",
+    height: 8,
     borderRadius: 999,
-    overflow: "hidden"
+    overflow: "hidden",
+    gap: 1
   },
-  pfill: { height: "100%", backgroundColor: colors.greenDark, borderRadius: 999 },
+  segment: {
+    flex: 1,
+    minWidth: 2,
+    borderRadius: 1
+  },
   cRow: {
     flexDirection: "row",
     gap: 12,

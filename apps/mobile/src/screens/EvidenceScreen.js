@@ -143,23 +143,19 @@ export default function EvidenceScreen() {
         ))}
         <Text style={styles.h}>Summary</Text>
         <View style={styles.table}>
-          <ScrollView horizontal>
-            <View>
-              {summaryHeaders.length ? (
-                <View style={styles.tr}>
-                  {summaryHeaders.map((h, hi) => (
-                    <Text key={`h-${hi}`} style={[styles.th, { minWidth: 120, maxWidth: 180 }]}>
-                      {h}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-              {table.map((row, ri) => (
-                <View key={ri} style={styles.tr}>
-                  {colKeys.map((key) => (
-                    <Text key={key} style={[styles.tc, { minWidth: 120, maxWidth: 180 }]}>
-                      {String(row[key] ?? "")}
-                    </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.tableRow}>
+              {colKeys.map((key, ci) => (
+                <View key={key} style={[styles.tableCol, ci < colKeys.length - 1 && styles.tableColBorder]}>
+                  {summaryHeaders[ci] ? (
+                    <View style={styles.thCell}>
+                      <Text style={styles.th}>{summaryHeaders[ci]}</Text>
+                    </View>
+                  ) : null}
+                  {table.map((row, ri) => (
+                    <View key={ri} style={styles.tcCell}>
+                      <Text style={styles.tc}>{String(row[key] ?? "")}</Text>
+                    </View>
                   ))}
                 </View>
               ))}
@@ -238,14 +234,24 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 8
   },
-  tr: { flexDirection: "row", borderBottomWidth: 1, borderColor: colors.border },
-  th: {
+  tableRow: { flexDirection: "row" },
+  tableCol: { minWidth: 120, maxWidth: 180, flexShrink: 0 },
+  tableColBorder: { borderRightWidth: 1, borderColor: colors.border },
+  thCell: {
     padding: 8,
     backgroundColor: colors.greenLight,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  th: {
     fontWeight: "700",
     fontSize: 11,
-    color: colors.greenDark,
-    flexShrink: 0
+    color: colors.greenDark
   },
-  tc: { padding: 8, fontSize: 11, color: colors.textMuted, flexShrink: 0, borderRightWidth: 1, borderColor: colors.border }
+  tcCell: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  tc: { fontSize: 11, color: colors.textMuted }
 });

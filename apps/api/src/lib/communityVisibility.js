@@ -64,9 +64,11 @@ export async function buildCommunityVisibilityFilters(viewerId) {
 
   const shouldHideSlug = (targetSlug) => {
     if (!targetSlug) return true;
+    // Viewers can always resolve their own slug (profile, follow lists, etc.).
+    if (targetSlug === ctx.viewerSlug) return false;
     if (isHiddenFromCommunity(viewerIsAnna, targetSlug)) return true;
     if (!visibleSlugSet.has(targetSlug)) return true;
-    if (!ctx.canViewIndividuals && targetSlug !== ctx.viewerSlug) return true;
+    if (!ctx.canViewIndividuals) return true;
     return false;
   };
 

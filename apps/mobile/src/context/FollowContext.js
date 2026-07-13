@@ -8,7 +8,7 @@ const FollowContext = createContext(null);
 export function FollowProvider({ children }) {
   const posthog = usePostHog();
   const data = useData();
-  const { updateSocialFollows, applySocialFollows } = data ?? {};
+  const { updateSocialFollows, applySocialFollows, refetchCommunityIndividuals } = data ?? {};
   const selfSlug = data?.profile?.viewerSlug ?? null;
   const [following, setFollowing] = useState(() => new Set());
   const [followingResearchers, setFollowingResearchers] = useState(() => new Set());
@@ -63,6 +63,7 @@ export function FollowProvider({ children }) {
           posthog?.capture("followed a community member");
           posthog?.capture("followed an explorer");
         }
+        refetchCommunityIndividuals?.();
       } catch {
         setFollowing((prev) => {
           const n = new Set(prev);
@@ -72,7 +73,7 @@ export function FollowProvider({ children }) {
         });
       }
     },
-    [isSelf, applySocialFollows, updateSocialFollows, socialMeta, posthog]
+    [isSelf, applySocialFollows, updateSocialFollows, socialMeta, posthog, refetchCommunityIndividuals]
   );
 
   const toggleResearcherFollow = useCallback(

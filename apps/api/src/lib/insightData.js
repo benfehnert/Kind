@@ -3,6 +3,7 @@ import explorationEvidence from "../mocks/explorationEvidence.json" with { type:
 import {
   fetchActiveRun,
   fetchFallbackExplorationId,
+  fetchActiveRunsForOutcomeCards,
   EXPLORATION_FEED_LABELS
 } from "./homeData.js";
 import { buildInsightViewsFromLogs } from "./cent/morningRules/insightAdapter.js";
@@ -12,6 +13,13 @@ import { SHORT_EXPLORATION_IDS, evidenceExplorationId, isShortExploration } from
 import { fetchExplorationReportsList } from "./explorationReportsData.js";
 
 const ICON_TONES = ["amber", "green", "purple"];
+
+const PLACEHOLDER_OBSERVATION_TITLES = new Set([
+  "Keep logging",
+  "Get started",
+  "Patterns forming",
+  "Building your picture"
+]);
 
 const RULES_CHART_LEGEND = [
   { label: "3+ morning rules", crash: false },
@@ -94,12 +102,10 @@ function emptyPersonalInsights(explorationId) {
             }
           ]
     },
+    dailyCheckIns: buildDailyCheckInsChart(new Map()),
     adherence: {
       cardTitle: "Exploration adherence",
-      weekLabel: "This week",
-      weekPct: "0%",
-      overallLabel: "Overall (0 days)",
-      overallPct: "0%"
+      explorations: []
     },
     emptyMessage: explorationId
       ? "Log daily check-ins on the Home tab to unlock your personal charts."
@@ -135,6 +141,230 @@ function daysSince(dateStr) {
   const start = new Date(dateStr);
   const now = new Date();
   return Math.max(1, Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1);
+}
+
+function formatShortWeekday(date) {
+  return date.toLocaleDateString("en-GB", { weekday: "short" });
+}
+
+function groupLogsByExploration(rows) {
+  const byExploration = new Map();
+  for (const row of rows) {
+    if (!byExploration.has(row.exploration_id)) {
+      byExploration.set(row.exploration_id, []);
+    }
+    byExploration.get(row.exploration_id).push(row);
+  }
+  return byExploration;
+}
+
+function buildDailyCheckInsChart(logsByExploration) {
+  const loggedDates = new Set();
+  for (const logs of logsByExploration.values()) {
+    for (const log of logs) {
+      loggedDates.add(logDateKey(log.log_date));
+    }
+  }
+
+  const today = new Date();
+  const bars = [];
+  const labels = [];
+
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - offset);
+    const key = day.toISOString().slice(0, 10);
+    const logged = loggedDates.has(key);
+    bars.push({ logged, h: logged ? 100 : 12 });
+    labels.push(formatShortWeekday(day));
+  }
+
+  return {
+    cardTitle: "Daily check-ins",
+    chartHint: "Days you logged over the last 7 days",
+    bars,
+    labels,
+    legend: [
+      { label: "Logged", logged: true },
+      { label: "Not logged", logged: false }
+    ]
+  };
+}
+
+function explorationEndDate(run) {
+  if (run.status === "complete" && run.completed_at) {
+    return logDateKey(run.completed_at);
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
+function buildExplorationAdherenceRow(run, logs) {
+  const startKey = logDateKey(run.started_at);
+  const endKey = explorationEndDate(run);
+  const logDates = new Set(logs.map((log) => logDateKey(log.log_date)));
+
+  const days = [];
+  const cursor = new Date(startKey);
+  const end = new Date(endKey);
+
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10);
+    days.push({ adherent: logDates.has(key) });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  const adherentCount = days.filter((day) => day.adherent).length;
+  const pct = days.length ? Math.round((adherentCount / days.length) * 100) : 0;
+
+  return {
+    explorationId: run.exploration_id,
+    title: run.title,
+    pct: `${pct}%`,
+    days
+  };
+}
+
+function buildMultiExplorationAdherence(activeRuns, logsByExploration) {
+  return {
+    cardTitle: "Exploration adherence",
+    explorations: activeRuns.map((run) =>
+      buildExplorationAdherenceRow(run, logsByExploration.get(run.exploration_id) || [])
+    )
+  };
+}
+
+function normalizeObservationRow(row, explorationId, explorationTitle) {
+  const tone =
+    row.tone ?? (row.type === "adherence" || row.title === "Keep logging" ? "!" : "+");
+  return {
+    tone,
+    title: row.title,
+    body: row.body || row.text,
+    explorationId,
+    explorationTitle
+  };
+}
+
+function buildLatestObservations(runs, logsByExploration) {
+  const candidates = [];
+
+  for (const run of runs) {
+    const logs = logsByExploration.get(run.exploration_id) || [];
+    const personal = buildPersonalInsights(run.exploration_id, logs, run);
+    const rows = personal.observations?.rows || [];
+    const latestLogDate = logs.length ? logDateKey(logs[logs.length - 1].log_date) : "";
+
+    for (const row of rows) {
+      if (PLACEHOLDER_OBSERVATION_TITLES.has(row.title)) continue;
+      candidates.push({
+        ...normalizeObservationRow(row, run.exploration_id, run.title),
+        latestLogDate
+      });
+    }
+  }
+
+  candidates.sort((a, b) => b.latestLogDate.localeCompare(a.latestLogDate));
+
+  if (candidates.length) {
+    return {
+      cardTitle: "Key observations",
+      rows: candidates.slice(0, 5).map(({ latestLogDate: _latestLogDate, ...row }) => row)
+    };
+  }
+
+  const fallbackRun = runs[0];
+  if (!fallbackRun) {
+    return emptyPersonalInsights(null).observations;
+  }
+
+  const fallbackLogs = logsByExploration.get(fallbackRun.exploration_id) || [];
+  const fallbackPersonal = buildPersonalInsights(
+    fallbackRun.exploration_id,
+    fallbackLogs,
+    fallbackRun
+  );
+  const fallbackRows = (fallbackPersonal.observations?.rows || []).map((row) =>
+    normalizeObservationRow(row, fallbackRun.exploration_id, fallbackRun.title)
+  );
+
+  return {
+    cardTitle: "Key observations",
+    rows: fallbackRows.length
+      ? fallbackRows.slice(0, 5)
+      : emptyPersonalInsights(fallbackRun.exploration_id).observations.rows
+  };
+}
+
+async function fetchAllUserExplorationRuns(individualId) {
+  const { rows } = await query(
+    `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days,
+            ue.started_at, ue.completed_at, ue.status, e.title
+     FROM user_explorations ue
+     JOIN explorations e ON e.id = ue.exploration_id
+     JOIN exploration_consents ec
+       ON ec.individual_id = ue.individual_id AND ec.exploration_id = ue.exploration_id
+     WHERE ue.individual_id = $1 AND ec.granted = TRUE
+     ORDER BY COALESCE(ue.completed_at, ue.started_at) DESC, ue.started_at DESC`,
+    [individualId]
+  );
+  return rows;
+}
+
+async function fetchAllExplorationLogs(individualId) {
+  const { rows } = await query(
+    `SELECT exploration_id, field_values, log_date
+     FROM daily_logs
+     WHERE individual_id = $1
+     ORDER BY log_date ASC`,
+    [individualId]
+  );
+  return groupLogsByExploration(rows);
+}
+
+async function buildLatestReports(individualId, runs) {
+  const lists = await Promise.all(
+    runs.map((run) => fetchExplorationReportsList(individualId, run.exploration_id))
+  );
+  const items = [];
+
+  for (let i = 0; i < runs.length; i += 1) {
+    const run = runs[i];
+    for (const item of lists[i].items || []) {
+      if (!item.headline) continue;
+      items.push({
+        ...item,
+        explorationId: run.exploration_id,
+        explorationTitle: run.title
+      });
+    }
+  }
+
+  items.sort((a, b) => new Date(b.generatedAt || 0) - new Date(a.generatedAt || 0));
+
+  return {
+    cardTitle: "Reports",
+    items
+  };
+}
+
+async function fetchActiveExplorationRunsWithMeta(individualId) {
+  const activeRuns = await fetchActiveRunsForOutcomeCards(individualId);
+  if (!activeRuns.length) return [];
+
+  const { rows } = await query(
+    `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days,
+            ue.started_at, ue.completed_at, ue.status, e.title
+     FROM user_explorations ue
+     JOIN explorations e ON e.id = ue.exploration_id
+     WHERE ue.individual_id = $1
+       AND ue.exploration_id = ANY($2::text[])`,
+    [individualId, activeRuns.map((run) => run.exploration_id)]
+  );
+
+  const byId = new Map(rows.map((row) => [row.exploration_id, row]));
+  return activeRuns
+    .map((run) => byId.get(run.exploration_id))
+    .filter(Boolean);
 }
 
 function stripHtml(text) {
@@ -616,26 +846,9 @@ async function buildCommunitySection(explorationId) {
 }
 
 export async function buildInsightPayload(individualId, { communityExplorationId } = {}) {
-  let activeRun = await fetchActiveRun(individualId);
-  let explorationId = activeRun?.exploration_id ?? null;
+  const allRuns = await fetchAllUserExplorationRuns(individualId);
 
-  if (!explorationId) {
-    explorationId = await fetchFallbackExplorationId(individualId);
-    if (explorationId && !activeRun) {
-      const { rows } = await query(
-        `SELECT ue.exploration_id, ue.week_current, ue.weeks_total, ue.streak_days,
-                ue.started_at, e.title
-         FROM user_explorations ue
-         JOIN explorations e ON e.id = ue.exploration_id
-         WHERE ue.individual_id = $1 AND ue.exploration_id = $2
-         LIMIT 1`,
-        [individualId, explorationId]
-      );
-      activeRun = rows[0] ?? null;
-    }
-  }
-
-  if (!explorationId) {
+  if (!allRuns.length) {
     const communityScopeId = communityExplorationId ?? null;
     const community = await buildCommunitySection(communityScopeId);
     return {
@@ -645,23 +858,36 @@ export async function buildInsightPayload(individualId, { communityExplorationId
     };
   }
 
-  const communityScopeId = communityExplorationId ?? explorationId;
-  const [logs, community, reportsList] = await Promise.all([
-    fetchExplorationLogs(individualId, explorationId),
-    buildCommunitySection(communityScopeId),
-    fetchExplorationReportsList(individualId, explorationId)
+  const [logsByExploration, activeRuns, reports, community] = await Promise.all([
+    fetchAllExplorationLogs(individualId),
+    fetchActiveExplorationRunsWithMeta(individualId),
+    buildLatestReports(individualId, allRuns),
+    buildCommunitySection(communityExplorationId ?? allRuns[0].exploration_id)
   ]);
 
-  const personal = buildPersonalInsights(explorationId, logs, activeRun);
-  const reports = {
-    cardTitle: "Reports",
-    items: (reportsList.items || []).filter((item) => item.headline)
-  };
+  const activeRun = await fetchActiveRun(individualId);
+  let explorationId = activeRun?.exploration_id ?? allRuns[0]?.exploration_id ?? null;
+
+  if (!explorationId) {
+    explorationId = await fetchFallbackExplorationId(individualId);
+  }
+
+  const observations = buildLatestObservations(allRuns, logsByExploration);
+  const dailyCheckIns = buildDailyCheckInsChart(logsByExploration);
+  const adherence = buildMultiExplorationAdherence(activeRuns, logsByExploration);
+  const hasAnyLogs = [...logsByExploration.values()].some((logs) => logs.length > 0);
+  const hasMeaningfulObservations = observations.rows.some(
+    (row) => !PLACEHOLDER_OBSERVATION_TITLES.has(row.title)
+  );
+  const hasPersonalData = hasAnyLogs || hasMeaningfulObservations || reports.items.length > 0;
 
   return {
     ...STATIC_COPY,
     activeExplorationId: explorationId,
-    ...personal,
+    hasPersonalData,
+    observations,
+    dailyCheckIns,
+    adherence,
     reports,
     ...community
   };
