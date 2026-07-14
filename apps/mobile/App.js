@@ -87,7 +87,7 @@ function AuthenticatedApp() {
   return (
     <DataProvider>
       <FollowProvider>
-        <ConsentProvider>
+        <ConsentProvider serverDriven>
           <ProfileProvider>
             <UiProvider>
               <AppShell />

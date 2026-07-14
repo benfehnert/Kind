@@ -96,7 +96,7 @@ export async function fetchPrivacyPrefs(individualId) {
     return {
       globalConsent: false,
       science: false,
-      visible: false,
+      visible: true,
       reminders: false
     };
   }
@@ -154,17 +154,18 @@ export async function fetchUserExplorations(individualId) {
 
 export async function upsertPrivacyFromOnboarding(individualId, answers) {
   const prefs = privacyFromOnboardingAnswers(answers);
+  const { rows } = await query(
+    `SELECT 1 FROM privacy_settings WHERE individual_id = $1`,
+    [individualId]
+  );
+  if (rows.length) {
+    return fetchPrivacyPrefs(individualId);
+  }
   await query(
     `INSERT INTO privacy_settings (
        individual_id, platform_consent, contribute_to_citizen_science,
        visible_in_community, daily_reminders
-     ) VALUES ($1, $2, $3, $4, $5)
-     ON CONFLICT (individual_id) DO UPDATE SET
-       platform_consent = EXCLUDED.platform_consent,
-       contribute_to_citizen_science = EXCLUDED.contribute_to_citizen_science,
-       visible_in_community = EXCLUDED.visible_in_community,
-       daily_reminders = EXCLUDED.daily_reminders,
-       updated_at = NOW()`,
+     ) VALUES ($1, $2, $3, $4, $5)`,
     [individualId, prefs.globalConsent, prefs.science, prefs.visible, prefs.reminders]
   );
   return prefs;

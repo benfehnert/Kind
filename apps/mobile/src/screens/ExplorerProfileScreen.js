@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, ScrollView, StyleSheet, Text, Pressable } from "react-native";
+import { View, ScrollView, StyleSheet, Text, Pressable, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { usePostHog } from "posthog-react-native";
@@ -41,11 +41,16 @@ export default function ExplorerProfileScreen() {
   const { isFollowing, toggleFollow, isSelf } = useFollow();
   const [profile, setProfile] = useState(null);
   const [acts, setActs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [togglingNice, setTogglingNice] = useState({});
 
   const loadProfile = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     setUnavailable(false);
     try {
       const data = await get(`/community/individuals/${userId}`);
@@ -55,6 +60,8 @@ export default function ExplorerProfileScreen() {
       setProfile(null);
       setActs([]);
       setUnavailable(true);
+    } finally {
+      setLoading(false);
     }
   }, [userId]);
 
@@ -164,6 +171,14 @@ export default function ExplorerProfileScreen() {
   );
 
   const u = profile;
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingSafe}>
+        <ActivityIndicator size="large" color={colors.greenDark} />
+      </SafeAreaView>
+    );
+  }
 
   if (!u || !userId) {
     return (
@@ -381,6 +396,12 @@ export default function ExplorerProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingSafe: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.bg
+  },
   safe: { flex: 1, backgroundColor: colors.bg },
   header: {
     backgroundColor: colors.greenDark,

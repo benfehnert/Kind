@@ -45,7 +45,7 @@ function choicesFromPrefs(prefs) {
   };
 }
 
-export function ConsentProvider({ children }) {
+export function ConsentProvider({ children, serverDriven = false }) {
   const data = useData();
   const { isAuthenticated } = useAuth();
   const { answers: onboardingAnswers, completed: onboardingCompleted, hydrating } = useOnboarding();
@@ -124,9 +124,31 @@ export function ConsentProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        if (isAuthenticated && data?.consent?.privacyPrefs) {
-          if (cancelled) return;
-          applyPrefs(data.consent.privacyPrefs);
+        if (isAuthenticated) {
+          if (data?.consent?.privacyPrefs) {
+            if (cancelled) return;
+            applyPrefs(data.consent.privacyPrefs);
+            if (!cancelled) setPrefsHydrating(false);
+            return;
+          }
+          if (data) {
+            if (!cancelled) setPrefsHydrating(false);
+            return;
+          }
+          if (serverDriven) {
+            // Authenticated app: wait for DataProvider batch load, not local cache.
+            return;
+          }
+          // Onboarding flow (no DataProvider): derive from answers, not stale cache.
+          if (onboardingCompleted) {
+            const fromOnboarding = privacyFromAnswers(onboardingAnswers);
+            if (!cancelled) {
+              setPrivacyPrefs(fromOnboarding);
+              setChoices((prev) => ({ ...prev, ...choicesFromPrefs(fromOnboarding) }));
+              await persistPrefs(fromOnboarding);
+            }
+          }
+          if (!cancelled) setPrefsHydrating(false);
           return;
         }
 
@@ -146,7 +168,7 @@ export function ConsentProvider({ children }) {
       } catch {
         // ignore corrupt storage
       } finally {
-        if (!cancelled) setPrefsHydrating(false);
+        if (!cancelled && !isAuthenticated) setPrefsHydrating(false);
       }
     })();
 
@@ -156,7 +178,9 @@ export function ConsentProvider({ children }) {
   }, [
     hydrating,
     isAuthenticated,
+    data,
     data?.consent?.privacyPrefs,
+    serverDriven,
     onboardingCompleted,
     onboardingAnswers,
     applyPrefs,
