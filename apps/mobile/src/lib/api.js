@@ -5,11 +5,26 @@ const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 let getToken = () => null;
 let onRefresh = null;
 let onUnauthorized = null;
+let refreshInFlight = null;
 
 export function configureApiAuth({ getToken: getTokenFn, onRefresh: refreshFn, onUnauthorized: unauthorizedFn }) {
   getToken = getTokenFn ?? (() => null);
   onRefresh = refreshFn ?? null;
   onUnauthorized = unauthorizedFn ?? null;
+}
+
+// Concurrent 401s (e.g. from a fan-out of parallel requests) must share a
+// single refresh attempt — Supabase refresh tokens are single-use, so firing
+// one per request races them against each other and the losers wipe out the
+// session the winner just re-established.
+function refreshOnce() {
+  if (!onRefresh) return Promise.resolve(false);
+  if (!refreshInFlight) {
+    refreshInFlight = Promise.resolve(onRefresh()).finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 }
 
 export class ApiError extends Error {
@@ -47,7 +62,7 @@ async function request(method, path, body, { isPublic = false, retried = false, 
   });
 
   if (res.status === 401 && !isPublic && !retried && onRefresh) {
-    const refreshed = await onRefresh();
+    const refreshed = await refreshOnce();
     if (refreshed) return request(method, path, body, { isPublic, retried: true });
     onUnauthorized?.();
   }
