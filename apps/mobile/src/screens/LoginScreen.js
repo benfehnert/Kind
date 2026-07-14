@@ -25,34 +25,13 @@ import { type } from "../theme/typography";
 export default function LoginScreen() {
   const navigation = useNavigation();
   const posthog = usePostHog();
-  const { login, signInWithOAuth } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [oauthProvider, setOauthProvider] = useState(null);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting && !oauthProvider;
-
-  const handleOAuth = async (provider) => {
-    setError("");
-    setOauthProvider(provider);
-    try {
-      const data = await signInWithOAuth(provider);
-      if (data.email) identifyPostHogUser(posthog, data.email);
-      posthog?.capture("signed in", { method: provider });
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err?.message === "OAuth sign-in was cancelled"
-            ? ""
-            : "Something went wrong. Please try again.";
-      if (message) setError(message);
-    } finally {
-      setOauthProvider(null);
-    }
-  };
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
 
   const handleLogin = async () => {
     if (!canSubmit) return;
@@ -148,11 +127,7 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.oauthSection}>
-            <OAuthButtons
-              onProviderPress={handleOAuth}
-              disabled={submitting}
-              loadingProvider={oauthProvider}
-            />
+            <OAuthButtons />
           </View>
 
           <View style={styles.footer}>

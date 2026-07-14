@@ -21,38 +21,18 @@ import { type } from "../theme/typography";
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
-  const { signup, signInWithOAuth } = useAuth();
+  const { signup } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [oauthProvider, setOauthProvider] = useState(null);
 
   const canSubmit =
     name.trim().length > 0 &&
     email.trim().length > 0 &&
     password.length >= 8 &&
-    !submitting &&
-    !oauthProvider;
-
-  const handleOAuth = async (provider) => {
-    setError("");
-    setOauthProvider(provider);
-    try {
-      await signInWithOAuth(provider);
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err?.message === "OAuth sign-in was cancelled"
-            ? ""
-            : "Something went wrong. Please try again.";
-      if (message) setError(message);
-    } finally {
-      setOauthProvider(null);
-    }
-  };
+    !submitting;
 
   const handleSignUp = async () => {
     if (!canSubmit) return;
@@ -153,11 +133,7 @@ export default function SignUpScreen() {
             <View style={styles.dividerLine} />
           </View>
 
-          <OAuthButtons
-            onProviderPress={handleOAuth}
-            disabled={submitting}
-            loadingProvider={oauthProvider}
-          />
+          <OAuthButtons />
 
           <View style={styles.footer}>
             <Text style={styles.footerTxt}>Already have an account?</Text>

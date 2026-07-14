@@ -8,24 +8,37 @@ const PROVIDERS = [
   { id: "apple", label: "Continue with Apple" }
 ];
 
-export function OAuthButtons({ onProviderPress, disabled = false, loadingProvider = null }) {
+export function OAuthButtons({
+  onProviderPress,
+  disabled = false,
+  loadingProvider = null,
+  comingSoon = true
+}) {
+  const handlePress = (providerId) => {
+    if (comingSoon) return;
+    onProviderPress?.(providerId);
+  };
+
   return (
     <View style={styles.section}>
       {PROVIDERS.map((provider) => {
-        const loading = loadingProvider === provider.id;
-        const isDisabled = disabled || Boolean(loadingProvider);
+        const loading = !comingSoon && loadingProvider === provider.id;
+        const isInactive = comingSoon || disabled || Boolean(loadingProvider);
         return (
           <Pressable
             key={provider.id}
-            style={[styles.btn, isDisabled && styles.btnDisabled]}
-            onPress={() => onProviderPress(provider.id)}
-            disabled={isDisabled}
-            accessibilityState={{ disabled: isDisabled }}
+            style={[styles.btn, isInactive && styles.btnDisabled, comingSoon && styles.btnComingSoon]}
+            onPress={() => handlePress(provider.id)}
+            disabled={isInactive}
+            accessibilityState={{ disabled: isInactive }}
           >
-            <Text style={styles.btnTxt}>{loading ? "Continuing…" : provider.label}</Text>
+            <Text style={[styles.btnTxt, isInactive && styles.btnTxtDisabled]}>
+              {loading ? "Continuing…" : provider.label}
+            </Text>
           </Pressable>
         );
       })}
+      {comingSoon ? <Text style={styles.caption}>OAuth coming soon</Text> : null}
     </View>
   );
 }
@@ -42,9 +55,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  btnDisabled: { opacity: 0.6 },
+  btnDisabled: { opacity: 0.55 },
+  btnComingSoon: {
+    backgroundColor: colors.bg,
+    borderColor: colors.border
+  },
   btnTxt: {
     ...type.buttonMd,
     color: colors.text
+  },
+  btnTxtDisabled: {
+    color: colors.textMuted
+  },
+  caption: {
+    ...type.caption,
+    color: colors.textMuted,
+    textAlign: "center",
+    marginTop: 4
   }
 });
