@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, AppState, View } from "react-native";
+import { ActivityIndicator, AppState, Pressable, Text, View } from "react-native";
 import { get } from "../lib/api";
 
 const DataContext = createContext(null);
@@ -27,6 +27,7 @@ function parseCommunityIndividualsResponse(communityIndividuals, socialMeta) {
 
 export function DataProvider({ children }) {
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
 
   const loadAll = useCallback(async () => {
     const [
@@ -86,11 +87,19 @@ export function DataProvider({ children }) {
     };
   }, []);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoadError(null);
     loadAll()
       .then(setData)
-      .catch((err) => console.error("[DataContext] failed to load:", err));
+      .catch((err) => {
+        console.error("[DataContext] failed to load:", err);
+        setLoadError(err);
+      });
   }, [loadAll]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const refetchHome = useCallback(async () => {
     const home = await get("/home");
@@ -277,6 +286,19 @@ export function DataProvider({ children }) {
   );
 
   if (!value) {
+    if (loadError) {
+      return (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F7F8F2", padding: 24 }}>
+          <Text style={{ marginBottom: 16, textAlign: "center" }}>Something went wrong loading your data.</Text>
+          <Pressable
+            onPress={load}
+            style={{ paddingVertical: 10, paddingHorizontal: 20, backgroundColor: "#222", borderRadius: 8 }}
+          >
+            <Text style={{ color: "#fff" }}>Retry</Text>
+          </Pressable>
+        </View>
+      );
+    }
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F7F8F2" }}>
         <ActivityIndicator size="large" />
