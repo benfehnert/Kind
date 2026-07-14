@@ -175,10 +175,14 @@ export function ConsentProvider({ children, serverDriven = false }) {
     return () => {
       cancelled = true;
     };
+    // Deliberately omit `data` itself: DataContext's granular refetchers
+    // (refetchProfile, refetchHome, etc.) give `data` a new object reference
+    // on every unrelated update without ever touching `data.consent`, so
+    // depending on `data` re-ran this effect and reapplied the stale
+    // first-load privacyPrefs over any change made via updatePrivacyPref.
   }, [
     hydrating,
     isAuthenticated,
-    data,
     data?.consent?.privacyPrefs,
     serverDriven,
     onboardingCompleted,
