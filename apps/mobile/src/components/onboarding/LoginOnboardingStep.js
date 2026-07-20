@@ -5,7 +5,7 @@ import { ApiError } from "../../lib/api";
 import { OnboardingContinueButton } from "./OnboardingContinueButton";
 import { DEMO_ACCOUNT } from "../../data/demoAccount";
 
-export function LoginOnboardingStep({ onSubmit, onSwitchToCreate }) {
+export function LoginOnboardingStep({ onSubmit, onSwitchToCreate, onForgotPassword }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -70,6 +70,12 @@ export function LoginOnboardingStep({ onSubmit, onSwitchToCreate }) {
           />
         </View>
 
+        {onForgotPassword ? (
+          <Pressable onPress={onForgotPassword} hitSlop={8} style={styles.forgotWrap}>
+            <Text style={styles.forgotLink}>Forgot password?</Text>
+          </Pressable>
+        ) : null}
+
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <OnboardingContinueButton
@@ -122,6 +128,12 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   form: { gap: 12 },
+  forgotWrap: { alignSelf: "flex-end", marginTop: -4 },
+  forgotLink: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 14,
+    color: colors.greenDark
+  },
   inputCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,

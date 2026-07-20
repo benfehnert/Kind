@@ -33,8 +33,11 @@ test("oauthDisplayName prefers provider metadata", () => {
 
 test("isAllowedOAuthRedirect accepts app and local dev URLs", () => {
   assert.equal(isAllowedOAuthRedirect("kind://auth/callback"), true);
+  assert.equal(isAllowedOAuthRedirect("kind://auth/reset-password"), true);
   assert.equal(isAllowedOAuthRedirect("exp://127.0.0.1:8081/--/auth/callback"), true);
+  assert.equal(isAllowedOAuthRedirect("exp://127.0.0.1:8081/--/auth/reset-password"), true);
   assert.equal(isAllowedOAuthRedirect("http://localhost:8081/auth/callback"), true);
+  assert.equal(isAllowedOAuthRedirect("http://localhost:8081/auth/reset-password"), true);
   assert.equal(isAllowedOAuthRedirect("http://127.0.0.1:3000/auth/callback"), true);
   assert.equal(isAllowedOAuthRedirect("https://evil.example/callback"), false);
   assert.equal(isAllowedOAuthRedirect(""), false);

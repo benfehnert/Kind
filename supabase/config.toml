@@ -162,9 +162,13 @@ site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = [
   "https://127.0.0.1:3000",
   "kind://auth/callback",
+  "kind://auth/reset-password",
   "exp://127.0.0.1:8081/--/auth/callback",
+  "exp://127.0.0.1:8081/--/auth/reset-password",
   "http://localhost:8081/auth/callback",
-  "http://127.0.0.1:8081/auth/callback"
+  "http://127.0.0.1:8081/auth/callback",
+  "http://localhost:8081/auth/reset-password",
+  "http://127.0.0.1:8081/auth/reset-password"
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

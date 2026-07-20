@@ -107,6 +107,14 @@ export default function LoginScreen() {
               />
             </View>
 
+            <Pressable
+              onPress={() => navigation.navigate("ForgotPassword")}
+              hitSlop={8}
+              style={styles.forgotWrap}
+            >
+              <Text style={styles.forgotLink}>Forgot password?</Text>
+            </Pressable>
+
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
             <OnboardingContinueButton
@@ -185,6 +193,12 @@ const styles = StyleSheet.create({
   },
   blobWrap: { alignItems: "center", marginVertical: 16 },
   form: { gap: 12 },
+  forgotWrap: { alignSelf: "flex-end", marginTop: -4 },
+  forgotLink: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 14,
+    color: colors.greenDark
+  },
   inputCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,

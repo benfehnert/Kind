@@ -200,6 +200,62 @@ app.post("/auth/login", async (c) => {
   });
 });
 
+app.post("/auth/forgot-password", async (c) => {
+  const { email, redirectTo } = await c.req.json();
+  if (!email || typeof email !== "string") {
+    return c.json({ error: "email is required" }, 400);
+  }
+  if (!isAllowedOAuthRedirect(redirectTo)) {
+    return c.json({ error: "redirectTo is not allowed" }, 400);
+  }
+
+  const anon = makeAnonClient(c.env);
+  // Always return ok to avoid email enumeration. Supabase only sends mail when the user exists.
+  const { error } = await anon.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+  if (error) {
+    console.error("forgot-password:", error.message);
+  }
+
+  return c.json({ ok: true });
+});
+
+app.post("/auth/reset-password", async (c) => {
+  const { password, accessToken, tokenHash } = await c.req.json();
+  if (!password || typeof password !== "string" || password.length < 8) {
+    return c.json({ error: "password must be at least 8 characters" }, 400);
+  }
+
+  const anon = makeAnonClient(c.env);
+  const admin = makeAdminClient(c.env);
+  let userId = null;
+
+  if (tokenHash && typeof tokenHash === "string") {
+    const { data, error } = await anon.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: "recovery"
+    });
+    if (error || !data?.user) {
+      return c.json({ error: "Invalid or expired reset link. Please request a new one." }, 401);
+    }
+    userId = data.user.id;
+  } else if (accessToken && typeof accessToken === "string") {
+    const { data, error } = await admin.auth.getUser(accessToken);
+    if (error || !data?.user) {
+      return c.json({ error: "Invalid or expired reset link. Please request a new one." }, 401);
+    }
+    userId = data.user.id;
+  } else {
+    return c.json({ error: "reset credentials are required" }, 400);
+  }
+
+  const { error: updateError } = await admin.auth.admin.updateUserById(userId, { password });
+  if (updateError) {
+    return c.json({ error: updateError.message }, 400);
+  }
+
+  return c.json({ ok: true });
+});
+
 app.post("/auth/refresh", async (c) => {
   const { refreshToken } = await c.req.json();
   if (!refreshToken) {

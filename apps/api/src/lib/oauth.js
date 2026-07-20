@@ -1,8 +1,13 @@
 export const OAUTH_PROVIDERS = new Set(["google", "apple"]);
 
+const ALLOWED_KIND_REDIRECTS = new Set([
+  "kind://auth/callback",
+  "kind://auth/reset-password"
+]);
+
 export function isAllowedOAuthRedirect(redirectTo) {
   if (!redirectTo || typeof redirectTo !== "string") return false;
-  if (redirectTo === "kind://auth/callback") return true;
+  if (ALLOWED_KIND_REDIRECTS.has(redirectTo)) return true;
   if (redirectTo.startsWith("exp://")) return true;
 
   try {

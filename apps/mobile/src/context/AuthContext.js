@@ -2,6 +2,10 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { configureApiAuth, publicPost } from "../lib/api";
 import { startOAuthSignIn } from "../lib/oauth";
+import {
+  getPasswordResetRedirectUri,
+  subscribeToPasswordResetLinks
+} from "../lib/passwordReset";
 
 const STORAGE_KEY = "@kind/auth";
 const EXPLORATION_CONSENTS_KEY = "@kind/exploration_consents";
@@ -32,6 +36,7 @@ export function AuthProvider({ children }) {
   const [individualId, setIndividualId] = useState(null);
   const [email, setEmail] = useState("");
   const [hydrating, setHydrating] = useState(true);
+  const [pendingPasswordReset, setPendingPasswordReset] = useState(null);
 
   const saveSession = useCallback(async ({ token: nextToken, refreshToken: nextRefresh, individualId: nextId, email: nextEmail }) => {
     setToken(nextToken);
@@ -78,6 +83,12 @@ export function AuthProvider({ children }) {
       onUnauthorized: clearSession
     });
   }, [token, refreshSession, clearSession]);
+
+  useEffect(() => {
+    return subscribeToPasswordResetLinks((payload) => {
+      setPendingPasswordReset(payload);
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,6 +196,29 @@ export function AuthProvider({ children }) {
     await AsyncStorage.removeItem("@kind/community_withdraw_notice");
   }, [token, clearSession]);
 
+  const requestPasswordReset = useCallback(async (resetEmail) => {
+    const redirectTo = getPasswordResetRedirectUri();
+    await publicPost("/auth/forgot-password", {
+      email: resetEmail.trim(),
+      redirectTo
+    });
+  }, []);
+
+  const completePasswordReset = useCallback(async ({ password, accessToken, tokenHash }) => {
+    await publicPost("/auth/reset-password", {
+      password,
+      accessToken,
+      tokenHash
+    });
+    setPendingPasswordReset(null);
+  }, []);
+
+  const consumePasswordResetLink = useCallback(() => {
+    const current = pendingPasswordReset;
+    if (current) setPendingPasswordReset(null);
+    return current;
+  }, [pendingPasswordReset]);
+
   const value = useMemo(
     () => ({
       token,
@@ -193,12 +227,30 @@ export function AuthProvider({ children }) {
       email,
       hydrating,
       isAuthenticated: Boolean(token),
+      pendingPasswordReset,
       login,
       signup,
       signInWithOAuth,
-      logout
+      logout,
+      requestPasswordReset,
+      completePasswordReset,
+      consumePasswordResetLink
     }),
-    [token, refreshToken, individualId, email, hydrating, login, signup, signInWithOAuth, logout]
+    [
+      token,
+      refreshToken,
+      individualId,
+      email,
+      hydrating,
+      pendingPasswordReset,
+      login,
+      signup,
+      signInWithOAuth,
+      logout,
+      requestPasswordReset,
+      completePasswordReset,
+      consumePasswordResetLink
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
