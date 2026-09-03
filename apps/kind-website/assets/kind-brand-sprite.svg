@@ -34,5 +34,12 @@
       <circle cx="31.5" cy="25.5" r="1.5" fill="currentColor"/>
       <path d="M23 31c1.2 2.5 9 2.5 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
     </symbol>
+    <symbol id="ib-transparent" viewBox="0 0 56 56">
+      <rect x="9" y="13" width="26" height="32" rx="4" stroke="currentColor" stroke-width="2.2" fill="none"/>
+      <rect x="21" y="19" width="26" height="32" rx="4" stroke="currentColor" stroke-width="2.2" fill="currentColor" fill-opacity="0.12"/>
+      <line x1="14" y1="21" x2="30" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.4"/>
+      <line x1="14" y1="27" x2="30" y2="27" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.4"/>
+      <line x1="14" y1="33" x2="24" y2="33" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.4"/>
+    </symbol>
   </defs>
 </svg>
