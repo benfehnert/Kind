@@ -49,6 +49,12 @@ The snapshot tests compare the cent/centShort analysis output for every explorat
 - `npm run release:staging` — push `dev`, merge `dev` → `staging`, and push `staging`
 - `npm run release:main` — push `staging`, merge `staging` → `main`, and push `main`
 
+## Kind System docs
+
+- `docs/the-kind-system/` holds The Kind System: the design-system and governance spec (`the-kind-system.md`), implementation status against the codebase, the design token reference, and a CalVer decision trail in `decisions/`.
+- To change it (tokens, primitives, rules, pipeline, stack, figures), use the `update-kind-system` skill (`/update-kind-system`, canonical instructions in `docs/the-kind-system/skills/update-kind-system/SKILL.md`). The skill writes a new release in `decisions/` and leaves it `Proposed` for human review.
+- If a change to `apps/mobile/src/theme/` or `apps/mobile/src/components/primitives/` has no matching Kind System release, the two have drifted. Record the change through the skill.
+
 ## Release Guardrails
 
 - Release targets are fixed to dev -> staging and staging -> main.
