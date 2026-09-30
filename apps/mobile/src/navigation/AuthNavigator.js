@@ -11,13 +11,16 @@ import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 
 const AuthStack = createNativeStackNavigator();
 
+function hasResetPayload(reset) {
+  return Boolean(reset && (reset.error || reset.accessToken || reset.tokenHash));
+}
+
 function PasswordResetDeepLinkBridge() {
   const navigation = useNavigation();
   const { pendingPasswordReset } = useAuth();
 
   useEffect(() => {
-    if (!pendingPasswordReset) return;
-    if (pendingPasswordReset.error || pendingPasswordReset.accessToken || pendingPasswordReset.tokenHash) {
+    if (hasResetPayload(pendingPasswordReset)) {
       navigation.navigate("ResetPassword", pendingPasswordReset);
     }
   }, [pendingPasswordReset, navigation]);
@@ -35,7 +38,7 @@ function LoginWithBridge(props) {
 }
 
 export default function AuthNavigator() {
-  const { hydrating } = useAuth();
+  const { hydrating, pendingPasswordReset } = useAuth();
 
   if (hydrating) {
     return (
@@ -45,8 +48,13 @@ export default function AuthNavigator() {
     );
   }
 
+  // The link is usually already pending by the time hydration ends. Navigating from
+  // Login's mount effect is dropped because the container isn't ready yet, so start
+  // on ResetPassword instead; the bridge still covers links that arrive later.
+  const initialRouteName = hasResetPayload(pendingPasswordReset) ? "ResetPassword" : "Login";
+
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
+    <AuthStack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRouteName}>
       <AuthStack.Screen name="Login" component={LoginWithBridge} />
       <AuthStack.Screen name="SignUp" component={SignUpScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
