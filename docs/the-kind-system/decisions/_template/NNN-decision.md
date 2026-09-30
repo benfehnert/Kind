@@ -3,6 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Proposed |
+| Reviewed | pending |
 | Release | [`YYYY.MM.DD[.N]`](RELEASE.md) |
 | Author(s) | <person> with <agent / model, if any> |
 | Sections / rules affected | e.g. §2.1, Rule 2.2.2, `design-tokens.md` › Colour |

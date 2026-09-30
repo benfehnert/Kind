@@ -2,7 +2,7 @@
 
 This is the governing specification for how Kind builds, reviews, and deploys features. It covers the design system, AI-generated output, and the exploration (research protocol) pipeline, and it's kept in step with the codebase that implements it.
 
-**Current version: `2026.09.29.1`** (Proposed, pending review)
+**Current version: `2026.09.30`** (Proposed, pending review)
 
 ## What's here
 
@@ -26,6 +26,7 @@ This is the governing specification for how Kind builds, reviews, and deploys fe
 
 | Version | Status | Decisions | Tag |
 |---|---|---|---|
+| [`2026.09.30`](decisions/2026.09.30/RELEASE.md) | Proposed | [001](decisions/2026.09.30/001-approval-skill.md) Approval skill | *not yet created* |
 | [`2026.09.29.1`](decisions/2026.09.29.1/RELEASE.md) | Proposed | [001](decisions/2026.09.29.1/001-protocol-review-board.md) Protocol Review Board · [002](decisions/2026.09.29.1/002-kind-readiness-owner.md) Kind-readiness owner · [003](decisions/2026.09.29.1/003-dpo-protocol-signoff.md) DPO sign-off · [004](decisions/2026.09.29.1/004-reporting-and-protocol-standards.md) SPENT/CENT standards · [005](decisions/2026.09.29.1/005-ai-drafts-only.md) AI drafts only · [006](decisions/2026.09.29.1/006-irb-routes.md) IRB routes · [007](decisions/2026.09.29.1/007-deidentification-and-researcher-access.md) De-identification · [008](decisions/2026.09.29.1/008-matching-engine.md) Matching engine · [009](decisions/2026.09.29.1/009-live-ai-output.md) Live AI output · [010](decisions/2026.09.29.1/010-findings-without-change.md) No-change findings | *not yet created* |
 | [`2026.09.29`](decisions/2026.09.29/RELEASE.md) | Proposed | [001](decisions/2026.09.29/001-documentation-package-and-trail.md) Documentation package and decision trail · [002](decisions/2026.09.29/002-implementation-status.md) Implementation status against the codebase · [003](decisions/2026.09.29/003-design-token-reference.md) Design token reference · [004](decisions/2026.09.29/004-calver.md) CalVer versioning | *not yet created* |
 | [`2026.08.28`](decisions/2026.08.28/RELEASE.md) | Proposed (reconstructed; issued as "0.1 — Draft for review") | [001](decisions/2026.08.28/001-governance-spec.md) Governance specification · [002](decisions/2026.08.28/002-figures-from-figjam.md) Figures from FigJam | *not yet created* |
@@ -37,4 +38,11 @@ Every change becomes a new release in `decisions/`. Nothing is edited quietly.
 - **With Claude Code:** run `/update-kind-system` and describe the change. The skill works out what the change touches in the docs and the code, asks only for what it can't find, writes the release, and leaves it `Proposed`.
 - **By hand:** follow [`skills/update-kind-system/SKILL.md`](skills/update-kind-system/SKILL.md) step by step, using the templates in [`decisions/_template/`](decisions/_template/).
 
-A release becomes `Accepted` only when a named human records the review in its `RELEASE.md`. After it's committed, tag it `kind-system/<version>`.
+## Approving a change
+
+A release becomes `Accepted` only when a named human, who isn't one of its authors, records the review in its `RELEASE.md`.
+
+- **With Claude Code:** run `/approve-kind-system`. It summarises every Proposed release, raises anything that needs clarifying (contradictions, unverified sources, rules nobody can meet yet), asks the reviewer for Accept or Reject on each decision, and records their answers. It never approves anything itself.
+- **By hand:** follow [`skills/approve-kind-system/SKILL.md`](skills/approve-kind-system/SKILL.md).
+
+After it's committed, tag it `kind-system/<version>`.

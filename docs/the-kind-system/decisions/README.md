@@ -55,7 +55,9 @@ Binary files are committed directly. If a single file goes over about 5 MB, move
 ## Status and immutability
 
 - **Decision status** is one of `Proposed`, `Accepted`, `Rejected`, or `Superseded by <version>/<NNN>`.
-- **Release status** is `Proposed` until a named human records the review in `RELEASE.md`, and `Accepted` after. Agents never set a release or decision to `Accepted` (Rule 3.1.3).
+- **Release status** is `Proposed` until a named human records the review in `RELEASE.md`, and `Accepted` after. Agents never set a release or decision to `Accepted` of their own accord (Rule 3.1.3).
+- **Approval.** Use the `approve-kind-system` skill ([`../skills/approve-kind-system/SKILL.md`](../skills/approve-kind-system/SKILL.md)). It summarises what is pending, raises anything that needs clarifying, and records the named reviewer's own Accept or Reject on each decision. A release passes only when every decision in it is Accepted. If any decision is Rejected, the release fails and stays `Proposed`: the rejected changes are backed out through `update-kind-system`, and the release is reviewed again. Every attempt stays in the review record.
+- **Order.** Releases are decided oldest first. A release can't be Accepted while an earlier release is still `Proposed`.
 - **After acceptance, a release folder is immutable.** The only edit allowed is adding a `Superseded by` back-link to an old decision when a later decision replaces it. Corrections, including corrections to a past record, are made as new decisions in a new release.
 - **Proposed releases may be edited** until they are reviewed. The history is still in git.
 

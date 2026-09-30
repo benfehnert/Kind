@@ -104,7 +104,7 @@ Tell the user:
 - The new version, and one line per decision.
 - What was deferred or left `pending`.
 - The touchpoints that now need a human reviewer.
-- Next steps: review, commit (on `dev` first, per this repo's workflow), then tag with:
+- Next steps: review with `/approve-kind-system` (which records the named reviewer's decision), commit (on `dev` first, per this repo's workflow), then tag with:
 
 ```sh
 git tag -a kind-system/<version> -m "The Kind System <version>" <commit> && git push origin kind-system/<version>
