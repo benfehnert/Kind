@@ -2,7 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Proposed |
+| Status | Accepted |
+| Reviewed | Ben Fehnert (CEO), 2026-10-02, Touchpoint 1 |
 | Release | [`2026.09.29.1`](RELEASE.md) |
 | Author(s) | Grady Ng with Claude Opus 5.5; findings from Ben Fehnert (`context/analysis.md`) |
 | Sections / rules affected | §0.1 Touchpoint 6; §4.3 (retitled *Protocol and Ethics Review*), Rules 4.3.1, 4.3.3 (new); §6; Figure 3b caption |

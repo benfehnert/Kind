@@ -4,7 +4,7 @@
 |---|---|
 | Version | `2026.09.29` |
 | Date | 2026-09-29 |
-| Status | Proposed |
+| Status | Accepted |
 | Previous version | [`2026.08.28`](../2026.08.28/RELEASE.md) |
 | Git tag | `kind-system/2026.09.29`, *not yet created* |
 | Codebase at authoring | branch `staging`, commit `15a1016` |
@@ -24,10 +24,10 @@ The governance rules themselves are unchanged.
 
 | # | Decision | Status |
 |---|---|---|
-| 001 | [Documentation package and decision trail](001-documentation-package-and-trail.md) | Proposed |
-| 002 | [Track implementation status against the codebase](002-implementation-status.md) | Proposed |
-| 003 | [Record design tokens, with code as authoritative for values](003-design-token-reference.md) | Proposed |
-| 004 | [Version the Kind System with CalVer](004-calver.md) | Proposed |
+| 001 | [Documentation package and decision trail](001-documentation-package-and-trail.md) | Accepted |
+| 002 | [Track implementation status against the codebase](002-implementation-status.md) | Accepted |
+| 003 | [Record design tokens, with code as authoritative for values](003-design-token-reference.md) | Accepted |
+| 004 | [Version the Kind System with CalVer](004-calver.md) | Accepted |
 
 ## Files changed
 
@@ -58,7 +58,7 @@ None regenerated. Figure 4 still shows the stack as specified. The §5 table car
 
 | Touchpoint | Reviewer | Date | Outcome | Notes |
 |---|---|---|---|---|
-| 1: Design System change review | pending | | | Documentation and agent-instruction change. Per §2.1, changes to agent instructions are reviewed like any other Design System change. |
+| 1: Design System change review | Ben Fehnert (CEO) | 2026-10-02 | Pass | Accepted 001–004. recorded by Ben via approve-kind-system |
 
 ## Open gaps
 

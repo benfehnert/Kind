@@ -2,7 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Proposed |
+| Status | Accepted |
+| Reviewed | Ben Fehnert (CEO), 2026-10-02, Touchpoint 1 |
 | Release | [`2026.08.28`](RELEASE.md) (reconstructed) |
 | Author(s) | Grady Ng with Claude Sonnet 5 |
 | Sections / rules affected | All: §0–§6, Appendices A–B |

@@ -4,7 +4,7 @@
 
 A controlled document governing feature development, the design system, AI-generated output, and the research protocol pipeline at Kind.
 
-*Version 2026.09.30 — Proposed, pending review — 30 September 2026*
+*Version 2026.09.30 — Accepted 2026-10-02 — 30 September 2026*
 
 *Previous versions: 2026.09.29.1; 2026.09.29; 2026.08.28 (originally issued as "Version 0.1 — Draft for review"). Versions use CalVer (`YYYY.MM.DD`). Every version and the reasoning behind it is recorded in [`decisions/`](decisions/README.md). Implementation state against the codebase is tracked in [`implementation-status.md`](implementation-status.md). Visual token values are recorded in [`design-tokens.md`](design-tokens.md).*
 

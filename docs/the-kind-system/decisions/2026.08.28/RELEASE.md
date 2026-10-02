@@ -6,7 +6,7 @@
 |---|---|
 | Version | `2026.08.28` (issued as "Version 0.1 — Draft for review") |
 | Date | 2026-08-28 |
-| Status | Proposed. The original was issued as a draft for review, and no review was recorded. |
+| Status | Accepted |
 | Previous version | — (initial release) |
 | Git tag | `kind-system/2026.08.28` → `15a1016`, *not yet created* |
 | Codebase at authoring | branch `staging`, commit `15a1016` (parent `fe171f0`), 2026-08-28 14:19 +08:00 |
@@ -20,8 +20,8 @@ This is the first version of The Kind System: a governing specification for how 
 
 | # | Decision | Status |
 |---|---|---|
-| 001 | [Adopt The Kind System governance specification](001-governance-spec.md) | Proposed |
-| 002 | [Ship figures as versioned repository images, not live-board links](002-figures-from-figjam.md) | Proposed |
+| 001 | [Adopt The Kind System governance specification](001-governance-spec.md) | Accepted |
+| 002 | [Ship figures as versioned repository images, not live-board links](002-figures-from-figjam.md) | Accepted |
 
 ## Files changed
 
@@ -51,6 +51,7 @@ All six figures are new. Their sources, provenance, and checksums are in [`conte
 | Touchpoint | Reviewer | Date | Outcome | Notes |
 |---|---|---|---|---|
 | 1: Design System change review | unknown | | not recorded | Committed directly to `staging` as a draft for review |
+| 1: Design System change review | Ben Fehnert (CEO) | 2026-10-02 | Pass | Accepted 001–002. Acknowledged as a known gap: reconstructed record; original prompts never kept (001). recorded by Ben via approve-kind-system |
 
 ## Open gaps
 

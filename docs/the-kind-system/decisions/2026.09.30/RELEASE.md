@@ -4,7 +4,7 @@
 |---|---|
 | Version | `2026.09.30` |
 | Date | 2026-09-30 |
-| Status | Proposed |
+| Status | Accepted |
 | Previous version | [`2026.09.29.1`](../2026.09.29.1/RELEASE.md) |
 | Git tag | `kind-system/2026.09.30`, *not yet created* |
 | Codebase at authoring | branch `dev`, commit `bd56ad3` |
@@ -18,7 +18,7 @@ Adds the `approve-kind-system` skill: the agent instructions for reviewing Propo
 
 | # | Decision | Status |
 |---|---|---|
-| 001 | [An approval skill that prepares reviews and records the human's decision](001-approval-skill.md) | Proposed |
+| 001 | [An approval skill that prepares reviews and records the human's decision](001-approval-skill.md) | Accepted |
 
 ## Files changed
 
@@ -47,7 +47,7 @@ None.
 
 | Touchpoint | Reviewer | Date | Outcome | Notes |
 |---|---|---|---|---|
-| 1: Design System change review | pending | | | This changes agent instructions, which §2.1 reviews like any Design System change. The reviewer must not be Grady Ng, the author. |
+| 1: Design System change review | Ben Fehnert (CEO) | 2026-10-02 | Pass | Accepted 001. Reviewer is not an author. recorded by Ben via approve-kind-system |
 
 ## Open gaps
 

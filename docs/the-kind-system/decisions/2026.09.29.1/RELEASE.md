@@ -4,7 +4,7 @@
 |---|---|
 | Version | `2026.09.29.1` |
 | Date | 2026-09-29 |
-| Status | Proposed |
+| Status | Accepted |
 | Previous version | [`2026.09.29`](../2026.09.29/RELEASE.md) |
 | Git tag | `kind-system/2026.09.29.1`, *not yet created* |
 | Codebase at authoring | branch `staging`, commit `15a1016` (with release `2026.09.29` uncommitted) |
@@ -23,16 +23,16 @@ This release brings the Kind System's research governance into line with Kind's 
 
 | # | Decision | Status |
 |---|---|---|
-| 001 | [The Protocol Review Board replaces the Science Advisory Board as the scientific gate](001-protocol-review-board.md) | Proposed |
-| 002 | [The Head of Science owns the Kind-readiness determination](002-kind-readiness-owner.md) | Proposed |
-| 003 | [DPO data-protection sign-off on every protocol is its own touchpoint](003-dpo-protocol-signoff.md) | Proposed |
-| 004 | [SPENT/SPIRIT govern protocol writing; CENT/CONSORT govern reporting](004-reporting-and-protocol-standards.md) | Proposed |
-| 005 | [AI tooling produces draft protocols only, with disclosure](005-ai-drafts-only.md) | Proposed |
-| 006 | [BRANY review routes under an umbrella protocol](006-irb-routes.md) | Proposed |
-| 007 | [De-identification standard, researcher access, and DPO re-identification review](007-deidentification-and-researcher-access.md) | Proposed |
-| 008 | [The matching engine is deterministic, and changes need Protocol Review Board approval](008-matching-engine.md) | Proposed |
-| 009 | [Governing live AI output to individuals](009-live-ai-output.md) | Proposed |
-| 010 | [Findings closed without a Kind System change](010-findings-without-change.md) | Proposed |
+| 001 | [The Protocol Review Board replaces the Science Advisory Board as the scientific gate](001-protocol-review-board.md) | Accepted |
+| 002 | [The Head of Science owns the Kind-readiness determination](002-kind-readiness-owner.md) | Accepted |
+| 003 | [DPO data-protection sign-off on every protocol is its own touchpoint](003-dpo-protocol-signoff.md) | Accepted |
+| 004 | [SPENT/SPIRIT govern protocol writing; CENT/CONSORT govern reporting](004-reporting-and-protocol-standards.md) | Accepted |
+| 005 | [AI tooling produces draft protocols only, with disclosure](005-ai-drafts-only.md) | Accepted |
+| 006 | [BRANY review routes under an umbrella protocol](006-irb-routes.md) | Accepted |
+| 007 | [De-identification standard, researcher access, and DPO re-identification review](007-deidentification-and-researcher-access.md) | Accepted |
+| 008 | [The matching engine is deterministic, and changes need Protocol Review Board approval](008-matching-engine.md) | Accepted |
+| 009 | [Governing live AI output to individuals](009-live-ai-output.md) | Accepted |
+| 010 | [Findings closed without a Kind System change](010-findings-without-change.md) | Accepted |
 
 ## Files changed
 
@@ -74,7 +74,7 @@ None regenerated. Figures 3a and 3b are now marked out of date, and 3c is marked
 
 | Touchpoint | Reviewer | Date | Outcome | Notes |
 |---|---|---|---|---|
-| 1: Design System change review | pending | | | This release changes the governance rules and the §0.1 touchpoint table. |
+| 1: Design System change review | Ben Fehnert (CEO) | 2026-10-02 | Pass | Accepted 001–010. Acknowledged as known gaps: agent-supplied SPENT/SPIRIT/CONSORT/HHS citations not fetched (004, 007); adopting now means explorations stay blocked until DPO, Safety Officer, PRB seats, and Head of Science are filled (001, 002, 003, 007, 009). recorded by Ben via approve-kind-system |
 
 ## Open gaps
 

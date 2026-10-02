@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | Proposed |
-| Reviewed | pending |
+| Status | Accepted |
+| Reviewed | Ben Fehnert (CEO), 2026-10-02, Touchpoint 1 |
 | Release | [`2026.09.30`](RELEASE.md) |
 | Author(s) | Grady Ng with Claude Opus 5.5 |
 | Sections / rules affected | §2.1 (agent instructions under source control), Rule 0.2.1, Rules 3.1.2–3.1.4 as applied to Kind System changes; `decisions/README.md`; `decisions/_template/NNN-decision.md`; `README.md` |
