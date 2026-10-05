@@ -2,7 +2,9 @@ export const OAUTH_PROVIDERS = new Set(["google", "apple"]);
 
 const ALLOWED_KIND_REDIRECTS = new Set([
   "kind://auth/callback",
-  "kind://auth/reset-password"
+  "kind://auth/reset-password",
+  "https://web.kind-health.app/auth/callback",
+  "https://web.kind-health.app/auth/reset-password"
 ]);
 
 export function isAllowedOAuthRedirect(redirectTo) {
